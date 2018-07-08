@@ -19,6 +19,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var expect = chai.expect;
 
+var subtests = require("./subtests");
 var config = require("./test-config.json");
 var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
 var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('ws');
@@ -657,7 +658,7 @@ describe("Getting components catalog ... \n".bold, function() {
     }).timeout(10000);
 })
 
-describe("Creating rules ... \n".bold, function() {
+/*describe("Creating rules ... \n".bold, function() {
     it('Shall create switch-on rule', function(done) {
 
         rules[switchOnCmdName].cid = componentId;
@@ -700,9 +701,17 @@ describe("Creating rules ... \n".bold, function() {
         })
 
     }).timeout(20000);    
-}); 
+});*/ 
 
-describe("Sending observations and checking rules ...\n".bold, function() {
+describe("Do statistics rule test",
+	 function() {
+	     
+	     it('Shall create statisics rule',function(done) {
+		 var test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId).createStatisticsRule(done);
+		 
+	     }).timeout(10000)
+	 });
+/*describe("Sending observations and checking rules ...\n".bold, function() {
 
     it('Shall send observation and check rules', function(done) {
         assert.notEqual(componentId, null, "Invalid component id")
@@ -754,7 +763,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                             var i;
                             for(i=0; i<lines.length; i++) {
                                 var reExecReason = /^- Reason:.*/;
-                                if ( reExecReason.test(lines[i]) ) {
+                                /*if ( reExecReason.test(lines[i]) ) {
                                     var reason = lines[i].split(":")[1].trim();
                                     if ( reason == temperatureValues[index].expectedEmailReason ) {
                                         break;
@@ -1327,4 +1336,4 @@ describe("change password and delete receiver ... \n".bold, function(){
         })
     })
  
-})   
+})*/   
