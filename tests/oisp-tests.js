@@ -63,11 +63,11 @@ rules[switchOnCmdName] = {
                 {
                     type: "actuation",
                     target: [ switchOnCmdName ]
-                },
+                }/*,
                 {
                     type: "mail",
                     target: [ recipientEmail ]
-                }
+                }*/
             ],
 };
 
@@ -80,11 +80,11 @@ rules[switchOffCmdName] = {
                 {
                     type: "actuation",
                     target: [ switchOffCmdName ]
-                },
+                }/*,
                 {
                     type: "mail",
                     target: [ recipientEmail ]
-                }
+                }*/
             ],
 };
 
@@ -209,7 +209,8 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
 
                 kafkaConsumer = new kafka.Consumer(kafkaClient, topics, options)
 
-                var oispServicesToMonitor = ['rules-engine'];
+                //var oispServicesToMonitor = ['rules-engine'];
+		var oispServicesToMonitor = [];
                 process.stdout.write("    ");
                 kafkaConsumer.on('message', function (message) {
                     process.stdout.write(".".green);
@@ -658,7 +659,7 @@ describe("Getting components catalog ... \n".bold, function() {
     }).timeout(10000);
 })
 
-/*describe("Creating rules ... \n".bold, function() {
+describe("Creating rules ... \n".bold, function() {
     it('Shall create switch-on rule', function(done) {
 
         rules[switchOnCmdName].cid = componentId;
@@ -701,15 +702,15 @@ describe("Getting components catalog ... \n".bold, function() {
         })
 
     }).timeout(20000);    
-});*/ 
+});
 
 describe("Do statistics rule test",
 	 function() {
 	     
-	     it('Shall create statisics rule',function(done) {
+	     it('Shall create statisics rule and wait for synchronization with RE',function(done) {
 		 var test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId).createStatisticsRule(done);
 		 
-	     }).timeout(10000)
+	     }).timeout(50000)
 	 });
 /*describe("Sending observations and checking rules ...\n".bold, function() {
 

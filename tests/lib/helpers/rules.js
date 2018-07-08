@@ -124,6 +124,7 @@ function createRule(ruleConfig, userToken, accountId, deviceId, cb) {
             var ruleId = response.id;
             var syncInterval = setInterval( function(id) {
                 getRuleDetails(userToken, accountId, ruleId, function(err, status) {
+		    console.log("Marcel56", err, status);
                     if (err) {
                         clearInterval(syncInterval);
                         cb(err)
@@ -187,14 +188,16 @@ function createStatisticRule(ruleConfig, userToken, accountId, deviceId, cb) {
         }
     };
 
-    console.log("Data", JSON.stringify(data.body));
     api.rules.createRule(data, function(err, response) {
         if (err) {
             cb(err)
         } else {
             var ruleId = response.id;
             var syncInterval = setInterval( function(id) {
+		console.log("Marcel53");
                 getRuleDetails(userToken, accountId, ruleId, function(err, status) {
+		    console.log("Marcel54", err, status);
+
                     if (err) {
                         clearInterval(syncInterval);
                         cb(err)

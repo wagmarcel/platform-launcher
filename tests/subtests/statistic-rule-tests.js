@@ -56,7 +56,7 @@ var test = function(userToken, accountId, deviceId) {
     var rule = {
 	name: "oisp-tests-rule-statistic",
 	conditionComponent: componentName,
-	statisticConditionOperator: "<=",
+	statisticConditionOperator: ">=",
 	statisticConditionValue: "2",
 	statisticMinimalInstances: 10,
 	statisticSecondsBack: 10,
@@ -146,6 +146,7 @@ var test = function(userToken, accountId, deviceId) {
 		if (err) {
                     done(new Error("Cannot create switch-on rule: " + err));
 		} else {
+		    console.log("StatisticRules created");
                     rule.id = id;
                     done();
 		}
