@@ -1,0 +1,15 @@
+FROM ubuntu:xenial
+RUN apt-get update -qq && apt-get upgrade -y
+
+RUN apt-get install -y curl unzip openjdk-8-jre-headless python-setuptools
+
+#RUN wget www.example.com
+RUN curl --retry 3 --insecure https://archive.apache.org/dist/spark/spark-2.2.1/spark-2.2.1.tgz -o tmp.tgz
+RUN tar xvzf tmp.tgz && rm tmp.tgz && chmod +x spark-2.2.1-bin-hadoop2.7/bin/* && chmod +x spark-2.2.1-bin-hadoop2.7/sbin/*
+
+
+EXPOSE 8080
+EXPOSE 7077
+EXPOSE 6066
+
+#CMD bash

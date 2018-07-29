@@ -143,3 +143,26 @@ services:
     environment:
       - VCAP_SERVICES=${VCAP_SERVICES}
       - VCAP_APPLICATION=${VCAP_APPLICATION}
+  spark-master:
+    build:
+      context: ./docker-spark
+    command: /spark/sbin/start-master.sh 
+    environment:
+      - SPARK_HOME=/spark
+      - SPARK_NO_DAEMONIZE=1
+    hostname: spark-master
+    ports:
+      - 6066:6066
+      - 7077:7077
+      - 8081:8080
+  spark-worker:
+    build:
+      context: ./docker-spark
+    command: /spark/sbin/start-slave.sh -c 1 spark://spark-master:7077
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=2g
+      - SPARK_HOME=/spark
+      - SPARK_NO_DAEMONIZE=1
