@@ -144,25 +144,26 @@ services:
       - VCAP_SERVICES=${VCAP_SERVICES}
       - VCAP_APPLICATION=${VCAP_APPLICATION}
   spark-master:
-    build:
-      context: ./docker-spark
-    command: /spark/sbin/start-master.sh 
-    environment:
-      - SPARK_HOME=/spark
-      - SPARK_NO_DAEMONIZE=1
+    image: singularities/spark:2.2
+    command: start-spark master
     hostname: spark-master
     ports:
-      - 6066:6066
-      - 7077:7077
-      - 8081:8080
-  spark-worker:
-    build:
-      context: ./docker-spark
-    command: /spark/sbin/start-slave.sh -c 1 spark://spark-master:7077
-    depends_on:
-      - spark-master
+      - "6066:6066"
+      - "7077:7077"
+      - "8081:8080"
+      - "50070:50070"
+    volumes:
+      - ./data/hdfs/master-node:/opt/hdfs
     environment:
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=2g
-      - SPARK_HOME=/spark
-      - SPARK_NO_DAEMONIZE=1
+      - HDFS_USER=spark
+  spark-worker:
+    image: singularities/spark:2.2
+    command: start-spark worker spark-master
+    environment:
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=2G
+      - HDFS_USER=spark
+    links:
+      - spark-master
+    volumes:
+      - ./data/hdfs/worker-node:/opt/hdfs
