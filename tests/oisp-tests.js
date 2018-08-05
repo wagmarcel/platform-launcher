@@ -62,11 +62,11 @@ rules[switchOnCmdName] = {
                 {
                     type: "actuation",
                     target: [ switchOnCmdName ]
-                },
+                }/*,
                 {
                     type: "mail",
                     target: [ recipientEmail ]
-                }
+                }*/
             ],
 };
 
@@ -79,11 +79,11 @@ rules[switchOffCmdName] = {
                 {
                     type: "actuation",
                     target: [ switchOffCmdName ]
-                },
+                }/*,
                 {
                     type: "mail",
                     target: [ recipientEmail ]
-                }
+                }*/
             ],
 };
 
@@ -208,7 +208,8 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
 
                 kafkaConsumer = new kafka.Consumer(kafkaClient, topics, options)
 
-                var oispServicesToMonitor = ['rules-engine'];
+                //var oispServicesToMonitor = ['rules-engine'];
+		var oispServicesToMonitor = [];
                 process.stdout.write("    ");
                 kafkaConsumer.on('message', function (message) {
                     process.stdout.write(".".green);
@@ -700,9 +701,17 @@ describe("Creating rules ... \n".bold, function() {
         })
 
     }).timeout(20000);    
-}); 
+});
 
-describe("Sending observations and checking rules ...\n".bold, function() {
+describe("Do statistics rule test",
+	 function() {
+	     
+	     it('Shall create statisics rule and wait for synchronization with RE',function(done) {
+		 var test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, componentId).createStatisticsRule(done);
+		 
+	     }).timeout(50000)
+	 });
+/*describe("Sending observations and checking rules ...\n".bold, function() {
 
     it('Shall send observation and check rules', function(done) {
         assert.notEqual(componentId, null, "Invalid component id")
@@ -754,7 +763,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                             var i;
                             for(i=0; i<lines.length; i++) {
                                 var reExecReason = /^- Reason:.*/;
-                                if ( reExecReason.test(lines[i]) ) {
+                                /*if ( reExecReason.test(lines[i]) ) {
                                     var reason = lines[i].split(":")[1].trim();
                                     if ( reason == temperatureValues[index].expectedEmailReason ) {
                                         break;
@@ -1327,4 +1336,4 @@ describe("change password and delete receiver ... \n".bold, function(){
         })
     })
  
-})   
+})*/   
