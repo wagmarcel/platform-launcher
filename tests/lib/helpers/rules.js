@@ -142,6 +142,76 @@ function createRule(ruleConfig, userToken, accountId, deviceId, cb) {
 
 }
 
+function createStatisticRule(ruleConfig, userToken, accountId, deviceId, cb) {
+    if (!cb) {
+        throw "Callback required";
+    }
+
+    var data = {
+        userToken: userToken,
+        accountId: accountId,
+
+        body: {
+            name: ruleConfig.name,
+            description: "OISP testing rule",
+            priority: "Medium",
+            type: "Regular",
+            status: "Active",
+            resetType: "Automatic",
+            synchronizationStatus: "NotSync",
+
+            actions: ruleConfig.actions,
+
+            population: {
+                ids: [deviceId],
+                attributes: null,
+                tags: null
+            },
+
+            conditions: {
+                operator: "OR",
+                values: [{
+                    component: {
+                        dataType: "Number",
+                        name: ruleConfig.conditionComponent,
+                        cid: ruleConfig.cid
+                    },
+                    type: "statistics",
+                    values: [ruleConfig.statisticConditionValue.toString()],
+                    operator: ruleConfig.statisticConditionOperator,
+		    baselineCalculationLevel: "Device level",
+		    baselineMinimalInstances: ruleConfig.statisticMinimalInstances,
+		    baselineSecondsBack: ruleConfig.statisticSecondsBack
+                }]
+            }
+        }
+    };
+
+    api.rules.createRule(data, function(err, response) {
+        if (err) {
+            cb(err)
+        } else {
+            var ruleId = response.id;
+            var syncInterval = setInterval( function(id) {
+                getRuleDetails(userToken, accountId, ruleId, function(err, status) {
+                    if (err) {
+                        clearInterval(syncInterval);
+                        cb(err)
+                    }
+                    else {
+                        if ( status == true ) {
+                            clearInterval(syncInterval);
+                            cb(null, ruleId)
+                        }
+                    }
+                })
+            }, 500)
+            
+        }
+    });
+
+}
+
 function updateRule(ruleConfig, userToken, accountId, ruleId, cb) {
     if (!cb) {
         throw "Callback required";
@@ -335,6 +405,7 @@ function deleteRule (userToken, accountId,ruleId , cb) {
 
 module.exports={
     createRule:createRule,
+    createStatisticRule:createStatisticRule,
     getRules: getRules,
     getRuleDetails: getRuleDetails,
     updateRule: updateRule,

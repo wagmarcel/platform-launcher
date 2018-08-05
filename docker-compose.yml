@@ -58,9 +58,9 @@ services:
       - ./data/redis:/data
     ports:
       - 6379:6379
-  gearpump:
+  rule-engine:
     build:
-      context: ./oisp-gearpump-rule-engine
+      context: ./beam-rule-engine
       dockerfile: Dockerfile
     depends_on:
       - nginx
@@ -73,10 +73,11 @@ services:
       - VCAP_APPLICATION=${VCAP_APPLICATION}
       - KAFKA=${KAFKA}
       - KAFKA_HEARTBEAT_TOPIC=${KAFKA_HEARTBEAT_TOPIC}
-      - GEARPUMP=${GEARPUMP}
+      - SPARK=${GEARPUMP}
     ports:
-      - 8090:8090
-    command: bash wait-for-it.sh kafka:9092 -t 300 -- bash bootstrap.sh
+      - 8081:8080
+      - 4040:4040
+    command: bash /app/wait-for-it.sh kafka:9092 -t 300 -- bash /app/bootstrap.sh
   nginx:
     build:
       context: ./oisp-frontend/public-interface/nginx

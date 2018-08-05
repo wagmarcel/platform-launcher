@@ -208,7 +208,8 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
 
                 kafkaConsumer = new kafka.Consumer(kafkaClient, topics, options)
 
-                var oispServicesToMonitor = ['rules-engine'];
+                //var oispServicesToMonitor = ['rules-engine'];
+		var oispServicesToMonitor = [];
                 process.stdout.write("    ");
                 kafkaConsumer.on('message', function (message) {
                     process.stdout.write(".".green);
@@ -700,7 +701,7 @@ describe("Creating rules ... \n".bold, function() {
         })
 
     }).timeout(20000);    
-}); 
+});
 
 describe("Sending observations and checking rules ...\n".bold, function() {
 
