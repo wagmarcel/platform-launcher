@@ -21,6 +21,42 @@
 
 var Imap = require('imap');
 
+
+function waitForNewEmail(user, password, host, port){
+    var newmail = 0;
+    var timeoutcount = 0;
+
+    var imap = new Imap({
+        user: user,
+        password: password,
+        host: host,
+        port: port,
+	connTimeout: 30000,
+	authTimeout: 20000,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
+    });
+
+    return new Promise(
+	function(resolve, reject){
+	    check();
+	    function check(){
+		imap.once('ready', function(){
+		    imap.status('INBOX', function(err, box){
+			if (box.messages.new) { resolve(1);}
+			else if (box.messages.new == 0 && timeoutcount < 5){
+			    setTimeout(check, 1000);
+			    timeoutcount++;
+			}
+			else if (timeoutcount == 5) {reject("Timeout")}
+		    })
+		})
+	    }
+	}
+    );
+}
+
+
 function getEmailMessage(user, password, host, port, num, cb) {
     if (!cb) {
         throw "Callback required";
@@ -30,6 +66,8 @@ function getEmailMessage(user, password, host, port, num, cb) {
         password: password,
         host: host,
         port: port,
+	connTimeout: 30000,
+	authTimeout: 20000,
         tls: true,
         tlsOptions: { rejectUnauthorized: false }
     });
@@ -80,5 +118,6 @@ function getEmailMessage(user, password, host, port, num, cb) {
 } 
 
 module.exports ={
-    getEmailMessage: getEmailMessage
+    getEmailMessage: getEmailMessage,
+    waitForNewEmail: waitForNewEmail
 }

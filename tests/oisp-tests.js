@@ -748,31 +748,32 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
                 if(paramValue == expectedActuationValue)
                 {
-                    helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1, function(err, message) {
-                        if (!err) {
-                            var lines = message.toString().split("\n");
-                            var i;
-                            for(i=0; i<lines.length; i++) {
-                                var reExecReason = /^- Reason:.*/;
-                                if ( reExecReason.test(lines[i]) ) {
-                                    var reason = lines[i].split(":")[1].trim();
-                                    if ( reason == temperatureValues[index].expectedEmailReason ) {
-                                        break;
+		    helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port).then(
+			helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1, function(err, message) {
+                            if (!err) {
+				var lines = message.toString().split("\n");
+				var i;
+				for(i=0; i<lines.length; i++) {
+                                    var reExecReason = /^- Reason:.*/;
+                                    if ( reExecReason.test(lines[i]) ) {
+					var reason = lines[i].split(":")[1].trim();
+					if ( reason == temperatureValues[index].expectedEmailReason ) {
+                                            break;
+					}
                                     }
-                                }
-                            }
+				}
 
-                            if ( i==lines.length ) {
-                                done(new Error("Wrong email " + message ))
+				if ( i==lines.length ) {
+                                    done(new Error("Wrong email " + message ))
+				}
+				else {
+                                    step();
+				}
                             }
                             else {
-                                step();
+				done(new Error("Wrong email " + err ))
                             }
-                        }
-                        else {
-                            done(new Error("Wrong email " + err ))
-                        }
-                    })
+			})).catch(function(err){done(new Error("No mail received: " + err))});
                 }
                 else
                 {
@@ -1012,42 +1013,43 @@ describe("Adding user and posting email ...\n".bold, function() {
     })
 
     it("Shall activate user with token", function(done) {
-        helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1, function(err, message) {
-            if (!err) {
-                var regexp = /token=\w*?\r/
-                var activationline = regexp.exec(message.toString());
-                var rawactivation = activationline[0].split("token=")[1].toString();
-                var activationToken = rawactivation.replace(/\r/, '')
-                activationToken = activationToken.substring(2)
+	helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port).then(
+            helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1, function(err, message) {
+		if (!err) {
+                    var regexp = /token=\w*?\r/
+			var activationline = regexp.exec(message.toString());
+                    var rawactivation = activationline[0].split("token=")[1].toString();
+                    var activationToken = rawactivation.replace(/\r/, '')
+                    activationToken = activationToken.substring(2)
 
-                if ( activationToken === null) {
-                    done(new Error("Wrong email " + message ))
-                }
-                else {
-                    assert.isString(activationToken,'activationToken is not string')
+                    if ( activationToken === null) {
+			done(new Error("Wrong email " + message ))
+                    }
+                    else {
+			assert.isString(activationToken,'activationToken is not string')
 
-                    helpers.users.activateUser(activationToken, function(err, response) {
-                        if (err) {
-                            done(new Error("Cannot activate user: " + err));
-                        } else {
-                            assert.equal(response.status, 'OK', 'cannot activate user')
+			helpers.users.activateUser(activationToken, function(err, response) {
+                            if (err) {
+				done(new Error("Cannot activate user: " + err));
+                            } else {
+				assert.equal(response.status, 'OK', 'cannot activate user')
 
-                            helpers.auth.login(imap_username, imap_password, function(err, token) {
-                                if (err) {
-                                    done(new Error("Cannot authenticate receiver: " + err));
-                                } else {
-                                    receiverToken = token;
-                                    done();
-                                }   
-                            })
-                        }
-                    });
-                }
-            }
-            else {
-                done(new Error("Wrong email " + err ))
-            }
-        })
+				helpers.auth.login(imap_username, imap_password, function(err, token) {
+                                    if (err) {
+					done(new Error("Cannot authenticate receiver: " + err));
+                                    } else {
+					receiverToken = token;
+					done();
+                                    }
+				})
+                            }
+			});
+                    }
+		}
+		else {
+                    done(new Error("Wrong email " + err ))
+		}
+            })).catch(function(err){done(new Error("No mail received: " + err))});
     }).timeout( 60 * 1000);        
 
     it('Shall create receiver account', function(done) {
@@ -1213,31 +1215,32 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
 
     it('Shall update receiver password', function(done) {
-        helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1, function(err, message) {
-            var regexp = /token=\w*?\r/
-            var activationline = regexp.exec(message.toString());
-            var rawactivation = activationline[0].split("token=")[1].toString();
-            var activationToken = rawactivation.replace(/\r/, '')
-            activationToken = activationToken.substring(2)
+	helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port).then(
+            helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1, function(err, message) {
+		var regexp = /token=\w*?\r/
+		    var activationline = regexp.exec(message.toString());
+		var rawactivation = activationline[0].split("token=")[1].toString();
+		var activationToken = rawactivation.replace(/\r/, '')
+		activationToken = activationToken.substring(2)
 
-            if ( activationToken === null) {
-                done(new Error("Wrong email " + message ))
-            }
-            else {
-                assert.isString(activationToken,'activationToken is not string')
+		if ( activationToken === null) {
+                    done(new Error("Wrong email " + message ))
+		}
+		else {
+                    assert.isString(activationToken,'activationToken is not string')
 
-                imap_password = 'Receiver12345'
+                    imap_password = 'Receiver12345'
 
-                helpers.users.updateUserPassword(activationToken, imap_password, function(err, response) {
-                    if (err) {
-                        done(new Error("Cannot update receiver password : " + err));
-                    } else {
-                       	assert.equal(response.status, 'OK', 'status error')
-                        done();
-                    }
-                })
-            }
-        });
+                    helpers.users.updateUserPassword(activationToken, imap_password, function(err, response) {
+			if (err) {
+                            done(new Error("Cannot update receiver password : " + err));
+			} else {
+			    assert.equal(response.status, 'OK', 'status error')
+                            done();
+			}
+                    })
+		}
+            })).catch(function(err){done(new Error("No mail received: " + err))});
     }).timeout(2 * 60 * 1000);
 
     it('Shall change password', function(done) {
