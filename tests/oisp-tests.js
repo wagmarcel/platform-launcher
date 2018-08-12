@@ -1075,7 +1075,6 @@ describe("Invite receiver ...\n".bold, function() {
                 assert.equal(response.email, imap_username, 'send invite to wrong name');
 		console.log("Marcel before waitandconsumer");
 		helpers.mail.waitAndConsumeEmailMessage(imap_username, imap_password, imap_host, imap_port).then(function(message){
-		    console.log("Marcel: waitandconsumemessage " + message);
                     done();
 		}). catch(function(err){done(new Error("Mail not received: " + err))});
             }
@@ -1105,13 +1104,15 @@ describe("Invite receiver ...\n".bold, function() {
                     if (err) {
                         done(new Error("Cannot create invitation: " + err));
                     } else {
-                        assert.equal(response.email, imap_username, 'send invite to wrong name')
-                        done();
+                        assert.equal(response.email, imap_username, 'send invite to wrong name');
+			helpers.mail.waitAndConsumeEmailMessage(imap_username, imap_password, imap_host, imap_port).then(function(message){
+                            done();
+			})
                     }
                 })
             }
-        })        
-    })
+        })
+    }).timeout(20 * 1000);
 
     it('Shall get specific invitations', function(done){
         var getInvitation = function(cb){
@@ -1162,12 +1163,14 @@ describe("Invite receiver ...\n".bold, function() {
             if (err) {
                 done(new Error('cannot request activation:' + err));
             } else {
-                assert.equal(response.status, 'OK')
+                    assert.equal(response.status, 'OK')
+		    helpers.mail.waitAndConsumeEmailMessage(imap_username, imap_password, imap_host, imap_port).then(function(message){
         		done();
+		    })
             }
         })
-    })
-    
+    }).timeout( 20 * 1000);
+
     it('Shall get id of receiver and change privilege', function (done) {
         helpers.auth.tokenInfo(receiverToken, function (err, response) {
             if (err) {
@@ -1215,7 +1218,7 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
 
     it('Shall update receiver password', function(done) {
-	helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, 3)
+	helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, 1)
 	    .then(() => helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1))
 	    .then(function(message) {
 		var regexp = /token=\w*?\r/;

@@ -37,7 +37,6 @@ function removeRecentEmail(user, password, host, port){
     return new Promise(function(resolve,reject){
 	imap.once('ready', function() {
             imap.openBox('INBOX', false, function(err, box) {
-		console.log("Marcel: in openBox");
 		if (!err){
 		    imap.seq.setFlags(1, '\\Deleted', function(err){
 			if (err) reject(err);
@@ -117,7 +116,6 @@ function getEmailMessage(user, password, host, port, num) {
     return new Promise(function(resolve, reject){
 	imap.once('ready', function() {
             imap.openBox('INBOX', false, function(err, box) {
-		console.log("Marcel: in openBox");
 		if ( !err ) {
                     if ( num <= 0 ) {
 			num = box.messages.total;
