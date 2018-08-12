@@ -22,10 +22,7 @@
 var Imap = require('imap');
 
 
-function waitForNewEmail(user, password, host, port){
-    var newmail = 0;
-    var timeoutcount = 0;
-
+function removeRecentEmail(user, password, host, port){
     var imap = new Imap({
         user: user,
         password: password,
@@ -37,30 +34,37 @@ function waitForNewEmail(user, password, host, port){
         tlsOptions: { rejectUnauthorized: false }
     });
 
-    return new Promise(
-	function(resolve, reject){
-	    check();
-	    function check(){
-		imap.once('ready', function(){
-		    imap.status('INBOX', function(err, box){
-			if (box.messages.new) { resolve(1);}
-			else if (box.messages.new == 0 && timeoutcount < 5){
-			    setTimeout(check, 1000);
-			    timeoutcount++;
-			}
-			else if (timeoutcount == 5) {reject("Timeout")}
+    return new Promise(function(resolve,reject){
+	imap.once('ready', function() {
+            imap.openBox('INBOX', false, function(err, box) {
+		console.log("Marcel: in openBox");
+		if (!err){
+		    imap.seq.setFlags(1, '\\Deleted', function(err){
+			if (err) reject(err);
+			imap.closeBox(true, function(err){
+			    if (err) reject(err);
+				resolve();
+			})
 		    })
-		})
-	    }
-	}
-    );
+		}
+		else
+		    reject(err);
+	    })
+	});
+	imap.connect();
+    });
 }
 
+function waitAndConsumeEmailMessage(user, password, host, port){
+    return waitForNewEmail(user, password, host,port, 1)
+	.then(() => removeRecentEmail(user, password, host, port));
+}
 
-function getEmailMessage(user, password, host, port, num, cb) {
-    if (!cb) {
-        throw "Callback required";
-    }
+function waitForNewEmail(user, password, host, port, num){
+    var newmail = 0;
+    var timeoutcount = 0;
+    const TIMEOUTS = 20;
+
     var imap = new Imap({
         user: user,
         password: password,
@@ -72,52 +76,96 @@ function getEmailMessage(user, password, host, port, num, cb) {
         tlsOptions: { rejectUnauthorized: false }
     });
 
-    imap.once('ready', function() {
-        imap.openBox('INBOX', true, function(err, box) {
-            if ( !err ) {
-                if ( num <= 0 ) {
-                    num = box.messages.total;
-                }
-                var f = imap.seq.fetch(num, {
-                            bodies: ['HEADER.FIELDS (TO)', '1'],
-                            struct: true
-                        });
+    return new Promise(function(resolve,reject){
+	imap.once('ready', function(){
+	    check();
+	    function check(){
+		imap.status('INBOX', function(err, box) {
+		    if (box.messages.unseen >= num) {
+			console.log("Marcel: resolve " + JSON.stringify(box));
+			resolve(box.messages.unseen);
+		    }
+		    else if (box.messages.unseen < num && timeoutcount < TIMEOUTS){
+			console.log("Marcel: schedule another check timeoutcount=", timeoutcount, "found: ", box.messages.unseen, "num =", num);
+			setTimeout(check, 1000);
+			timeoutcount++;
+		    }
+		    else if (timeoutcount == TIMEOUTS) {
+			console.log("Marcel: timeout " + timeoutcount);
+			reject("Timeout")
+		    }
+		});
+	    };
+	})
+	imap.connect();
+    })
+}
 
-                f.on('message', function(msg, seqno) {
-                    var buffer = '';
-                    msg.on('body', function(stream, info) {
+function getEmailMessage(user, password, host, port, num) {
 
-                        stream.on('data', function(chunk) {
-                            buffer += chunk.toString('utf8');
-                        });
-                    });
-
-                    msg.once('end', function() {
-                        buffer = buffer.replace("&lt;","<");
-                        buffer = buffer.replace("&gt;",">");
-                        cb(null, buffer);
-                        imap.closeBox(() => {
-                                                imap.destroy();
-                                                imap.end();
-                                            });
-                    });
-                });
-            }
-            else {
-                cb(err);
-            }
-        });
+    var imap = new Imap({
+        user: user,
+        password: password,
+        host: host,
+        port: port,
+	connTimeout: 30000,
+	authTimeout: 20000,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
     });
 
-    imap.once('error', function(err) {
-        cb(err);
-    });
+    return new Promise(function(resolve, reject){
+	imap.once('ready', function() {
+            imap.openBox('INBOX', false, function(err, box) {
+		console.log("Marcel: in openBox");
+		if ( !err ) {
+                    if ( num <= 0 ) {
+			num = box.messages.total;
+                    }
+                    var f = imap.seq.fetch(num, {
+                        bodies: ['HEADER.FIELDS (TO)', '1'],
+                        struct: true
+                    });
 
-    imap.connect();
+                    f.on('message', function(msg, seqno) {
+			var buffer = '';
+			msg.on('body', function(stream, info) {
 
-} 
+                            stream.on('data', function(chunk) {
+				buffer += chunk.toString('utf8');
+                            });
+			});
 
+			msg.once('end', function() {
+                            buffer = buffer.replace("&lt;","<");
+                            buffer = buffer.replace("&gt;",">");
+			    imap.seq.addFlags(num, '\\Deleted', () =>
+					      imap.closeBox(true, () => {
+						  imap.destroy();
+						  imap.end();
+					      })
+					     );
+			    resolve(buffer);
+			});
+                    });
+		}
+		else {
+                    reject(err);
+		}
+            });
+	});
+    
+	imap.once('error', function(err) {
+            reject(err);
+	}); 
+
+	imap.connect();
+    })
+}
+		      
+    
 module.exports ={
     getEmailMessage: getEmailMessage,
-    waitForNewEmail: waitForNewEmail
+    waitForNewEmail: waitForNewEmail,
+    waitAndConsumeEmailMessage: waitAndConsumeEmailMessage
 }
