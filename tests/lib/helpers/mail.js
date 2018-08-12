@@ -37,6 +37,7 @@ function removeRecentEmail(user, password, host, port){
     return new Promise(function(resolve,reject){
 	imap.once('ready', function() {
             imap.openBox('INBOX', false, function(err, box) {
+		console.log("Marcel: delete mail");
 		if (!err){
 		    imap.seq.setFlags(1, '\\Deleted', function(err){
 			if (err) reject(err);

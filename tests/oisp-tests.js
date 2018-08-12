@@ -1079,7 +1079,7 @@ describe("Invite receiver ...\n".bold, function() {
 		}). catch(function(err){done(new Error("Mail not received: " + err))});
             }
         })
-    }).timeout( 20 * 1000);
+    }).timeout( 30 * 1000);
 
     
     it('Shall get all invitations', function(done){
@@ -1112,7 +1112,7 @@ describe("Invite receiver ...\n".bold, function() {
                 })
             }
         })
-    }).timeout(20 * 1000);
+    }).timeout(30 * 1000);
 
     it('Shall get specific invitations', function(done){
         var getInvitation = function(cb){
@@ -1169,7 +1169,7 @@ describe("Invite receiver ...\n".bold, function() {
 		    })
             }
         })
-    }).timeout( 20 * 1000);
+    }).timeout( 30 * 1000);
 
     it('Shall get id of receiver and change privilege', function (done) {
         helpers.auth.tokenInfo(receiverToken, function (err, response) {
