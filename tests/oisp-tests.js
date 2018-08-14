@@ -749,31 +749,6 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                 if(paramValue == expectedActuationValue)
 		{
 		    step();
-		    /*console.log("Marcel: checking email");
-		    helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, 1)
-			.then(() => helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1))
-			.then(function(message) {
-			    console.log("Marcel: message + ", message);
-g			    var lines = message.toString().split("\n");
-			    var i;
-			    for(i=0; i<lines.length; i++) {
-                                var reExecReason = /^- Reason:.*/;
-                                /*if ( reExecReason.test(lines[i]) ) {
-				    var reason = lines[i].split(":")[1].trim();
-				    if ( reason == temperatureValues[index].expectedEmailReason ) {
-                                        break;
-				    }
-                                }
-			    }
-
-			    if ( i==lines.length ) {
-                                done(new Error("Wrong email " + message ))
-			    }
-			    else {
-                                step();
-			    }
-                        
-			}).catch(function(err){done(new Error("No mail received: " + err))});*/
                 }
                 else
                 {
@@ -825,7 +800,6 @@ g			    var lines = message.toString().split("\n");
                         var reExecReason = /^- Reason:.*/;
                         if ( reExecReason.test(line) ) {
 			    var reason = line.split(":")[1].trim();
-			    console.log("Marcel: Reason + ", reason);
 			    var index = temperatureValuesCopy.findIndex( (element) => {
 				return (reason == element.expectedEmailReason);
 			    })
@@ -1098,7 +1072,6 @@ describe("Invite receiver ...\n".bold, function() {
                 done(new Error("Cannot create invitation: " + err));
             } else {
                 assert.equal(response.email, imap_username, 'send invite to wrong name');
-		console.log("Marcel before waitandconsumer");
 		helpers.mail.waitAndConsumeEmailMessage(imap_username, imap_password, imap_host, imap_port).then(function(message){
                     done();
 		}). catch(function(err){done(new Error("Mail not received: " + err))});

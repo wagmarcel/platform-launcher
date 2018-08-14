@@ -37,7 +37,6 @@ function removeRecentEmail(user, password, host, port){
     return new Promise(function(resolve,reject){
 	imap.once('ready', function() {
             imap.openBox('INBOX', false, function(err, box) {
-		console.log("Marcel: delete mail");
 		if (!err){
 		    imap.seq.setFlags(1, '\\Deleted', function(err){
 			if (err) reject(err);
@@ -82,17 +81,13 @@ function waitForNewEmail(user, password, host, port, num){
 	    function check(){
 		imap.status('INBOX', function(err, box) {
 		    if (box.messages.unseen >= num) {
-			console.log("Marcel: resolve " + JSON.stringify(box));
 			resolve(box.messages.unseen);
 		    }
 		    else if (box.messages.unseen < num && timeoutcount < TIMEOUTS){
-			console.log("Marcel: schedule another check timeoutcount=", timeoutcount, "found: ", box.messages.unseen, "num =", num);
-			console.log("Marcel: box " + JSON.stringify(box));
 			setTimeout(check, 1000);
 			timeoutcount++;
 		    }
 		    else if (timeoutcount == TIMEOUTS) {
-			console.log("Marcel: timeout " + timeoutcount);
 			reject("Timeout")
 		    }
 		});
@@ -182,7 +177,6 @@ function getAllEmailMessages(user, password, host, port) {
             imap.openBox('INBOX', false, function(err, box) {
 		if ( !err ) {
 		    var num = Array.from(new Array(box.messages.total), (elem, index) => index + 1);
-		    console.log("Marcel: now fetching ", num);
                     var f = imap.seq.fetch(num, {
                         bodies: ['HEADER.FIELDS (TO)', '1'],
                         struct: true
