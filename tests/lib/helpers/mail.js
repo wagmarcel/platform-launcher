@@ -87,6 +87,7 @@ function waitForNewEmail(user, password, host, port, num){
 		    }
 		    else if (box.messages.unseen < num && timeoutcount < TIMEOUTS){
 			console.log("Marcel: schedule another check timeoutcount=", timeoutcount, "found: ", box.messages.unseen, "num =", num);
+			console.log("Marcel: box " + JSON.stringify(box));
 			setTimeout(check, 1000);
 			timeoutcount++;
 		    }
@@ -161,10 +162,79 @@ function getEmailMessage(user, password, host, port, num) {
 	imap.connect();
     })
 }
-		      
+
+
+function getAllEmailMessages(user, password, host, port) {
+
+    var imap = new Imap({
+        user: user,
+        password: password,
+        host: host,
+        port: port,
+	connTimeout: 30000,
+	authTimeout: 20000,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
+    });
+
+    return new Promise(function(resolve, reject){
+	imap.once('ready', function() {
+            imap.openBox('INBOX', false, function(err, box) {
+		if ( !err ) {
+		    var num = Array.from(new Array(box.messages.total), (elem, index) => index + 1);
+		    console.log("Marcel: now fetching ", num);
+                    var f = imap.seq.fetch(num, {
+                        bodies: ['HEADER.FIELDS (TO)', '1'],
+                        struct: true
+                    });
+		    var buffers = [];
+                    f.on('message', function(msg, seqno) {
+			var buffer = '';
+			msg.on('body', function(stream, info) {
+                            stream.on('data', function(chunk) {
+				buffer += chunk.toString('utf8');
+                            });
+			});
+			
+			msg.once('end', function() {
+                            buffer = buffer.replace("&lt;","<");
+                            buffer = buffer.replace("&gt;",">");
+			    buffers.push(buffer);
+			    imap.seq.addFlags(seqno, '\\Deleted', (err) => {
+				if (err){
+				    reject(err);
+				}			
+			    });
+			    //resolve(buffers);
+			});
+                    });
+		    f.once('error', (err) => {
+			reject(err);
+		    })
+		    f.once('end', () => {
+			imap.closeBox(true, () => {
+			    imap.destroy();
+			    imap.end();
+			})
+			resolve(buffers);
+		    })
+		}
+		else {
+		    reject(err);
+		}
+            });
+	});
+	
+	imap.once('error', function(err) {
+            reject(err);
+	}); 
+	imap.connect();
+    });
+}
     
 module.exports ={
     getEmailMessage: getEmailMessage,
+    getAllEmailMessages: getAllEmailMessages,
     waitForNewEmail: waitForNewEmail,
     waitAndConsumeEmailMessage: waitAndConsumeEmailMessage
 }

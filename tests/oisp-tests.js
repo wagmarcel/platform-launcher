@@ -702,7 +702,7 @@ describe("Creating rules ... \n".bold, function() {
     }).timeout(20000);    
 }); 
 
-/*describe("Sending observations and checking rules ...\n".bold, function() {
+describe("Sending observations and checking rules ...\n".bold, function() {
 
     it('Shall send observation and check rules', function(done) {
         assert.notEqual(componentId, null, "Invalid component id")
@@ -712,7 +712,7 @@ describe("Creating rules ... \n".bold, function() {
 
         var index = 0;
         var nbActuations = 0;
-        
+
         process.stdout.write("    ");
 
         for (var i = 0; i < temperatureValues.length; i++) {
@@ -733,7 +733,6 @@ describe("Creating rules ... \n".bold, function() {
             }
         };
 
-
         helpers.connector.wsConnect(proxyConnector, deviceToken, deviceId, function(message) {
             --nbActuations;
 
@@ -741,45 +740,46 @@ describe("Creating rules ... \n".bold, function() {
             var componentParam = message.content.params.filter(function(param){
                 return param.name == componentParamName;
             });
+	    
             if(componentParam.length == 1)
             {
                 var param = componentParam[0];
                 var paramValue = param.value.toString();
 
                 if(paramValue == expectedActuationValue)
-                {
-		    helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port).then(
-			helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1, function(err, message) {
-                            if (!err) {
-				var lines = message.toString().split("\n");
-				var i;
-				for(i=0; i<lines.length; i++) {
-                                    var reExecReason = /^- Reason:.*/;
-                                    /*if ( reExecReason.test(lines[i]) ) {
-					var reason = lines[i].split(":")[1].trim();
-					if ( reason == temperatureValues[index].expectedEmailReason ) {
-                                            break;
-					}
-                                    }
-				}
+		{
+		    step();
+		    /*console.log("Marcel: checking email");
+		    helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, 1)
+			.then(() => helpers.mail.getEmailMessage(imap_username, imap_password, imap_host, imap_port, -1))
+			.then(function(message) {
+			    console.log("Marcel: message + ", message);
+g			    var lines = message.toString().split("\n");
+			    var i;
+			    for(i=0; i<lines.length; i++) {
+                                var reExecReason = /^- Reason:.*/;
+                                /*if ( reExecReason.test(lines[i]) ) {
+				    var reason = lines[i].split(":")[1].trim();
+				    if ( reason == temperatureValues[index].expectedEmailReason ) {
+                                        break;
+				    }
+                                }
+			    }
 
-				if ( i==lines.length ) {
-                                    done(new Error("Wrong email " + message ))
-				}
-				else {
-                                    step();
-				}
-                            }
-                            else {
-				done(new Error("Wrong email " + err ))
-                            }
-			})).catch(function(err){done(new Error("No mail received: " + err))});
+			    if ( i==lines.length ) {
+                                done(new Error("Wrong email " + message ))
+			    }
+			    else {
+                                step();
+			    }
+                        
+			}).catch(function(err){done(new Error("No mail received: " + err))});*/
                 }
                 else
                 {
                     done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
                 }
-            }
+	    }
             else
             {
                 done(new Error("Did not find component param: " + componentParamName))
@@ -813,6 +813,31 @@ describe("Creating rules ... \n".bold, function() {
 
     //---------------------------------------------------------------
 
+    it('Shall check received emails', function(done){
+	helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, 7)
+	    .then(() => helpers.mail.getAllEmailMessages(imap_username, imap_password, imap_host, imap_port))
+	    .then( (messages) => {
+		var temperatureValuesCopy =  temperatureValues.map( (elem) => elem);
+		messages.forEach( (message) => {
+		    var lines = message.toString().split("\n");
+		    var i;
+		    lines.forEach((line) => {
+                        var reExecReason = /^- Reason:.*/;
+                        if ( reExecReason.test(line) ) {
+			    var reason = line.split(":")[1].trim();
+			    console.log("Marcel: Reason + ", reason);
+			    var index = temperatureValuesCopy.findIndex( (element) => {
+				return (reason == element.expectedEmailReason);
+			    })
+			    temperatureValuesCopy.splice(index, 1);
+			}
+                    })
+		})
+		assert.equal(temperatureValuesCopy.length, 3, "Received emails do not match expected emails sent from rule-engine");
+		done();
+	    }).catch( (err) => {done(new Error("Error in Rule Engine Emails: ", err))});
+    }).timeout(30 * 1000);
+    
     it('Shall check observation', function(done) {
         helpers.data.searchData(firstObservationTime, userToken, accountId, deviceId, componentId, function(err, data) {
             if (err) {
@@ -927,7 +952,7 @@ describe("Geting and manage alerts ... \n".bold, function(){
         })
     })
 
-});*/
+});
 
 describe("update rules and create draft rules ... \n".bold, function(){
 
