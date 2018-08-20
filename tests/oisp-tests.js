@@ -65,7 +65,7 @@ rules[switchOnCmdName] = {
                 },
                 {
                     type: "mail",
-                    target: [ recipientEmail ]
+                    target: [ emailRecipient ]
                 }
             ],
 };
@@ -82,7 +82,7 @@ rules[switchOffCmdName] = {
                 },
                 {
                     type: "mail",
-                    target: [ recipientEmail ]
+                    target: [ emailRecipient ]
                 }
             ],
 };
@@ -208,8 +208,7 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
 
                 kafkaConsumer = new kafka.Consumer(kafkaClient, topics, options)
 
-                //var oispServicesToMonitor = ['rules-engine'];
-		var oispServicesToMonitor = [];
+                var oispServicesToMonitor = ['rules-engine'];
                 process.stdout.write("    ");
                 kafkaConsumer.on('message', function (message) {
                     process.stdout.write(".".green);
@@ -859,6 +858,13 @@ describe("Sending observations and checking rules ...\n".bold, function() {
     }).timeout(10000);
     
 });
+
+describe("Do statistics rule test ...".bold,
+	 function() {
+	     it('Shall create statisics rule and wait for synchronization with RE',function(done) {
+		 var test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, componentId).createStatisticsRule(done);
+             }).timeout(50000)
+         });
 
 describe("Geting and manage alerts ... \n".bold, function(){
 
