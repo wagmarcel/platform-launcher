@@ -161,6 +161,17 @@ process.stdout.write("__________________________________________________________
 process.stdout.write("                                                                     \n");
 process.stdout.write("                           OISP E2E TESTING                          \n".green.bold);
 process.stdout.write("_____________________________________________________________________\n".bold);
+//Callback for WSS
+var cbManager = function(){
+    
+    var wssCB = null;
+    return {
+	"cb": function(message){
+	    wssCB(message)
+	},
+	"set": function(newCB){wssCB = newCB}
+    }
+}();
 
 
 describe("Waiting for OISP services to be ready ...\n".bold, function() {
@@ -733,7 +744,9 @@ describe("Sending observations and checking rules ...\n".bold, function() {
             }
         };
 
-        helpers.connector.wsConnect(proxyConnector, deviceToken, deviceId, function(message) {
+	
+        
+	cbManager.set(function(message) {
             --nbActuations;
 
             var expectedActuationValue = temperatureValues[index].expectedActuation.toString();
@@ -760,7 +773,8 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                 done(new Error("Did not find component param: " + componentParamName))
             }
         });
-
+	helpers.connector.wsConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+	
         var sendObservationAndCheckRules = function(index) {
             
             process.stdout.write(".".green);
@@ -861,11 +875,20 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
 describe("Do statistics rule test ...".bold,
 	 function() {
+	     var test; 
 	     it('Shall create statisics rule and wait for synchronization with RE',function(done) {
-		 var test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, componentId).createStatisticsRule(done);
+		 test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, componentId, deviceToken, cbManager);
+		 test.createStatisticsRule(done);
+             }).timeout(10000)
+	     it('Shall send observtations and trigger event',function(done) {
+		 test.sendObservations(done);
              }).timeout(50000)
+	     it('Check alert',function(done) {
+		 test.checkAlert(done);
+             }).timeout(10000)
+	     
          });
-
+function donotcall (){ //Marcel remove it later!!!
 describe("Geting and manage alerts ... \n".bold, function(){
 
     it('Shall get list of alerts', function(done){
@@ -1338,3 +1361,4 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
  
 })   
+}
