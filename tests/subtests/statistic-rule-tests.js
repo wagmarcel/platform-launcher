@@ -245,7 +245,21 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
             sendObservationAndCheckRules(index);
 	},
 	"checkAlert": function(done){
-	    done();
+
+	    var getAllAlerts = new Promise(function(resolve, reject){
+		helpers.alerts.getListOfAlerts(userToken, accountId, function(err, response) {
+		    if (err) {
+			reject("Cannot get list of alerts: " + err);
+		    } else {
+			resolve(response);
+		    }
+		})
+	    })
+	    getAllAlerts
+		.then((response) => {
+		    console.log("Marcel23 + ", JSON.stringify(response));
+		    done();
+		})
 	}
     }
 }
