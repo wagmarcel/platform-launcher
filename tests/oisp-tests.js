@@ -877,7 +877,7 @@ describe("Do statistics rule test ...".bold,
 	 function() {
 	     var test; 
 	     it('Shall create statisics rule and wait for synchronization with RE',function(done) {
-		 test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, componentId, deviceToken, cbManager);
+		 test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
 		 test.createStatisticsRule(done);
              }).timeout(10000)
 	     it('Shall send observtations and trigger event',function(done) {
@@ -888,6 +888,7 @@ describe("Do statistics rule test ...".bold,
              }).timeout(10000)
 	     
          });
+
 function donotcall (){ //Marcel remove it later!!!
 describe("Geting and manage alerts ... \n".bold, function(){
 

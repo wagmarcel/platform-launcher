@@ -15,7 +15,7 @@
  */
 "use strict";
 
-var test = function(userToken, accountId, deviceId, componentId, deviceToken, cbManager) {
+var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     var chai = require('chai');
     var assert = chai.assert;
     var expect = chai.expect;
@@ -33,7 +33,7 @@ var test = function(userToken, accountId, deviceId, componentId, deviceToken, cb
     var accountName = "oisp-tests";
     var deviceName = "oisp-tests-device";
 
-    var componentName = "temperature-sensor";
+    var componentName = "temperature-sensor2";
     var componentType = "temperature.v1.0";
 
     var actuatorName = "powerswitch-actuator";
@@ -77,7 +77,7 @@ var test = function(userToken, accountId, deviceId, componentId, deviceToken, cb
     var receiveraccountId;
     var userId; 
     //var deviceToken;
-    //var componentId;
+    var componentId;
     var actuatorId;
     var rulelist;
     var alertlist;               
@@ -129,19 +129,41 @@ var test = function(userToken, accountId, deviceId, componentId, deviceToken, cb
 
 
     return {
-        "createStatisticsRule": function(done) {
-	    assert.notEqual(componentId, null, "CommponentId not defined");
-            rule.cid = componentId;
+	"createStatisticsRule": function(done) {
+	    //assert.notEqual(componentId, null, "CommponentId not defined");
 
-            helpers.rules.createStatisticRule(rule, userToken, accountId, deviceId, function(err, id) {
-		if (err) {
-                    done(new Error("Cannot create switch-on rule: " + err));
-		} else {
-                    rule.id = id;
-                    done();
-		}
-            })
-
+	    //create first new component
+	    var addComponent = () => {
+		return new Promise(function(resolve, reject){
+		    helpers.devices.addDeviceComponent(componentName, componentType, deviceToken, accountId, deviceId, function(err, id) {
+			if (err) {
+			    reject("Cannot create component: " + err);
+			} else {
+			    resolve(id);
+			}
+		    });
+		});
+	    }
+	    var createStatisticRule = () => {
+		return new Promise(function(resolve, reject){
+		    helpers.rules.createStatisticRule(rule, userToken, accountId, deviceId, function(err, id) {
+			if (err) {
+			    reject("Cannot create switch-on rule: " + err);
+			} else {
+			    rule.id = id;
+			    resolve();
+			}
+		    })
+		})
+	    }
+	    addComponent()
+		.then((id) => {
+		    componentId = id
+		    rule.cid = componentId;
+		})
+		.then( () => createStatisticRule())
+		.then(() => {done()})
+		.catch( (err) => { done(new Error("Error in creating statistics rule: ", err))});
 	},
 	"sendObservations": function(done){
 	    assert.notEqual(componentId, null, "CommponentId not defined");
@@ -176,7 +198,6 @@ var test = function(userToken, accountId, deviceId, componentId, deviceToken, cb
             //helpers.connector.wsConnect(proxyConnector, deviceToken, deviceId,
 	    cbManager.set(function(message) {
 		--nbActuations;
-		console.log("Marcel42 + ", JSON.stringify(message));
 		var expectedActuationValue = temperatureValues[index].expectedActuation.toString();
 		var componentParam = message.content.params.filter(function(param){
                     return param.name == componentParamName;
