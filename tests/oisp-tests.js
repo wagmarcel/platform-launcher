@@ -875,15 +875,16 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
 describe("Do statistics rule test ...".bold,
 	 function() {
-	     var test; 
-	     it('Shall create statisics rule and wait for synchronization with RE',function(done) {
+	     var test;
+	     var descriptions = require("./subtests/statistic-rule-tests").descriptions;
+	     it(descriptions.createStatisticsRule,function(done) {
 		 test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
 		 test.createStatisticsRule(done);
              }).timeout(10000)
-	     it('Shall send observtations and trigger event',function(done) {
+	     it(descriptions.sendObservations,function(done) {
 		 test.sendObservations(done);
              }).timeout(50000)
-	     it('Check alert',function(done) {
+	     it(descriptions.checkAlert,function(done) {
 		 test.checkAlert(done);
              }).timeout(10000)
 	     

@@ -93,7 +93,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    expectedActuation: null,
 	},
 	{
-	    value: 18.3,
+	    value: 17.9,
 	    expectedActuation: null,
 	},
 	{
@@ -121,7 +121,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    expectedActuation: null,
 	},
 	{
-	    value: 24,
+	    value: 18.56,
 	    expectedActuation: 1, // swich on
 	}
     ];
@@ -276,17 +276,22 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    })
 	    getAllAlerts
 		.then((response) => {
-		    console.log("Marcel78 + ", response[0].naturalLangAlert);
 		    if(response[0].naturalLangAlert.indexOf(componentName) == -1) {
 			reject("Description of event does not containt correct component name");
 		    }
 		    done();
 		})
 		.catch( (err) => { done(new Error("Error in alerts: ", err))});
-	}
+	},
     }
+}
+var descriptions = {
+    "createStatisticsRule": "Shall create statisics rule and wait for synchronization with RE",
+    "sendObservations": "Shall send observations and trigger event",
+    "checkAlert": "Check whether Alert contains the right component"
 }
 
 module.exports = {
-    test: test
+    test: test,
+    descriptions: descriptions
 }
