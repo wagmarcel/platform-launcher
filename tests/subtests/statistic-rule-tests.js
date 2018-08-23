@@ -121,61 +121,63 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    expectedActuation: null,
 	},
 	{
-	    value: 18.56,
+	    value: 18.6,
 	    expectedActuation: 1, // swich on
 	}
     ];
 
+    var addComponent = () => {
+	return new Promise(function(resolve, reject){
+	    helpers.devices.addDeviceComponent(componentName, componentType, deviceToken, accountId, deviceId, function(err, id) {
+		if (err) {
+		    reject("Cannot create component: " + err);
+		} else {
+		    resolve(id);
+		}
+	    });
+	});
+    }
+    var addActuator = () => {
+	return new Promise(function(resolve, reject){
+	    helpers.devices.addDeviceComponent(actuatorName, actuatorType, deviceToken, accountId, deviceId, function(err, id) {
+		if (err) {
+		    reject("Cannot create actuator: " + err);
+		} else {
+		    resolve(id);;
+		}
+	    })
+	})
+    }
+    var createCommand = () => {
+	return new Promise(function(resolve, reject){
+	    helpers.control.saveComplexCommand(switchOnCmdName, componentParamName, 1, userToken, accountId, deviceId, actuatorId, function(err,response) {
+		if (err) {
+		    reject("Cannot create switch-on command: " + err);
+		} else {
+		    assert.equal(response.status, 'OK', 'get error response status')
+		    resolve();
+		}
+	    })
+	})
+    }
+    var createStatisticRule = () => {
+	return new Promise(function(resolve, reject){
+	    helpers.rules.createStatisticRule(rule, userToken, accountId, deviceId, function(err, id) {
+		if (err) {
+		    reject("Cannot create switch-on rule: " + err);
+		} else {
+		    rule.id = id;
+		    resolve();
+		}
+	    })
+	})
+    }
 
+    
     return {
 	"createStatisticsRule": function(done) {
 	    //To be independent of main tests, own sensors, actuators, and commands have to be created
-	    var addComponent = () => {
-		return new Promise(function(resolve, reject){
-		    helpers.devices.addDeviceComponent(componentName, componentType, deviceToken, accountId, deviceId, function(err, id) {
-			if (err) {
-			    reject("Cannot create component: " + err);
-			} else {
-			    resolve(id);
-			}
-		    });
-		});
-	    }
-	    var addActuator = () => {
-		return new Promise(function(resolve, reject){
-		    helpers.devices.addDeviceComponent(actuatorName, actuatorType, deviceToken, accountId, deviceId, function(err, id) {
-			if (err) {
-			    reject("Cannot create actuator: " + err);
-			} else {
-			    resolve(id);;
-			}
-		    })
-		})
-	    }
-	    var createCommand = () => {
-		return new Promise(function(resolve, reject){
-		    helpers.control.saveComplexCommand(switchOnCmdName, componentParamName, 1, userToken, accountId, deviceId, actuatorId, function(err,response) {
-			if (err) {
-			    reject("Cannot create switch-on command: " + err);
-			} else {
-			    assert.equal(response.status, 'OK', 'get error response status')
-			    resolve();
-			}
-		    })
-		})
-	    }
-	    var createStatisticRule = () => {
-		return new Promise(function(resolve, reject){
-		    helpers.rules.createStatisticRule(rule, userToken, accountId, deviceId, function(err, id) {
-			if (err) {
-			    reject("Cannot create switch-on rule: " + err);
-			} else {
-			    rule.id = id;
-			    resolve();
-			}
-		    })
-		})
-	    }
+
 	    addComponent()
 		.then((id) => {componentId = id; rule.cid = componentId;})
 		.then(()   => addActuator())
@@ -205,43 +207,43 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		    }
 		});
             var step = function(){
-            index++;
+		index++;
+		
+		if (index == temperatureValues.length) {
+                    process.stdout.write("\n");
+                    done();
+		} else {
+                    sendObservationAndCheckRules(index);
+		}
+            };
 
-            if (index == temperatureValues.length) {
-                process.stdout.write("\n");
-                done();
-            } else {
-                sendObservationAndCheckRules(index);
-            }
-        };
-
-            //helpers.connector.wsConnect(proxyConnector, deviceToken, deviceId,
-	    cbManager.set(function(message) {
+	    var actuationCallback = function(message) {
 		--nbActuations;
 		var expectedActuationValue = temperatureValues[index].expectedActuation.toString();
 		var componentParam = message.content.params.filter(function(param){
-                    return param.name == componentParamName;
+		    return param.name == componentParamName;
 		});
-
+		
 		if(componentParam.length == 1)
 		{
-                    var param = componentParam[0];
-                    var paramValue = param.value.toString();
+		    var param = componentParam[0];
+		    var paramValue = param.value.toString();
 		    
-                    if(paramValue == expectedActuationValue)
-                    {
+		    if(paramValue == expectedActuationValue)
+		    {
 			step();
-                    }
-                    else
-                    {
+		    }
+		    else
+		    {
 			done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
-                    }
+		    }
 		}
 		else
 		{
-                    done(new Error("Did not find component param: " + componentParamName))
+		    done(new Error("Did not find component param: " + componentParamName))
 		}
-            });
+	    }
+	    cbManager.set(actuationCallback);
 
             var sendObservationAndCheckRules = function(index) {
 
@@ -254,7 +256,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 			firstObservationTime = temperatureValues[index].ts;
                     }
                     if (err) {
-			done( "Cannot send observation: "+err);
+			done( "Cannot send observation: " + err);
                     }
 		    
                     if (temperatureValues[index].expectedActuation == null) {
@@ -263,6 +265,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		});
             }
             sendObservationAndCheckRules(index);
+	},
+	"test3xStdDevRule": function(done){
+	    //Delete 2xstddev rule and create 3xstddev rule
+	    //send observations + 1 and trigger new actuation
 	},
 	"checkAlert": function(done){
 	    var getAllAlerts = new Promise(function(resolve, reject){
@@ -287,7 +293,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 }
 var descriptions = {
     "createStatisticsRule": "Shall create statisics rule and wait for synchronization with RE",
-    "sendObservations": "Shall send observations and trigger event",
+    "sendObservations": "Shall send observations and trigger event for 2xstddev rule",
+    "test3xStdDevRule": "Shall send observations and trigger event for 3xstddev rule", 
     "checkAlert": "Check whether Alert contains the right component"
 }
 
