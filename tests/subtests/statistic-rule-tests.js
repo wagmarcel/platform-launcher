@@ -126,6 +126,80 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	}
     ];
 
+    var checkObservations = function(done, tempValues){
+	var index = 0;
+	var nbActuations = 0;
+
+	process.stdout.write("    ");
+
+	tempValues
+	    .forEach( (value) => {
+		value.ts = null;
+		if (value.expectedActuation != null) {
+		    nbActuations++;
+		}
+	    });
+	var step = function(){
+	    index++;
+	    
+	    if (index == tempValues.length) {
+		process.stdout.write("\n");
+		done();
+	    } else {
+		sendObservationAndCheckRules(index);
+	    }
+	};
+
+	var actuationCallback = function(message) {
+	    --nbActuations;
+	    var expectedActuationValue = tempValues[index].expectedActuation.toString();
+	    var componentParam = message.content.params.filter(function(param){
+		return param.name == componentParamName;
+	    });
+	    
+	    if(componentParam.length == 1)
+	    {
+		var param = componentParam[0];
+		var paramValue = param.value.toString();
+		
+		if(paramValue == expectedActuationValue)
+		{
+		    step();
+		}
+		else
+		{
+		    done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
+		}
+	    }
+	    else
+	    {
+		done(new Error("Did not find component param: " + componentParamName))
+	    }
+	}
+	cbManager.set(actuationCallback);
+
+	var sendObservationAndCheckRules = function(index) {
+
+	    process.stdout.write(".".green);
+	    
+	    helpers.devices.submitData(tempValues[index].value, deviceToken, accountId, deviceId, componentId, function(err, ts) {
+		tempValues[index].ts = ts;
+		
+		if (index == 0) {
+		    firstObservationTime = tempValues[index].ts;
+		}
+		if (err) {
+		    done( "Cannot send observation: " + err);
+		}
+		
+		if (tempValues[index].expectedActuation == null) {
+		    step();
+		}
+	    });
+	}
+	sendObservationAndCheckRules(index);
+    }
+    
     var addComponent = () => {
 	return new Promise(function(resolve, reject){
 	    helpers.devices.addDeviceComponent(componentName, componentType, deviceToken, accountId, deviceId, function(err, id) {
@@ -173,7 +247,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	})
     }
 
-    
+    //********************* Main Object *****************//
+    //---------------------------------------------------//
     return {
 	"createStatisticsRule": function(done) {
 	    //To be independent of main tests, own sensors, actuators, and commands have to be created
@@ -193,78 +268,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    assert.notEqual(cbManager, null, "cbManager proxy not defined");
 	    assert.notEqual(deviceToken, null, "Device Token not defined");
 	    assert.notEqual(deviceId, null, "DeviceId not defined");
-	    
-	    var index = 0;
-            var nbActuations = 0;
 
-            process.stdout.write("    ");
-
-            temperatureValues
-		.forEach( (value) => {
-		    value.ts = null;
-		    if (value.expectedActuation != null) {
-			nbActuations++;
-		    }
-		});
-            var step = function(){
-		index++;
-		
-		if (index == temperatureValues.length) {
-                    process.stdout.write("\n");
-                    done();
-		} else {
-                    sendObservationAndCheckRules(index);
-		}
-            };
-
-	    var actuationCallback = function(message) {
-		--nbActuations;
-		var expectedActuationValue = temperatureValues[index].expectedActuation.toString();
-		var componentParam = message.content.params.filter(function(param){
-		    return param.name == componentParamName;
-		});
-		
-		if(componentParam.length == 1)
-		{
-		    var param = componentParam[0];
-		    var paramValue = param.value.toString();
-		    
-		    if(paramValue == expectedActuationValue)
-		    {
-			step();
-		    }
-		    else
-		    {
-			done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
-		    }
-		}
-		else
-		{
-		    done(new Error("Did not find component param: " + componentParamName))
-		}
-	    }
-	    cbManager.set(actuationCallback);
-
-            var sendObservationAndCheckRules = function(index) {
-
-		process.stdout.write(".".green);
-		
-		helpers.devices.submitData(temperatureValues[index].value, deviceToken, accountId, deviceId, componentId, function(err, ts) {
-                    temperatureValues[index].ts = ts;
-		    
-                    if (index == 0) {
-			firstObservationTime = temperatureValues[index].ts;
-                    }
-                    if (err) {
-			done( "Cannot send observation: " + err);
-                    }
-		    
-                    if (temperatureValues[index].expectedActuation == null) {
-			step();
-                    }
-		});
-            }
-            sendObservationAndCheckRules(index);
+	    checkObservations(done, temperatureValues);
 	},
 	"test3xStdDevRule": function(done){
 	    //Delete 2xstddev rule and create 3xstddev rule
