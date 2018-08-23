@@ -33,14 +33,13 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     var accountName = "oisp-tests";
     var deviceName = "oisp-tests-device";
 
-    var componentName = "temperature-sensor2";
+    var componentName = "temperature-sensor-srt";
     var componentType = "temperature.v1.0";
 
-    var actuatorName = "powerswitch-actuator";
+    var actuatorName = "powerswitch-actuator-srt";
     var actuatorType = "powerswitch.v1.0";
 
-    var switchOnCmdName = "switch-on";
-    var switchOffCmdName = "switch-off";
+    var switchOnCmdName = "switch-on-srt";
 
 
     var emailRecipient = "test.receiver@streammyiot.com"
@@ -130,9 +129,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
     return {
 	"createStatisticsRule": function(done) {
-	    //assert.notEqual(componentId, null, "CommponentId not defined");
-
-	    //create first new component
+	    //To be independent of main tests, own sensors, actuators, and commands have to be created
 	    var addComponent = () => {
 		return new Promise(function(resolve, reject){
 		    helpers.devices.addDeviceComponent(componentName, componentType, deviceToken, accountId, deviceId, function(err, id) {
@@ -143,6 +140,29 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 			}
 		    });
 		});
+	    }
+	    var addActuator = () => {
+		return new Promise(function(resolve, reject){
+		    helpers.devices.addDeviceComponent(actuatorName, actuatorType, deviceToken, accountId, deviceId, function(err, id) {
+			if (err) {
+			    reject("Cannot create actuator: " + err);
+			} else {
+			    resolve(id);;
+			}
+		    })
+		})
+	    }
+	    var createCommand = () => {
+		return new Promise(function(resolve, reject){
+		    helpers.control.saveComplexCommand(switchOnCmdName, componentParamName, 1, userToken, accountId, deviceId, actuatorId, function(err,response) {
+			if (err) {
+			    reject("Cannot create switch-on command: " + err);
+			} else {
+			    assert.equal(response.status, 'OK', 'get error response status')
+			    resolve();
+			}
+		    })
+		})
 	    }
 	    var createStatisticRule = () => {
 		return new Promise(function(resolve, reject){
@@ -157,12 +177,12 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		})
 	    }
 	    addComponent()
-		.then((id) => {
-		    componentId = id
-		    rule.cid = componentId;
-		})
-		.then( () => createStatisticRule())
-		.then(() => {done()})
+		.then((id) => {componentId = id; rule.cid = componentId;})
+		.then(()   => addActuator())
+		.then((id) => {actuatorId = id;})
+		.then(()   => createCommand())
+		.then(()   => createStatisticRule())
+		.then(()   => {done()})
 		.catch( (err) => { done(new Error("Error in creating statistics rule: ", err))});
 	},
 	"sendObservations": function(done){
@@ -245,7 +265,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
             sendObservationAndCheckRules(index);
 	},
 	"checkAlert": function(done){
-
 	    var getAllAlerts = new Promise(function(resolve, reject){
 		helpers.alerts.getListOfAlerts(userToken, accountId, function(err, response) {
 		    if (err) {
@@ -257,9 +276,13 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    })
 	    getAllAlerts
 		.then((response) => {
-		    console.log("Marcel23 + ", JSON.stringify(response));
+		    console.log("Marcel78 + ", response[0].naturalLangAlert);
+		    if(response[0].naturalLangAlert.indexOf(componentName) == -1) {
+			reject("Description of event does not containt correct component name");
+		    }
 		    done();
 		})
+		.catch( (err) => { done(new Error("Error in alerts: ", err))});
 	}
     }
 }
