@@ -53,10 +53,25 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
 
     var rule = {
-	name: "oisp-tests-rule-statistic",
+	name: "oisp-tests-rule-statistic-2stddef",
 	conditionComponent: componentName,
 	statisticConditionOperator: ">=",
 	statisticConditionValue: "2",
+	statisticMinimalInstances: 9,
+	statisticSecondsBack: 1,
+	actions: [
+            {
+                type: "actuation",
+                target: [ switchOnCmdName ]
+            }
+        ],
+    };
+
+     var rule2 = {
+	name: "oisp-tests-rule-statistic-3stddef",
+	conditionComponent: componentName,
+	statisticConditionOperator: ">=",
+	statisticConditionValue: "3",
 	statisticMinimalInstances: 9,
 	statisticSecondsBack: 1,
 	actions: [
@@ -124,6 +139,53 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    value: 18.6,
 	    expectedActuation: 1, // swich on
 	}
+    ];
+
+        var temperatureValues2 = [
+	{
+            value: 17.1,
+            expectedActuation: null
+	},
+	{
+	    value: 17.0,
+	    expectedActuation: null,
+	},
+	{
+	    value: 17.9,
+	    expectedActuation: null,
+	},
+	{
+	    value: 17.5,
+	    expectedActuation: null,
+	},
+	{
+	    value: 18.1,
+	    expectedActuation: null,
+	},
+	{
+	    value: 16.8,
+	    expectedActuation: null,
+	},
+	{
+	    value: 17.3,
+	    expectedActuation: null,
+	},
+	{
+	    value: 16.9,
+	    expectedActuation: null
+	},
+	{
+	    value: 17,
+	    expectedActuation: null,
+	},
+	{
+	    value: 18.6,
+	    expectedActuation: null
+	},
+	    {
+		value: 20.0,
+		expectedActuation: null
+	    }
     ];
 
     var checkObservations = function(done, tempValues){
@@ -234,7 +296,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    })
 	})
     }
-    var createStatisticRule = () => {
+    var createStatisticRule = (rule) => {
 	return new Promise(function(resolve, reject){
 	    helpers.rules.createStatisticRule(rule, userToken, accountId, deviceId, function(err, id) {
 		if (err) {
@@ -258,7 +320,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		.then(()   => addActuator())
 		.then((id) => {actuatorId = id;})
 		.then(()   => createCommand())
-		.then(()   => createStatisticRule())
+		.then(()   => createStatisticRule(rule))
 		.then(()   => {done()})
 		.catch( (err) => { done(new Error("Error in creating statistics rule: ", err))});
 	},
@@ -274,6 +336,24 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	"test3xStdDevRule": function(done){
 	    //Delete 2xstddev rule and create 3xstddev rule
 	    //send observations + 1 and trigger new actuation
+	    var deleteRule = (id) => {
+		return new Promise((resolve, reject) => {
+		    helpers.rules.deleteRule (userToken, accountId, id, function(err, response){
+			if (err) {
+			    reject("cannot delete a rule " + err);
+			} else {
+			    assert.notEqual(response, null ,'response is null');
+			    assert.equal(response.status, 'Done');
+			    resolve();
+			}
+		    })
+		})
+	    }
+	    rule2.cid = componentId;
+	    deleteRule(rule.id)
+		.then(createStatisticRule(rule2))
+		.then (done())
+		.catch( (err) => { done(new Error("Error in testing 3xStdDevRule: ", err))});
 	},
 	"checkAlert": function(done){
 	    var getAllAlerts = new Promise(function(resolve, reject){

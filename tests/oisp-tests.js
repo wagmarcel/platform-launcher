@@ -883,10 +883,13 @@ describe("Do statistics rule test ...".bold,
              }).timeout(10000)
 	     it(descriptions.sendObservations,function(done) {
 		 test.sendObservations(done);
-             }).timeout(50000)
+             }).timeout(50000);
 	     it(descriptions.checkAlert,function(done) {
 		 test.checkAlert(done);
              }).timeout(10000)
+	     it(descriptions.test3xStdDevRule, function(done){
+		 test.test3xStdDevRule(done)
+	     });
 	     
          });
 
