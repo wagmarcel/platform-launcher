@@ -40,9 +40,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     var actuatorType = "powerswitch.v1.0";
 
     var switchOnCmdName = "switch-on-srt";
-
-
-    var emailRecipient = "test.receiver@streammyiot.com"
+    var switchOffCmdName = "switch-off-srt";
 
     var imap_username = process.env.IMAP_USERNAME;
     var imap_password = process.env.IMAP_PASSWORD; 
@@ -51,8 +49,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
     var recipientEmail = imap_username; 
 
-
-    var rule = {
+    var rules = [];
+    rules[switchOnCmdName] = {
 	name: "oisp-tests-rule-statistic-2stddef",
 	conditionComponent: componentName,
 	statisticConditionOperator: ">=",
@@ -67,7 +65,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         ],
     };
 
-     var rule2 = {
+    rules[switchOffCmdName] = {
 	name: "oisp-tests-rule-statistic-3stddef",
 	conditionComponent: componentName,
 	statisticConditionOperator: ">=",
@@ -77,11 +75,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	actions: [
             {
                 type: "actuation",
-                target: [ switchOnCmdName ]
+                target: [ switchOffCmdName ]
             }
         ],
     };
-
 
     //-------------------------------------------------------------------------------------------------------
     // Tests
@@ -138,6 +135,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	{
 	    value: 18.6,
 	    expectedActuation: 1, // swich on
+	},
+	{
+	    value: 224.0,
+	    expectedActuation: 1
 	}
     ];
 
@@ -182,91 +183,90 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    value: 18.6,
 	    expectedActuation: null
 	},
-	    {
-		value: 20.0,
-		expectedActuation: null
-	    }
+
     ];
 
-    var checkObservations = function(done, tempValues){
-	var index = 0;
-	var nbActuations = 0;
+    var checkObservations = function(tempValues, cid){
+	return new Promise((resolve, reject) => {
+	    var index = 0;
+	    var nbActuations = 0;
+	    process.stdout.write("    ");
 
-	process.stdout.write("    ");
+	    tempValues
+		.forEach( (value) => {
+		    value.ts = null;
+		    if (value.expectedActuation != null) {
+			nbActuations++;
+		    }
+		});
 
-	tempValues
-	    .forEach( (value) => {
-		value.ts = null;
-		if (value.expectedActuation != null) {
-		    nbActuations++;
+	    console.log("Marcel25 + ", nbActuations);
+	    var step = function(){
+		index++;
+		if (index == tempValues.length) {
+		    process.stdout.write("\n");
+		    resolve();
+		} else {
+		    sendObservationAndCheckRules(index);
 		}
-	    });
-	var step = function(){
-	    index++;
-	    
-	    if (index == tempValues.length) {
-		process.stdout.write("\n");
-		done();
-	    } else {
-		sendObservationAndCheckRules(index);
-	    }
-	};
+	    };
 
-	var actuationCallback = function(message) {
-	    --nbActuations;
-	    var expectedActuationValue = tempValues[index].expectedActuation.toString();
-	    var componentParam = message.content.params.filter(function(param){
-		return param.name == componentParamName;
-	    });
-	    
-	    if(componentParam.length == 1)
-	    {
-		var param = componentParam[0];
-		var paramValue = param.value.toString();
+	    var actuationCallback = function(message) {
+		console.log("Marcel19 + ", message);
+		--nbActuations;
+		var expectedActuationValue = tempValues[index].expectedActuation.toString();
+		var componentParam = message.content.params.filter(function(param){
+		    return param.name == componentParamName;
+		});
 		
-		if(paramValue == expectedActuationValue)
+		if(componentParam.length == 1)
 		{
-		    step();
+		    var param = componentParam[0];
+		    var paramValue = param.value.toString();
+		    
+		    if(paramValue == expectedActuationValue)
+		    {
+			step();
+		    }
+		    else
+		    {
+			reject(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
+		    }
 		}
 		else
 		{
-		    done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
+		    reject(new Error("Did not find component param: " + componentParamName));
 		}
 	    }
-	    else
-	    {
-		done(new Error("Did not find component param: " + componentParamName))
+	    cbManager.set(actuationCallback);
+
+	    var sendObservationAndCheckRules = function(index) {
+		process.stdout.write(".".green);
+		
+		helpers.devices.submitData(tempValues[index].value, deviceToken, accountId, deviceId, cid, function(err, ts) {
+		    tempValues[index].ts = ts;
+		    
+		    if (index == 0) {
+			firstObservationTime = tempValues[index].ts;
+		    }
+		    if (err) {
+			reject(err);
+		    }
+		    
+		    if (tempValues[index].expectedActuation == null) {
+			step();
+		    }
+		});
 	    }
-	}
-	cbManager.set(actuationCallback);
-
-	var sendObservationAndCheckRules = function(index) {
-
-	    process.stdout.write(".".green);
-	    
-	    helpers.devices.submitData(tempValues[index].value, deviceToken, accountId, deviceId, componentId, function(err, ts) {
-		tempValues[index].ts = ts;
-		
-		if (index == 0) {
-		    firstObservationTime = tempValues[index].ts;
-		}
-		if (err) {
-		    done( "Cannot send observation: " + err);
-		}
-		
-		if (tempValues[index].expectedActuation == null) {
-		    step();
-		}
-	    });
-	}
-	sendObservationAndCheckRules(index);
-    }
+	    sendObservationAndCheckRules(index);
+	})
+    }			  
     
     var addComponent = () => {
 	return new Promise(function(resolve, reject){
 	    helpers.devices.addDeviceComponent(componentName, componentType, deviceToken, accountId, deviceId, function(err, id) {
 		if (err) {
-		    reject("Cannot create component: " + err);
+		    reject(err);
 		} else {
 		    resolve(id);
 		}
@@ -277,18 +277,18 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	return new Promise(function(resolve, reject){
 	    helpers.devices.addDeviceComponent(actuatorName, actuatorType, deviceToken, accountId, deviceId, function(err, id) {
 		if (err) {
-		    reject("Cannot create actuator: " + err);
+		    reject(err);
 		} else {
-		    resolve(id);;
+		    resolve(id);
 		}
 	    })
 	})
     }
-    var createCommand = () => {
+    var createCommand = (cmdName, onOff) => {
 	return new Promise(function(resolve, reject){
-	    helpers.control.saveComplexCommand(switchOnCmdName, componentParamName, 1, userToken, accountId, deviceId, actuatorId, function(err,response) {
+	    helpers.control.saveComplexCommand(cmdName, componentParamName, onOff, userToken, accountId, deviceId, actuatorId, function(err,response) {
 		if (err) {
-		    reject("Cannot create switch-on command: " + err);
+		    reject(err);
 		} else {
 		    assert.equal(response.status, 'OK', 'get error response status')
 		    resolve();
@@ -300,7 +300,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	return new Promise(function(resolve, reject){
 	    helpers.rules.createStatisticRule(rule, userToken, accountId, deviceId, function(err, id) {
 		if (err) {
-		    reject("Cannot create switch-on rule: " + err);
+		    reject(err);
 		} else {
 		    rule.id = id;
 		    resolve();
@@ -312,26 +312,30 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     //********************* Main Object *****************//
     //---------------------------------------------------//
     return {
-	"createStatisticsRule": function(done) {
+	"createStatisticsRules": function(done) {
 	    //To be independent of main tests, own sensors, actuators, and commands have to be created
-
 	    addComponent()
-		.then((id) => {componentId = id; rule.cid = componentId;})
+		.then((id) => {componentId = id; rules[switchOffCmdName].cid = componentId; rules[switchOnCmdName].cid = componentId;})
 		.then(()   => addActuator())
-		.then((id) => {actuatorId = id;})
-		.then(()   => createCommand())
-		.then(()   => createStatisticRule(rule))
+		.then((id) => {actuatorId = id})
+		.then(()   => createCommand(switchOffCmdName, 0))
+		.then(()   => createCommand(switchOnCmdName, 1))
+		.then(()   => createStatisticRule(rules[switchOffCmdName]))
+		.then(()   => createStatisticRule(rules[switchOnCmdName]))
 		.then(()   => {done()})
-		.catch( (err) => { done(new Error("Error in creating statistics rule: ", err))});
+		.catch((err) => {done(err)});
 	},
 	"sendObservations": function(done){
 	    assert.notEqual(componentId, null, "CommponentId not defined");
-	    assert.notEqual(rule.id, null, "Rule not defined");
+	    assert.notEqual(rules[switchOnCmdName].id, null, "Rule not defined");
+	    assert.notEqual(rules[switchOffCmdName].id, null, "Rule not defined");
 	    assert.notEqual(cbManager, null, "cbManager proxy not defined");
 	    assert.notEqual(deviceToken, null, "Device Token not defined");
 	    assert.notEqual(deviceId, null, "DeviceId not defined");
 
-	    checkObservations(done, temperatureValues);
+	    checkObservations(temperatureValues, rules[switchOnCmdName].cid)
+		.then(() => {done()})
+		.catch((err) => { done(new Error("Error in sendObservations:", err))})
 	},
 	"test3xStdDevRule": function(done){
 	    //Delete 2xstddev rule and create 3xstddev rule
@@ -340,7 +344,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		return new Promise((resolve, reject) => {
 		    helpers.rules.deleteRule (userToken, accountId, id, function(err, response){
 			if (err) {
-			    reject("cannot delete a rule " + err);
+			    reject(err);
 			} else {
 			    assert.notEqual(response, null ,'response is null');
 			    assert.equal(response.status, 'Done');
@@ -351,15 +355,17 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    }
 	    rule2.cid = componentId;
 	    deleteRule(rule.id)
-		.then(createStatisticRule(rule2))
-		.then (done())
-		.catch( (err) => { done(new Error("Error in testing 3xStdDevRule: ", err))});
+		.then(() => createStatisticRule(rule2))
+		.then(() => {rule2.cid = rule.cid})
+		.then(() => checkObservations(temperatureValues2, rule2.cid))
+		.then(() => {done()})
+		.catch( (err) => { done(err)});
 	},
 	"checkAlert": function(done){
 	    var getAllAlerts = new Promise(function(resolve, reject){
 		helpers.alerts.getListOfAlerts(userToken, accountId, function(err, response) {
 		    if (err) {
-			reject("Cannot get list of alerts: " + err);
+			reject(err);
 		    } else {
 			resolve(response);
 		    }
@@ -368,17 +374,17 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    getAllAlerts
 		.then((response) => {
 		    if(response[0].naturalLangAlert.indexOf(componentName) == -1) {
-			reject("Description of event does not containt correct component name");
+			done(new Error("Description of event does not contain correct component name"));
 		    }
 		    done();
 		})
-		.catch( (err) => { done(new Error("Error in alerts: ", err))});
+		.catch((err) => {done(err)});
 	},
     }
 }
 var descriptions = {
-    "createStatisticsRule": "Shall create statisics rule and wait for synchronization with RE",
-    "sendObservations": "Shall send observations and trigger event for 2xstddev rule",
+    "createStatisticsRules": "Shall create statisics rules and wait for synchronization with RE",
+    "sendObservations": "Shall send observations and trigger event for statistics rules",
     "test3xStdDevRule": "Shall send observations and trigger event for 3xstddev rule", 
     "checkAlert": "Check whether Alert contains the right component"
 }

@@ -246,7 +246,7 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
                 });
             }
             else {
-                done("Cannot get Kafka offset ")
+                  done(new Error("Cannot get Kafka offset "))
             }
         });
        
@@ -877,9 +877,9 @@ describe("Do statistics rule test ...".bold,
 	 function() {
 	     var test;
 	     var descriptions = require("./subtests/statistic-rule-tests").descriptions;
-	     it(descriptions.createStatisticsRule,function(done) {
+	     it(descriptions.createStatisticsRules,function(done) {
 		 test = require("./subtests/statistic-rule-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
-		 test.createStatisticsRule(done);
+		 test.createStatisticsRules(done);
              }).timeout(10000)
 	     it(descriptions.sendObservations,function(done) {
 		 test.sendObservations(done);
@@ -887,10 +887,6 @@ describe("Do statistics rule test ...".bold,
 	     it(descriptions.checkAlert,function(done) {
 		 test.checkAlert(done);
              }).timeout(10000)
-	     it(descriptions.test3xStdDevRule, function(done){
-		 test.test3xStdDevRule(done)
-	     });
-	     
          });
 
 function donotcall (){ //Marcel remove it later!!!
