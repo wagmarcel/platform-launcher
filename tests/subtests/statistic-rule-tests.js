@@ -54,9 +54,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	name: "oisp-tests-rule-statistic-2stddef",
 	conditionComponent: componentName,
 	statisticConditionOperator: ">=",
-	statisticConditionValue: "2",
+	statisticConditionValue: "2", //2*stddev
 	statisticMinimalInstances: 9,
-	statisticSecondsBack: 1,
+	statisticSecondsBack: 60, //number of seconds to look back when collecting the data
 	actions: [
             {
                 type: "actuation",
@@ -68,10 +68,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     rules[switchOffCmdName] = {
 	name: "oisp-tests-rule-statistic-3stddef",
 	conditionComponent: componentName,
-	statisticConditionOperator: ">=",
-	statisticConditionValue: "3",
+	statisticConditionOperator: "<",
+	statisticConditionValue: "-3", //-3*stddev
 	statisticMinimalInstances: 9,
-	statisticSecondsBack: 1,
+	statisticSecondsBack: 60, //number of seconds to look back when collecting the relevant data
 	actions: [
             {
                 type: "actuation",
@@ -134,57 +134,15 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	},
 	{
 	    value: 18.6,
-	    expectedActuation: 1, // swich on
+	    expectedActuation: 1 // switch on
 	},
 	{
-	    value: 224.0,
-	    expectedActuation: 1
+	    value: 14.5,
+	    expectedActuation: 0 //switch off
 	}
     ];
 
-        var temperatureValues2 = [
-	{
-            value: 17.1,
-            expectedActuation: null
-	},
-	{
-	    value: 17.0,
-	    expectedActuation: null,
-	},
-	{
-	    value: 17.9,
-	    expectedActuation: null,
-	},
-	{
-	    value: 17.5,
-	    expectedActuation: null,
-	},
-	{
-	    value: 18.1,
-	    expectedActuation: null,
-	},
-	{
-	    value: 16.8,
-	    expectedActuation: null,
-	},
-	{
-	    value: 17.3,
-	    expectedActuation: null,
-	},
-	{
-	    value: 16.9,
-	    expectedActuation: null
-	},
-	{
-	    value: 17,
-	    expectedActuation: null,
-	},
-	{
-	    value: 18.6,
-	    expectedActuation: null
-	},
 
-    ];
 
     var checkObservations = function(tempValues, cid){
 	return new Promise((resolve, reject) => {
@@ -200,7 +158,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		    }
 		});
 
-	    console.log("Marcel25 + ", nbActuations);
 	    var step = function(){
 		index++;
 		if (index == tempValues.length) {
@@ -212,7 +169,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    };
 
 	    var actuationCallback = function(message) {
-		console.log("Marcel19 + ", message);
 		--nbActuations;
 		var expectedActuationValue = tempValues[index].expectedActuation.toString();
 		var componentParam = message.content.params.filter(function(param){
@@ -242,7 +198,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
 	    var sendObservationAndCheckRules = function(index) {
 		process.stdout.write(".".green);
-		
 		helpers.devices.submitData(tempValues[index].value, deviceToken, accountId, deviceId, cid, function(err, ts) {
 		    tempValues[index].ts = ts;
 		    
@@ -335,7 +290,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
 	    checkObservations(temperatureValues, rules[switchOnCmdName].cid)
 		.then(() => {done()})
-		.catch((err) => { done(new Error("Error in sendObservations:", err))})
+		.catch((err) => { done(err)})
 	},
 	"test3xStdDevRule": function(done){
 	    //Delete 2xstddev rule and create 3xstddev rule
