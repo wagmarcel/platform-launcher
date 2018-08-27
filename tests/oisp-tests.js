@@ -823,7 +823,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 		})
 		assert.equal(temperatureValuesCopy.length, 3, "Received emails do not match expected emails sent from rule-engine");
 		done();
-	    }).catch( (err) => {done(new Error("Error in Rule Engine Emails: ", err))});
+	    }).catch( (err) => {done(err)});
     }).timeout(30 * 1000);
 
     it('Shall check observation', function(done) {
@@ -1074,7 +1074,7 @@ describe("Adding user and posting email ...\n".bold, function() {
                         }
 		    });
                 }
-            }).catch(function(err){done(new Error("No mail received: " + err))});
+            }).catch(function(err){done(err)});
     }).timeout( 60 * 1000);
 
     it('Shall create receiver account', function(done) {
@@ -1105,7 +1105,7 @@ describe("Invite receiver ...\n".bold, function() {
                 assert.equal(response.email, imap_username, 'send invite to wrong name');
 		helpers.mail.waitAndConsumeEmailMessage(imap_username, imap_password, imap_host, imap_port).then(function(message){
                     done();
-		}). catch(function(err){done(new Error("Mail not received: " + err))});
+		}). catch(function(err){done(err)});
             }
         })
     }).timeout( 30 * 1000);
@@ -1271,7 +1271,7 @@ describe("change password and delete receiver ... \n".bold, function(){
 			}
                     })
 		}
-            }).catch(function(err){done(new Error("No mail received: " + err))});
+            }).catch(function(err){done(err)});
     }).timeout(2 * 60 * 1000);
 
     it('Shall change password', function(done) {
