@@ -137,7 +137,11 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    expectedActuation: 1 // switch on
 	},
 	{
-	    value: 1.0,
+	    value: 15.0,
+	    expectedActuation: null
+	},
+	{
+	    value: 10.0,
 	    expectedActuation: 0 //switch off
 	}
     ];
