@@ -140,12 +140,35 @@ var createStatisticRule = (rule, userToken, accountId, deviceId) => {
     })
 }
 
-
+var deleteComponent = function(userToken, accountId, deviceId, componentId){
+    return new Promise((resolve, reject) => {
+	helpers.devices.deleteDeviceComponent (userToken, accountId, deviceId, componentId, function(err, response){
+	    if (err) {
+		reject(err);
+	    } else {
+		resolve(response);
+	    }
+	})
+    })
+}
+var deleteRule = function(userToken, accountId, ruleId){
+    return new Promise((resolve, reject) => {
+	helpers.rules.deleteRule (userToken, accountId, ruleId, function(err, response){
+	    if (err) {
+		reject(err);
+	    } else {
+		resolve(response);
+	    }
+	})
+    })
+}
 
 module.exports = {
     checkObservations: checkObservations,
     addComponent: addComponent,
     addActuator: addActuator,
     createCommand: createCommand,
-    createStatisticRule: createStatisticRule
+    createStatisticRule: createStatisticRule,
+    deleteComponent: deleteComponent,
+    deleteRule: deleteRule
 }

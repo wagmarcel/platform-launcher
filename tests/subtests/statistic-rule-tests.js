@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Intel Corporation
+ * Copyright (c) 2018 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,7 +173,21 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
 	    promtests.checkObservations(temperatureValues, rules[switchOnCmdName].cid, cbManager, deviceToken, accountId, deviceId, componentParamName)
 		.then(() => {done()})
-		.catch((err) => { done(err)})
+		.catch((err) => { done(err)});
+	},
+	"cleanup": function(done){
+	    
+	    //delete new components
+	    promtests.deleteComponent(userToken, accountId, deviceId, componentId)
+		.then(() => promtests.deleteComponent(userToken, accountId, deviceId, actuatorId))
+	    //delete new commands
+		.then(() => helpers.control.deleteComplexCommand(switchOnCmdName, userToken, accountId))
+		.then(() => helpers.control.deleteComplexCommand(switchOffCmdName, userToken, accountId))
+	    //delete Statistic Rules
+		.then(() => promtests.deleteRule(userToken, accountId, rules[switchOnCmdName].id))
+		.then(() => promtests.deleteRule(userToken, accountId, rules[switchOffCmdName].id))
+		.then(() => {done()})
+		.catch((err) => {done(err)});
 	}
     }
 }
@@ -181,6 +195,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 var descriptions = {
     "createStatisticsRules": "Shall create statisics rules and wait for synchronization with RE",
     "sendObservations": "Shall send observations and trigger event for statistics rules",
+    "cleanup": "Cleanup components, commands, rules created for subtest"
 }
 
 module.exports = {

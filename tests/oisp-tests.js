@@ -873,7 +873,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
     
 });
 
-describe("Do statistics rule test ...".bold,
+describe("Do statistics rule subtests ...".bold,
 	 function() {
 	     var test;
 	     var descriptions = require("./subtests/statistic-rule-tests").descriptions;
@@ -884,6 +884,9 @@ describe("Do statistics rule test ...".bold,
 	     it(descriptions.sendObservations,function(done) {
 		 test.sendObservations(done);
              }).timeout(50000);
+	     it(descriptions.cleanup,function(done) {
+		 test.cleanup(done);
+	     }).timeout(10000);
          });
 
 function donotcall (){ //Marcel remove it later!!!
