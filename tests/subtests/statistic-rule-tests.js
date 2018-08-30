@@ -13,44 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*jshint esversion: 6 */
+/*jshint undef: true, unused: true */
+
 "use strict";
 
 var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     var chai = require('chai');
     var assert = chai.assert;
-    var expect = chai.expect;
-
-    var config = require("../test-config.json");
-    var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
-    //var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('ws');
-    var kafka = require('kafka-node');
-    var cfenvReader = require('../lib/cfenv/reader');
     var helpers = require("../lib/helpers");
-    var colors = require('colors');
-
-    var exec = require('child_process').exec;
-
-    var accountName = "oisp-tests";
-    var deviceName = "oisp-tests-device";
-
     var componentName = "temperature-sensor-srt";
     var componentType = "temperature.v1.0";
-
     var actuatorName = "powerswitch-actuator-srt";
     var actuatorType = "powerswitch.v1.0";
-
     var switchOnCmdName = "switch-on-srt";
     var switchOffCmdName = "switch-off-srt";
     var promtests = require('./promise-wrap');
-
-    var imap_username = process.env.IMAP_USERNAME;
-    var imap_password = process.env.IMAP_PASSWORD; 
-    var imap_host     = process.env.IMAP_HOST;
-    var imap_port     = process.env.IMAP_PORT;
-
-    var recipientEmail = imap_username; 
-
     var rules = [];
+    var componentId;
+    var actuatorId;
+    var componentParamName = "LED";
+
     rules[switchOnCmdName] = {
 	name: "oisp-tests-rule-statistic-2stddef",
 	conditionComponent: componentName,
@@ -80,21 +63,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
             }
         ],
     };
-
-    //-------------------------------------------------------------------------------------------------------
-    // Tests
-    //-------------------------------------------------------------------------------------------------------
-    var receiverToken;
-    var receiveruserId;
-    var receiveraccountId;
-    var userId; 
-    //var deviceToken;
-    var componentId;
-    var actuatorId;
-    var rulelist;
-    var alertlist;               
-    var componentParamName = "LED"; 
-
     var temperatureValues = [
 	{
             value: 17.1,
@@ -155,13 +123,13 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    promtests.addComponent(componentName, componentType, deviceToken, accountId, deviceId)
 		.then((id) => {componentId = id; rules[switchOffCmdName].cid = componentId; rules[switchOnCmdName].cid = componentId;})
 		.then(()   => promtests.addActuator(actuatorName, actuatorType, deviceToken, accountId, deviceId))
-		.then((id) => {actuatorId = id})
+		.then((id) => {actuatorId = id;})
 		.then(()   => promtests.createCommand(switchOffCmdName, componentParamName, 0, userToken, accountId, deviceId, actuatorId))
 		.then(()   => promtests.createCommand(switchOnCmdName, componentParamName, 1, userToken, accountId, deviceId, actuatorId))
 		.then(()   => promtests.createStatisticRule(rules[switchOffCmdName], userToken, accountId, deviceId))
 		.then(()   => promtests.createStatisticRule(rules[switchOnCmdName], userToken, accountId, deviceId))
-		.then(()   => {done()})
-		.catch((err) => {done(err)});
+		.then(()   => {done();})
+		.catch((err) => {done(err);});
 	},
 	"sendObservations": function(done){
 	    assert.notEqual(componentId, null, "CommponentId not defined");
@@ -172,11 +140,11 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    assert.notEqual(deviceId, null, "DeviceId not defined");
 
 	    promtests.checkObservations(temperatureValues, rules[switchOnCmdName].cid, cbManager, deviceToken, accountId, deviceId, componentParamName)
-		.then(() => {done()})
-		.catch((err) => { done(err)});
+		.then(() => {done();})
+		.catch((err) => { done(err);});
 	},
 	"cleanup": function(done){
-	    
+
 	    //delete new components
 	    promtests.deleteComponent(userToken, accountId, deviceId, componentId)
 		.then(() => promtests.deleteComponent(userToken, accountId, deviceId, actuatorId))
@@ -186,19 +154,19 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    //delete Statistic Rules
 		.then(() => promtests.deleteRule(userToken, accountId, rules[switchOnCmdName].id))
 		.then(() => promtests.deleteRule(userToken, accountId, rules[switchOffCmdName].id))
-		.then(() => {done()})
-		.catch((err) => {done(err)});
+		.then(() => {done();})
+		.catch((err) => {done(err);});
 	}
-    }
-}
+    };
+};
 
 var descriptions = {
     "createStatisticsRules": "Shall create statisics rules and wait for synchronization with RE",
     "sendObservations": "Shall send observations and trigger event for statistics rules",
     "cleanup": "Cleanup components, commands, rules created for subtest"
-}
+};
 
 module.exports = {
     test: test,
     descriptions: descriptions
-}
+};
