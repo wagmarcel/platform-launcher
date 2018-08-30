@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*jshint esversion: 6 */
+/*jshint undef: true, unused: true */
+
 "use strict";
 
 
@@ -29,14 +32,31 @@ var checkObservations = function(tempValues, cid, cbManager, deviceToken, accoun
 	tempValues
 	    .forEach( (value) => {
 		value.ts = null;
-		if (value.expectedActuation != null) {
+		if (value.expectedActuation !== null) {
 		    nbActuations++;
 		}
 	    });
+	var step;
+	var sendObservationAndCheckRules = function(index) {
+	    process.stdout.write(".".green);
+	    helpers.devices.submitData(tempValues[index].value, deviceToken, accountId, deviceId, cid, function(err, ts) {
+		tempValues[index].ts = ts;
 
-	var step = function(){
+		if (index === 0) {
+		    firstObservationTime = tempValues[index].ts;
+		}
+		if (err) {
+		    reject(err);
+		}
+
+		if (tempValues[index].expectedActuation === null) {
+		    step();
+		}
+	    });
+	};
+	step = function(){
 	    index++;
-	    if (index == tempValues.length) {
+	    if (index === tempValues.length) {
 		process.stdout.write("\n");
 		resolve();
 	    } else {
@@ -48,14 +68,14 @@ var checkObservations = function(tempValues, cid, cbManager, deviceToken, accoun
 	    --nbActuations;
 	    var expectedActuationValue = tempValues[index].expectedActuation.toString();
 	    var componentParam = message.content.params.filter(function(param){
-		return param.name == componentParamName;
+		return param.name === componentParamName;
 	    });
-	    if(componentParam.length == 1)
+	    if(componentParam.length === 1)
 	    {
 		var param = componentParam[0];
 		var paramValue = param.value.toString();
-		
-		if(paramValue == expectedActuationValue)
+
+		if(paramValue === expectedActuationValue)
 		{
 		    step();
 		}
@@ -68,29 +88,13 @@ var checkObservations = function(tempValues, cid, cbManager, deviceToken, accoun
 	    {
 		reject(new Error("Did not find component param: " + componentParamName));
 	    }
-	}
+	};
 	cbManager.set(actuationCallback);
 
-	var sendObservationAndCheckRules = function(index) {
-	    process.stdout.write(".".green);
-	    helpers.devices.submitData(tempValues[index].value, deviceToken, accountId, deviceId, cid, function(err, ts) {
-		tempValues[index].ts = ts;
-		
-		if (index == 0) {
-		    firstObservationTime = tempValues[index].ts;
-		}
-		if (err) {
-		    reject(err);
-		}
-		
-		if (tempValues[index].expectedActuation == null) {
-		    step();
-		}
-	    });
-	}
+
 	sendObservationAndCheckRules(index);
-    })
-}			  
+    });
+};
 
 var addComponent = (componentName, componentType, deviceToken, accountId, deviceId) => {
     return new Promise(function(resolve, reject){
@@ -102,7 +106,7 @@ var addComponent = (componentName, componentType, deviceToken, accountId, device
 	    }
 	});
     });
-}
+};
 var addActuator = (actuatorName, actuatorType, deviceToken, accountId, deviceId) => {
     return new Promise(function(resolve, reject){
 	helpers.devices.addDeviceComponent(actuatorName, actuatorType, deviceToken, accountId, deviceId, function(err, id) {
@@ -111,22 +115,25 @@ var addActuator = (actuatorName, actuatorType, deviceToken, accountId, deviceId)
 	    } else {
 		resolve(id);
 	    }
-	})
-    })
-}
+	});
+    });
+};
 var createCommand = (cmdName, componentParamName, onOff, userToken, accountId, deviceId, actuatorId) => {
     return new Promise(function(resolve, reject){
 	helpers.control.saveComplexCommand(cmdName, componentParamName, onOff, userToken, accountId, deviceId, actuatorId, function(err,response) {
 	    if (err) {
 		reject(err);
 	    } else {
-		if (response.status != 'OK') reject(new Error("Wrong status: " + response.status))
-		else
+		if (response.status !== 'OK') {
+		    reject(new Error("Wrong status: " + response.status));
+		}
+		else {
 		    resolve();
+		}
 	    }
-	})
-    })
-}
+	});
+    });
+};
 var createStatisticRule = (rule, userToken, accountId, deviceId) => {
     return new Promise(function(resolve, reject){
 	helpers.rules.createStatisticRule(rule, userToken, accountId, deviceId, function(err, id) {
@@ -136,9 +143,9 @@ var createStatisticRule = (rule, userToken, accountId, deviceId) => {
 		rule.id = id;
 		resolve();
 	    }
-	})
-    })
-}
+	});
+    });
+};
 
 var deleteComponent = function(userToken, accountId, deviceId, componentId){
     return new Promise((resolve, reject) => {
@@ -148,9 +155,9 @@ var deleteComponent = function(userToken, accountId, deviceId, componentId){
 	    } else {
 		resolve(response);
 	    }
-	})
-    })
-}
+	});
+    });
+};
 var deleteRule = function(userToken, accountId, ruleId){
     return new Promise((resolve, reject) => {
 	helpers.rules.deleteRule (userToken, accountId, ruleId, function(err, response){
@@ -159,9 +166,9 @@ var deleteRule = function(userToken, accountId, ruleId){
 	    } else {
 		resolve(response);
 	    }
-	})
-    })
-}
+	});
+    });
+};
 
 module.exports = {
     checkObservations: checkObservations,
@@ -171,4 +178,4 @@ module.exports = {
     createStatisticRule: createStatisticRule,
     deleteComponent: deleteComponent,
     deleteRule: deleteRule
-}
+};

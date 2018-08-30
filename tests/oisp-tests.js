@@ -889,7 +889,7 @@ describe("Do statistics rule subtests ...".bold,
 	     }).timeout(10000);
          });
 
-function donotcall (){ //Marcel remove it later!!!
+
 describe("Geting and manage alerts ... \n".bold, function(){
 
     it('Shall get list of alerts', function(done){
@@ -1362,4 +1362,4 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
  
 })   
-}
+

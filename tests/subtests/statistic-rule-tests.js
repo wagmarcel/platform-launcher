@@ -144,7 +144,18 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		.catch((err) => { done(err);});
 	},
 	"cleanup": function(done){
-
+	    var getListOfAlerts = function(userToken, accountId){
+		return new Promise((resolve, reject) => {
+		    helpers.alerts.getListOfAlerts(userToken, accountId, function(err, response) {
+			if (err) {
+			    reject(err);
+			} else {
+			    resolve(response);
+			}
+		    });
+		});
+	    };
+	    //delete 2 most recent alerts
 	    //delete new components
 	    promtests.deleteComponent(userToken, accountId, deviceId, componentId)
 		.then(() => promtests.deleteComponent(userToken, accountId, deviceId, actuatorId))
@@ -154,6 +165,13 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    //delete Statistic Rules
 		.then(() => promtests.deleteRule(userToken, accountId, rules[switchOnCmdName].id))
 		.then(() => promtests.deleteRule(userToken, accountId, rules[switchOffCmdName].id))
+		.then(() => getListOfAlerts(userToken, accountId))
+		.then((alerts) => {
+		    Promise.all(
+			[helpers.alerts.deleteAlert(userToken, accountId, alerts[0].alertId),
+			helpers.alerts.deleteAlert(userToken, accountId, alerts[1].alertId)]
+		    );
+		})
 		.then(() => {done();})
 		.catch((err) => {done(err);});
 	}
