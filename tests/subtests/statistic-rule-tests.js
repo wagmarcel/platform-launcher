@@ -167,10 +167,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		.then(() => promtests.deleteRule(userToken, accountId, rules[switchOffCmdName].id))
 		.then(() => getListOfAlerts(userToken, accountId))
 		.then((alerts) => {
-		    Promise.all(
-			[helpers.alerts.deleteAlert(userToken, accountId, alerts[0].alertId),
-			helpers.alerts.deleteAlert(userToken, accountId, alerts[1].alertId)]
-		    );
+		    var prm1 = helpers.alerts.deleteAlert(userToken, accountId, alerts[0].alertId);
+		    var prm2 = helpers.alerts.deleteAlert(userToken, accountId, alerts[1].alertId);
+		    return Promise.all([prm1, prm2]);
 		})
 		.then(() => {done();})
 		.catch((err) => {done(err);});
