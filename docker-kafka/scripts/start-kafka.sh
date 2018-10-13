@@ -14,6 +14,9 @@ if [ ! -z "$HELIOS_PORT_kafka" ]; then
     ADVERTISED_PORT=`echo $HELIOS_PORT_kafka | cut -d':' -f 2`
 fi
 
+#add newline to server.properties. seems to be issue with kafka 0.11.0.3
+echo "" >> $KAFKA_HOME/config/server.properties
+
 # Set the external host and port
 if [ ! -z "$ADVERTISED_HOST" ]; then
     echo "advertised host: $ADVERTISED_HOST"

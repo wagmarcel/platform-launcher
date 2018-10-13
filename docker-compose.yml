@@ -172,3 +172,24 @@ services:
     environment:
       - VCAP_SERVICES=${VCAP_SERVICES}
       - VCAP_APPLICATION=${VCAP_APPLICATION}
+  flink-master:
+    image: flink:1.5.4-alpine
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=flink-master
+  flink-worker:
+    image: flink:1.5.4-alpine
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - flink-master
+    command: taskmanager
+    links:
+      - "flink-master:jobmanager"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=flink-master
