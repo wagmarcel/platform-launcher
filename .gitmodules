@@ -4,9 +4,9 @@
 [submodule "oisp-backend"]
 	path = oisp-backend
 	url = https://github.com/Open-IoT-Service-Platform/oisp-backend.git
-[submodule "oisp-gearpump-rule-engine"]
-	path = oisp-gearpump-rule-engine
-	url = https://github.com/Open-IoT-Service-Platform/oisp-gearpump-rule-engine.git
 [submodule "oisp-websocket-server"]
 	path = oisp-websocket-server
 	url = https://github.com/Open-IoT-Service-Platform/oisp-websocket-server.git
+[submodule "beam-rule-engine"]
+	path = beam-rule-engine
+	url = ./beam-rule-engine
