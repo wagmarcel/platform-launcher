@@ -152,7 +152,7 @@ services:
   flink-master:
     image: oisp/flink-master:${DOCKER_TAG}
     build:
-      context: ./beam-rule-engine
+      context: ./oisp-beam-rule-engine
       dockerfile: Dockerfile
     depends_on:
       - nginx
