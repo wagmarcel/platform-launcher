@@ -10,3 +10,6 @@
 [submodule "beam-rule-engine"]
 	path = beam-rule-engine
 	url = ./beam-rule-engine
+[submodule "oisp-beam-rule-engine"]
+	path = oisp-beam-rule-engine
+	url = ./oisp-beam-rule-engine
