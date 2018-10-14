@@ -32,7 +32,6 @@ export POSTGRES_USERNAME='postgres'
 export POSTGRES_PASSWORD='intel123'
 export KAFKA='kafka:9092'
 export KAFKA_HEARTBEAT_TOPIC='heartbeat'
-export GEARPUMP='gearpump:8090'
 export BACKEND='backend:8080'
 export NGINX='nginx'
 export REDIS='redis'
@@ -97,14 +96,6 @@ export VCAP_SERVICES='{
     "name": "myzookeeper",
     "plan": "local",
     "tags": []
-}],
-"gearpump": [{
-    "credentials": {
-     "username": "admin",
-     "password": "admin",
-     "dashboardUrl": "'$GEARPUMP'"
-    },
-    "name": "mygearpump"
 }],
 "smtp": [
    {

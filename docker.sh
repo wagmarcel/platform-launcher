@@ -19,7 +19,7 @@
 
 export GIT_COMMIT_PLATFORM_LAUNCHER=$(git rev-parse HEAD)
 export GIT_COMMIT_FRONTEND=$(git -C oisp-frontend rev-parse HEAD)
-export GIT_COMMIT_GEARPUMP=$(git -C oisp-gearpump-rule-engine rev-parse HEAD)
+export GIT_COMMIT_RULE_ENGINE=$(git -C oisp-beam-rule-engine rev-parse HEAD)
 export GIT_COMMIT_WEBSOCKET_SERVER=$(git -C oisp-websocket-server rev-parse HEAD)
 export GIT_COMMIT_BACKEND=$(git -C oisp-backend rev-parse HEAD)
 
