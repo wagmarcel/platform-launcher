@@ -3,11 +3,15 @@
 
   <property>
      <name>hbase.zookeeper.quorum</name>
-     <value>hbase-hostname</value>
+     <value>zookeeper</value>
   </property>
   <property>
     <name>hbase.rootdir</name>
-    <value>file:////data/hbase</value>
+    <value>hdfs://hdfs-namenode:8020/hbase</value>
+  </property>
+    <property>
+    <name>hbase.cluster.distributed</name>
+    <value>true</value>
   </property>
 
   <property>

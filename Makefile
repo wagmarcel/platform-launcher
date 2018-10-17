@@ -88,6 +88,9 @@ endif
 			sudo mv data-backup data; \
 		fi; \
 	fi
+	@if [ -f data/hdfs ]; then echo "HDFS folder existing already"; else \
+		mkdir -p data/hdfa; \
+	fi;
 
 	@if [ -f data/keys/private.pem ]; then echo "RSA keys existing already"; else \
 		mkdir -p data/keys; \

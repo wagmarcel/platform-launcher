@@ -24,7 +24,6 @@ services:
         - oisp=true
         - oisp.git_commit=${GIT_COMMIT_PLATFORM_LAUNCHER}
     ports:
-      - 2181:2181
       - 9090:9090
       - 60000:60000
       - 60020:60020
@@ -172,3 +171,34 @@ services:
     environment:
       - VCAP_SERVICES=${VCAP_SERVICES}
       - VCAP_APPLICATION=${VCAP_APPLICATION}
+  hdfs-namenode:
+    image: singularities/hadoop
+    command: start-hadoop namenode
+    volumes:
+      - ./data/hdfs:/opt/hdfs
+    hostname: hdfs-namenode
+    environment:
+      HDFS_USER: hdfsuser
+    ports:
+      - "8020:8020"
+      - "14000:14000"
+      - "50070:50070"
+      - "50075:50075"
+      - "10020:10020"
+      - "13562:13562"
+      - "19888:19888"
+  hdfs-datanode:
+    image: singularities/hadoop
+    command: start-hadoop datanode namenode
+    environment:
+      HDFS_USER: hdfsuser
+    links:
+      - hdfs-namenode
+  zookeeper:
+    image: zookeeper:3.4.13
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
