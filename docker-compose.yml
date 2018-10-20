@@ -55,12 +55,12 @@ services:
     ports:
       - 9092:9092
     environment:
-      - ZK_CONNECT=hbase:2181
+      - ZK_CONNECT=${ZOOKEEPER_KAFKA}:${ZOOKEEPER_KAFKA_PORT}
     depends_on:
       - hbase
     environment:
       - ADVERTISED_HOST=${HOST_IP_ADDRESS}
-      - ADVERTISED_PORT=9092
+      - ADVERTISED_PORT=${KAFKA_PORT}
       - AUTO_CREATE_TOPICS=true
 
   redis:
@@ -178,7 +178,7 @@ services:
       - ./data/hdfs:/opt/hdfs
     hostname: hdfs-namenode
     environment:
-      HDFS_USER: hdfsuser
+      HDFS_USER: root
     ports:
       - "8020:8020"
       - "14000:14000"
@@ -191,7 +191,7 @@ services:
     image: singularities/hadoop
     command: start-hadoop datanode namenode
     environment:
-      HDFS_USER: hdfsuser
+      HDFS_USER: root
     links:
       - hdfs-namenode
   zookeeper:
