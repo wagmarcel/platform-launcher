@@ -29,6 +29,8 @@ services:
       - 60020:60020
     volumes:
       - ./data/hbase-logs:/opt/hbase/logs
+    depends_on:
+      - zookeeper
   postgres:
     image: oisp/postgres:${DOCKER_TAG}
     build:
@@ -54,15 +56,14 @@ services:
         - oisp.git_commit=${GIT_COMMIT_PLATFORM_LAUNCHER}
     ports:
       - 9092:9092
-    environment:
-      - ZK_CONNECT=${ZOOKEEPER_KAFKA}:${ZOOKEEPER_KAFKA_PORT}
     depends_on:
-      - hbase
+      - zookeeper
     environment:
       - ADVERTISED_HOST=${HOST_IP_ADDRESS}
       - ADVERTISED_PORT=${KAFKA_PORT}
       - AUTO_CREATE_TOPICS=true
-
+      - ZK_CONNECT=${ZOOKEEPER_KAFKA}:${ZOOKEEPER_KAFKA_PORT}
+    command: /usr/bin/start-kafka.sh
   redis:
     image: redis:3.0
     volumes:
@@ -166,7 +167,7 @@ services:
     depends_on:
       - hbase
       - kafka
-    command: ./wait-for-it.sh hbase:2181 -t 300 -- ./wait-for-it.sh kafka:9092 -t 300 -- make runjar
+    command: ./wait-for-it.sh hbase:9090 -t 300 -- ./wait-for-it.sh kafka:9092 -t 300 -- make runjar
     working_dir: /app
     environment:
       - VCAP_SERVICES=${VCAP_SERVICES}
