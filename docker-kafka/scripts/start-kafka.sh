@@ -10,6 +10,7 @@
 
 # Configure advertised host/port if we run in helios
 
+
 if [ ! -z "$HELIOS_PORT_kafka" ]; then
     ADVERTISED_HOST=`echo $HELIOS_PORT_kafka | cut -d':' -f 1 | xargs -n 1 dig +short | tail -n 1`
     ADVERTISED_PORT=`echo $HELIOS_PORT_kafka | cut -d':' -f 2`
@@ -22,7 +23,7 @@ if [ ! -z "$ADVERTISED_HOST" ]; then
     if grep -q "^advertised.host.name" $KAFKA_HOME/config/server.properties; then
         sed -r -i "s/#(advertised.host.name)=(.*)/\1=$ADVERTISED_HOST/g" $KAFKA_HOME/config/server.properties
     else
-        echo "advertised.host.name=$ADVERTISED_HOST" >> $KAFKA_HOME/config/server.properties
+        echo "\nadvertised.host.name=$ADVERTISED_HOST" >> $KAFKA_HOME/config/server.properties
     fi
 fi
 if [ ! -z "$ADVERTISED_PORT" ]; then
@@ -85,4 +86,5 @@ fi
 
 # Run kafka-server
 $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties
+
 

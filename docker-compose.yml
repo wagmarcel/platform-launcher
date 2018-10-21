@@ -16,8 +16,8 @@
 version: '3.7'
 
 services:
-  hbase:
-    image: oisp/hbase:${DOCKER_TAG}
+  hbase-master:
+    image: oisp/hbase-master:${DOCKER_TAG}
     build:
       context: ./docker-hbase/
       labels:
@@ -25,12 +25,31 @@ services:
         - oisp.git_commit=${GIT_COMMIT_PLATFORM_LAUNCHER}
     ports:
       - 9090:9090
+      - 8081:8080
+      - 9095:9095
+      - 16010:16010
       - 60000:60000
-      - 60020:60020
     volumes:
       - ./data/hbase-logs:/opt/hbase/logs
     depends_on:
       - zookeeper
+      - hdfs-namenode
+      - hdfs-datanode
+  hbase-region:
+    image: oisp/hbase-region:${DOCKER_TAG}
+    build:
+      context: ./docker-hbase/
+      dockerfile: Dockerfile.region
+      labels:
+        - oisp=true
+        - oisp.git_commit=${GIT_COMMIT_PLATFORM_LAUNCHER}
+    volumes:
+      - ./data/hbase-logs:/opt/hbase/logs
+    depends_on:
+      - hbase-master
+      - zookeeper
+      - hdfs-namenode
+      - hdfs-datanode
   postgres:
     image: oisp/postgres:${DOCKER_TAG}
     build:
@@ -63,7 +82,6 @@ services:
       - ADVERTISED_PORT=${KAFKA_PORT}
       - AUTO_CREATE_TOPICS=true
       - ZK_CONNECT=${ZOOKEEPER_KAFKA}:${ZOOKEEPER_KAFKA_PORT}
-    command: /usr/bin/start-kafka.sh
   redis:
     image: redis:3.0
     volumes:
@@ -80,7 +98,7 @@ services:
         - oisp.git_commit=${GIT_COMMIT_GEARPUMP}
     depends_on:
       - nginx
-      - hbase
+      - hbase-master
       - kafka
       - frontend
     working_dir: /app
@@ -165,9 +183,9 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      - hbase
+      - hbase-master
       - kafka
-    command: ./wait-for-it.sh hbase:9090 -t 300 -- ./wait-for-it.sh kafka:9092 -t 300 -- make runjar
+    command: ./wait-for-it.sh hbase-master:9090 -t 300 -- ./wait-for-it.sh kafka:9092 -t 300 -- make runjar
     working_dir: /app
     environment:
       - VCAP_SERVICES=${VCAP_SERVICES}
@@ -176,7 +194,7 @@ services:
     image: singularities/hadoop
     command: start-hadoop namenode
     volumes:
-      - ./data/hdfs:/opt/hdfs
+      - ./data/hdfs/name:/opt/hdfs
     hostname: hdfs-namenode
     environment:
       HDFS_USER: root
@@ -190,7 +208,9 @@ services:
       - "19888:19888"
   hdfs-datanode:
     image: singularities/hadoop
-    command: start-hadoop datanode namenode
+    command: start-hadoop datanode hdfs-namenode
+    volumes:
+      - ./data/hdfs/data:/opt/hdfs
     environment:
       HDFS_USER: root
     links:
