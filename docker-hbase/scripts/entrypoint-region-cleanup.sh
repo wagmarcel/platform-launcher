@@ -15,8 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-/opt/replace-hostname.sh
+echo "Stop listener started"
 
-mkdir -p /data/logs
+function clean_up {
+    echo "Stop listener called"
+    /opt/hbase/bin/hbase-daemon.sh stop regionserver
+    exit 0;
+    }
+trap clean_up SIGTERM
 
-exec supervisord -n
+while true; do sleep 10; done
+
+
+

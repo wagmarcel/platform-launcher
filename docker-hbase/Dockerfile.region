@@ -45,9 +45,11 @@ ADD config/zoo.cfg /opt/hbase/conf/
 
 ADD scripts/replace-hostname.sh /opt/
 
-ADD scripts/entrypoint.sh /opt/
+ADD scripts/entrypoint-region-cleanup.sh /opt/
+ADD scripts/entrypoint-region.sh /opt/
 
 ADD config/supervisor.region.conf /etc/supervisor/conf.d/supervisor.conf
+
 
 # REST API
 EXPOSE 8080
@@ -62,4 +64,4 @@ EXPOSE 9095
 # HBase Master web UI at :16010/master-status;  ZK at :16010/zk.jsp
 EXPOSE 16010
 
-ENTRYPOINT ["/opt/entrypoint.sh"]
+ENTRYPOINT ["/opt/entrypoint-region.sh"]

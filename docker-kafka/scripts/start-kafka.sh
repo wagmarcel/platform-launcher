@@ -23,7 +23,7 @@ if [ ! -z "$ADVERTISED_HOST" ]; then
     if grep -q "^advertised.host.name" $KAFKA_HOME/config/server.properties; then
         sed -r -i "s/#(advertised.host.name)=(.*)/\1=$ADVERTISED_HOST/g" $KAFKA_HOME/config/server.properties
     else
-        echo "\nadvertised.host.name=$ADVERTISED_HOST" >> $KAFKA_HOME/config/server.properties
+        echo -e "\nadvertised.host.name=$ADVERTISED_HOST" >> $KAFKA_HOME/config/server.properties
     fi
 fi
 if [ ! -z "$ADVERTISED_PORT" ]; then

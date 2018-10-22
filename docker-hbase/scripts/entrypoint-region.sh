@@ -20,3 +20,4 @@
 mkdir -p /data/logs
 
 exec supervisord -n
+
