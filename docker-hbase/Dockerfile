@@ -34,6 +34,7 @@ RUN apt-get update && apt-get upgrade -y && \
 		sed -i "s,^. export JAVA_HOME.*,export JAVA_HOME=$JAVA_HOME," conf/hbase-env.sh && \
 		echo "export JAVA_HOME=$JAVA_HOME" > /etc/profile.d/defaults.sh && \
 	apt-get install -y --no-install-recommends openjdk-8-jre-headless && \
+	apt-get install -y openssh-server openssh-client && \
 	apt-get clean  && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
 
@@ -46,9 +47,21 @@ ADD config/zoo.cfg /opt/hbase/conf/
 ADD scripts/replace-hostname.sh /opt/
 
 ADD scripts/entrypoint.sh /opt/
+ADD scripts/entrypoint-region.sh /opt/
 
 ADD config/supervisor.conf /etc/supervisor/conf.d/
 
+RUN mkdir -p /root/.ssh
+RUN chmod 700 /root/.ssh
+COPY ssh-key.pub /root/.ssh/id_rsa.pub
+ADD ssh-key /root/.ssh/id_rsa
+#ADD hello /root/.ssh/
+RUN ls -la /root/.ssh
+RUN cat /root/.ssh/id_rsa.pub > /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/id_rsa
+
+ADD scripts/wait-for-it.sh /opt/
 # REST API
 EXPOSE 8080
 # REST Web UI at :8085/rest.jsp

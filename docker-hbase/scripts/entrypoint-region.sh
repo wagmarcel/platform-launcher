@@ -19,5 +19,7 @@
 
 mkdir -p /data/logs
 
+service ssh start
+while true; do sleep 10; done
 exec supervisord -n
 

@@ -18,6 +18,7 @@ version: '3.7'
 services:
   hbase-master:
     image: oisp/hbase-master:${DOCKER_TAG}
+    entrypoint: bash /opt/wait-for-it.sh hdfs-namenode:50070 -t 300 -- bash /opt/wait-for-it.sh zookeeper:2181 -t 300 -- /opt/entrypoint.sh
     build:
       context: ./docker-hbase/
       labels:
@@ -35,11 +36,14 @@ services:
       - zookeeper
       - hdfs-namenode
       - hdfs-datanode
+    environment:
+      - REGIONSERVERS=hbase-region
   hbase-region:
     image: oisp/hbase-region:${DOCKER_TAG}
+    entrypoint: /opt/entrypoint-region.sh
     build:
       context: ./docker-hbase/
-      dockerfile: Dockerfile.region
+      dockerfile: Dockerfile
       labels:
         - oisp=true
         - oisp.git_commit=${GIT_COMMIT_PLATFORM_LAUNCHER}
@@ -218,6 +222,9 @@ services:
   zookeeper:
     image: zookeeper:3.4.13
     hostname: zookeeper
+    volumes:
+      - ./data/zookeeper:/data
+      - ./data/zookeeper-logs:/datalog
     ports:
       - 2181:2181
     environment:

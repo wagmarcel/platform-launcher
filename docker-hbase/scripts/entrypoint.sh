@@ -18,5 +18,7 @@
 /opt/replace-hostname.sh
 
 mkdir -p /data/logs
+service ssh start
+echo $REGIONSERVERS| tr " " "\n" > /opt/hbase/conf/regionservers
 
 exec supervisord -n

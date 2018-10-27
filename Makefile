@@ -93,6 +93,18 @@ endif
 		mkdir -p data/hdfs/name; \
 		mkdir -p data/hdfs/data; \
 	fi;
+	@if [ -f data/zookeeper ]; then echo "Zookeeper folder existing already"; else \
+		echo "Creating Zookeeper data folder"; \
+		mkdir -p data/zookeeper; \
+	mkdir -p data/zookeeper-logs; \
+	fi;
+
+	@if [ -f data/keys/hbase/id_rsa ]; then echo "HBase keys existing already"; else \
+		mkdir -p data/keys/hbase; \
+		ssh-keygen -q -t rsa -P "" -f data/keys/hbase/id_rsa; \
+	fi;
+	@cp data/keys/hbase/* docker-hbase
+	@chmod 755 docker-hbase/ssh-key*
 
 	@if [ -f data/keys/private.pem ]; then echo "RSA keys existing already"; else \
 		mkdir -p data/keys; \
