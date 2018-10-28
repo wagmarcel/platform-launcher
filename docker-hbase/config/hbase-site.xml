@@ -3,25 +3,15 @@
 
   <property>
      <name>hbase.zookeeper.quorum</name>
-     <value>zookeeper</value>
+     <value>zookeeper-hostname</value>
   </property>
   <property>
     <name>hbase.rootdir</name>
-    <value>hdfs://hdfs-namenode:8020/hbase</value>
+    <value>hdfs://hdfs-namenode-hostname:8020/hbase</value>
   </property>
     <property>
     <name>hbase.cluster.distributed</name>
     <value>true</value>
-  </property>
-
-  <property>
-    <name>hbase.master.info.bindAddress</name>
-    <value>hbase-hostname</value>
-  </property>
-
-  <property>
-    <name>hbase.regionserver.info.bindAddress</name>
-    <value>hbase-hostname</value>
   </property>
 
 </configuration>

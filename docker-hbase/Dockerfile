@@ -61,6 +61,8 @@ RUN cat /root/.ssh/id_rsa.pub > /root/.ssh/authorized_keys
 RUN chmod 600 /root/.ssh/authorized_keys
 RUN chmod 600 /root/.ssh/id_rsa
 
+RUN sed -i 's/#   StrictHostKeyChecking ask/   StrictHostKeyChecking no/' /etc/ssh/ssh_config
+
 ADD scripts/wait-for-it.sh /opt/
 # REST API
 EXPOSE 8080

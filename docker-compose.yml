@@ -36,8 +36,11 @@ services:
       - zookeeper
       - hdfs-namenode
       - hdfs-datanode
+      - hbase-region
     environment:
       - REGIONSERVERS=hbase-region
+      - ZOOKEEPER=${ZOOKEEPER_HBASE}
+      - HDFS_NAMENODE=hdfs-namenode
   hbase-region:
     image: oisp/hbase-region:${DOCKER_TAG}
     entrypoint: /opt/entrypoint-region.sh
@@ -50,10 +53,13 @@ services:
     volumes:
       - ./data/hbase-logs:/opt/hbase/logs
     depends_on:
-      - hbase-master
       - zookeeper
       - hdfs-namenode
       - hdfs-datanode
+    environment:
+      - HBASE_MASTER=hbase-master
+      - ZOOKEEPER=${ZOOKEEPER_HBASE}
+      - HDFS_NAMENODE=hdfs-namenode
   postgres:
     image: oisp/postgres:${DOCKER_TAG}
     build:
