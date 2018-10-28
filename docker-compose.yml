@@ -17,7 +17,7 @@ version: '3.7'
 
 services:
   hbase-master:
-    image: oisp/hbase-master:${DOCKER_TAG}
+    image: oisp/hbase:${DOCKER_TAG}
     entrypoint: bash /opt/wait-for-it.sh hdfs-namenode:50070 -t 300 -- bash /opt/wait-for-it.sh zookeeper:2181 -t 300 -- /opt/entrypoint.sh
     build:
       context: ./docker-hbase/
@@ -42,7 +42,7 @@ services:
       - ZOOKEEPER=${ZOOKEEPER_HBASE}
       - HDFS_NAMENODE=hdfs-namenode
   hbase-region:
-    image: oisp/hbase-region:${DOCKER_TAG}
+    image: oisp/hbase:${DOCKER_TAG}
     entrypoint: /opt/entrypoint-region.sh
     build:
       context: ./docker-hbase/
