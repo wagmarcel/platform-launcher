@@ -202,6 +202,8 @@ services:
       - OISP_KAFKA_CONFIG=${OISP_KAFKA_CONFIG}
       - OISP_ZOOKEEPER_CONFIG=${OISP_ZOOKEEPER_CONFIG}
       - OISP_KERBEROS_CONFIG=${OISP_KERBEROS_CONFIG}
+      - OISP_HBASE_CONFIG=${OISP_HBASE_CONFIG}
+      - OISP_HADOOP_PROPERTIES=${OISP_HADOOP_PROPERTIES}
   hdfs-namenode:
     image: singularities/hadoop
     command: start-hadoop namenode
