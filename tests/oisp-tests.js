@@ -728,6 +728,7 @@ describe("Creating rules ... \n".bold, function() {
     }).timeout(20000);
 });
 
+var ignoreme = function(){ 
 describe("Sending observations and checking rules ...\n".bold, function() {
 
     it('Shall send observation and check rules', function(done) {
@@ -920,8 +921,23 @@ describe("Do statistics rule subtests ...".bold,
 	     }).timeout(10000);
          });
 
+}
 
 
+describe("Do data sending subtests ...".bold,
+	 function() {
+	     var test;
+	     var descriptions = require("./subtests/data-sending-tests").descriptions;
+	     it(descriptions.sendAggregatedDataPoints,function(done) {
+		 test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+		 test.sendAggregatedDataPoints(done);
+             }).timeout(10000);
+	     it(descriptions.receiveAggregatedDataPoints,function(done) {
+		 test.receiveAggregatedDataPoints(done);
+             }).timeout(10000);
+         });
+
+var ignoremetoo = function(){
 describe("Geting and manage alerts ... \n".bold, function(){
 
     it('Shall get list of alerts', function(done){
@@ -1405,3 +1421,4 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
  
 })   
+}

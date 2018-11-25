@@ -50,7 +50,6 @@ function getObservation(ts, userToken, accountId, deviceId, cid, cb) {
 
     api.data.searchData(data, function(err, response) {
         var found = false;
-
         if (err) {
             cb(err);
         } else {
@@ -91,14 +90,16 @@ function searchData(from, userToken, accountId, deviceId, cid, cb) {
             }]
         }
     };
-
+    
     api.data.searchData(data, function(err, response) {
         if (err) {
             cb(err)
         } else {
-            if (response.series) {
+            if (response && response.series) {
                 cb(null, response.series[0].points)
-            }
+            } else {
+		cb(null, {});
+	    }
         }
     });
 }
@@ -111,7 +112,7 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
     var ts = new Date().getTime();
 
     var data = {
-        deviceToken: deviceToken,
+        userToken: deviceToken,
         deviceId: deviceId,
         body: {
             accountId: accountId,
@@ -128,8 +129,44 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
         if (err) {
             cb(err)
         } else {
-            if (response.series) {
-                cb(null, response.series[0].points)
+            if (response) {
+                cb(null, response)
+            }
+        }
+    });
+}
+
+function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb) {
+    if (!cb) {
+        throw "Callback required";
+    }
+    var ts = new Date().getTime();
+
+    var data = {
+        userToken: deviceToken,
+        deviceId: deviceId,
+        body: {
+            accountId: accountId,
+            on: valueList[0][2],
+            data: []
+        }
+    }
+
+    valueList.forEach(function(element){
+	data.body.data.push(
+	    {
+                componentId: cidList[element[0]],
+                value: element[1].toString(),
+                on: element[2]
+            });
+    });
+
+    api.data.submitData(data, function(err, response) {
+        if (err) {
+            cb(err)
+        } else {
+            if (response) {
+                cb(null, response)
             }
         }
     });
@@ -164,5 +201,6 @@ module.exports={
     getObservation: getObservation,
     searchData: searchData,
     submitData: submitData,
+    submitDataList: submitDataList,
     searchDataAdvanced: searchDataAdvanced
 }
