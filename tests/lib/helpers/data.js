@@ -147,7 +147,7 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
         deviceId: deviceId,
         body: {
             accountId: accountId,
-            on: valueList[0][2],
+            on: valueList[0].ts,
             data: []
         }
     }
@@ -155,9 +155,9 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
     valueList.forEach(function(element){
 	data.body.data.push(
 	    {
-                componentId: cidList[element[0]],
-                value: element[1].toString(),
-                on: element[2]
+                componentId: cidList[element.component],
+                value: element.value.toString(),
+                on: element.ts
             });
     });
 

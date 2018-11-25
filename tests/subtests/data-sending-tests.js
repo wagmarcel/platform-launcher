@@ -32,43 +32,103 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
     var dataValues1 = [
 	[
-	    [0, 10.1, 1],
+	    {
+		component: 0,
+		value: 10.1,
+		ts: 1
+	    }
 	],
 	[
-	    [0, 11.2, 2],
-	    [0, 12.3, 3]
+	    {
+		component: 0,
+		value: 11.2,
+		ts: 2
+	    },
+	    {
+		component: 0,
+		value: 12.3,
+		ts: 3
+	    }
 	],
 	[
-	    [0, 13.4, 4],
-	    [0, 14.5, 5],
-	    [0, 15.6, 6]
+	    {
+		component: 0,
+		value: 13.4,
+		ts: 4
+	    },
+	    {
+		component: 0,
+		value: 14.5,
+		ts: 5
+	    },
+	    {
+		component: 0,
+		value: 15.6,
+		ts: 6
+	    }
 	],
 	[
-	    [0, 16.7, 7],
-	    [0, 17.8, 8],
-	    [0, 18.9, 9],
-	    [0, 20.0, 10]
+	    {
+		component: 0,
+		value: 16.7,
+		ts: 7
+	    },
+	    {
+		component: 0,
+		value: 17.8,
+		ts: 8
+	    },
+	    {
+		component: 0,
+		value: 18.9,
+		ts: 9
+	    },
+	    {
+		component: 0,
+		value: 20.0,
+		ts: 10
+	    }
 	],
 	[
-	    [0, 21.1, 11],
-	    [0, 22.2, 12],
-	    [0, 23.3, 13],
-	    [0, 24.4, 14],
-	    [0, 25.5, 15]
+	    {
+		component: 0,
+		value: 21.1,
+		ts: 11
+	    },
+	    {
+		component: 0,
+		value: 22.2,
+		ts: 12
+	    },
+	    {
+		component: 0,
+		value: 23.3,
+		ts: 13
+	    },
+	    {
+		component: 0,
+		value: 24.4, ts: 14
+	    },
+	    {
+		component: 0,
+		value: 25.5,
+		ts: 15
+	    }
 	    
 	]
     ];
 
+    
 
     var comparePoints = function(dataValues, points){
 	var result = true;
 	var reason = "";
 	points.forEach(function(element, index){
-	    if ((element.ts != dataValues[index][2]) ||
-		(element.value != dataValues[index][1])){
+	    if ((element.ts != dataValues[index].ts) ||
+		(element.value != dataValues[index].value)){
 		result = false;
 		reason = "Point " + JSON.stringify(element) + " does not fit to expected value " +
-		    JSON.stringify({ ts: dataValues[index][2], value: dataValues[index][1]});
+		    JSON.stringify({ ts: dataValues[index].ts, value: dataValues[index].value});
 	    }
 	});
 	if (result) return true;
