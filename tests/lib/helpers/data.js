@@ -77,6 +77,12 @@ function searchData(from, userToken, accountId, deviceId, cid, cb) {
         throw "Callback required";
     }
 
+    var metrics = [{ "id": cid }];
+
+    if (Array.isArray(cid)) {
+	metrics = cid.map((element) => ({"id": element}))
+    }
+    
     var data = {
         userToken: userToken,
         accountId: accountId,
@@ -85,12 +91,10 @@ function searchData(from, userToken, accountId, deviceId, cid, cb) {
             targetFilter: {
                 deviceList: [deviceId]
             },
-            metrics: [{
-                id: cid
-            }]
+            metrics: metrics
         }
     };
-    
+
     api.data.searchData(data, function(err, response) {
         if (err) {
             cb(err)
@@ -100,6 +104,38 @@ function searchData(from, userToken, accountId, deviceId, cid, cb) {
             } else {
 		cb(null, {});
 	    }
+        }
+    });
+}
+
+function searchDataFull(from, userToken, accountId, deviceId, cid, cb) {
+    if (!cb) {
+        throw "Callback required";
+    }
+
+    var metrics = [{ "id": cid }];
+
+    if (Array.isArray(cid)) {
+	metrics = cid.map((element) => ({"id": element}))
+    }
+    
+    var data = {
+        userToken: userToken,
+        accountId: accountId,
+        body: {
+            from: from,
+            targetFilter: {
+                deviceList: [deviceId]
+            },
+            metrics: metrics
+        }
+    };
+
+    api.data.searchData(data, function(err, response) {
+        if (err) {
+            cb(err)
+        } else {	   
+            cb(null, response)
         }
     });
 }
@@ -200,6 +236,7 @@ function searchDataAdvanced(from, userToken, accountId, deviceId, cid, cb) {
 module.exports={
     getObservation: getObservation,
     searchData: searchData,
+    searchDataFull: searchDataFull,
     submitData: submitData,
     submitDataList: submitDataList,
     searchDataAdvanced: searchDataAdvanced

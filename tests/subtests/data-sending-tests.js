@@ -29,6 +29,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     var rules = [];
     var componentId = [];
     var dataValues1Time;
+    var dataValues2Time;
 
     var dataValues1 = [
 	[
@@ -118,7 +119,74 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	]
     ];
 
-    
+
+    var dataValues2 = [
+	[
+	    {
+		component: 0,
+		value: 10.1,
+		ts: 1000
+	    }
+	],
+	[
+	    {
+		component: 1,
+		value: 10,
+		ts: 1020
+	    },
+	    {
+		component: 0,
+		value: 12.3,
+		ts: 1030
+	    }
+	],
+	[
+	    {
+		component: 0,
+		value: 13.4,
+		ts: 1040
+	    },
+	    {
+		component: 1,
+		value: 20,
+		ts: 1050
+	    },
+	    {
+		component: 0,
+		value: 15.6,
+		ts: 1060
+	    }
+	],
+	[
+	    {
+		component: 1,
+		value: 30,
+		ts: 1070
+	    },
+	    {
+		component: 0,
+		value: 17.8,
+		ts: 1070
+	    },
+	    {
+		component: 0,
+		value: 18.9,
+		ts: 1090
+	    },
+	    {
+		component: 1,
+		value: 40,
+		ts: 1100
+	    }
+	],
+	[
+	    {
+		component: 1,
+		value: 50,
+		ts: 1170
+	    }
+	]
+    ]
 
     var comparePoints = function(dataValues, points){
 	var result = true;
@@ -162,9 +230,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		return acc.concat(cur)
 	    })
 	    promtests.searchData(dataValues1Time, deviceToken, accountId, deviceId, componentId[0])
-		//.then((result) => console.log("Result", JSON.stringify(result)))
 		.then((result) => {
-		    var comparisonResult = comparePoints(listOfExpectedResults, result);
+		    if (result.series.length != 1) done("Wrong number of point series!");
+		    var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
 		    if (comparisonResult === true) {
 			done();
 		    }
@@ -176,6 +244,22 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	    
 	},
 	"sendAggregatedMultipleDataPoints": function(done){
+	    var proms = [];
+	    dataValues2Time = dataValues2[0][0].ts;
+	    dataValues2.forEach(function(element){
+		proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+	    });
+	    Promise.all(proms)
+		.then(() => {done()})
+		.catch((err) => {done(err);});
+	},
+	"receiveAggregatedMultipleDataPoints": function(done){
+	    promtests.searchData(dataValues2Time, deviceToken, accountId, deviceId, componentId)
+		.then((result) => console.log("Result", JSON.stringify(result)))
+		.then( () => {done()})
+		.catch((err) => {done(err);});
+	},
+	"cleanup": function(done){
 	}
     };
 };
@@ -184,6 +268,7 @@ var descriptions = {
     "sendAggregatedDataPoints": "Shall send multiple datapoints for one component",
     "receiveAggregatedDataPoints": "Shall receive multiple datapoints for one component",
     "sendAggregatedMultipleDataPoints": "Shall send multiple datapoints for 2 components",
+    "receiveAggregatedMultipleDataPoints": "Shall receive multiple datapoints for 2 components",
     "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
