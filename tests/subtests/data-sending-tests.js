@@ -202,6 +202,16 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 	if (result) return true;
 	else return reason;
     }
+
+    var flattenArray = function(array){
+	var results = array.map(function(element) {
+		return element;
+	    });
+	    results = results.reduce(function(acc, cur) {
+		return acc.concat(cur)
+	    })
+	return results;
+    }
     //********************* Main Object *****************//
     //---------------------------------------------------//
     return {
@@ -223,12 +233,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		.catch((err) => {done(err);});
 	},
 	"receiveAggregatedDataPoints": function(done){
-	    var listOfExpectedResults = dataValues1.map(function(element) {
-		return element;
-	    });
-	    listOfExpectedResults = listOfExpectedResults.reduce(function(acc, cur) {
-		return acc.concat(cur)
-	    })
+	    var listOfExpectedResults = flattenArray(dataValues1);
 	    promtests.searchData(dataValues1Time, deviceToken, accountId, deviceId, componentId[0])
 		.then((result) => {
 		    if (result.series.length != 1) done("Wrong number of point series!");
@@ -254,9 +259,30 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 		.catch((err) => {done(err);});
 	},
 	"receiveAggregatedMultipleDataPoints": function(done){
+
+	    var flattenedDataValues = flattenArray(dataValues2);
+
 	    promtests.searchData(dataValues2Time, deviceToken, accountId, deviceId, componentId)
-		.then((result) => console.log("Result", JSON.stringify(result)))
-		.then( () => {done()})
+		.then( (result) => {
+		    if (result.series.length != 2) done("Wrong number of point series!");
+		    var listOfExpectedResults0 = flattenedDataValues.filter(
+			(element) => (element.component == 0)
+		    );
+		    var comparisonResult = comparePoints(listOfExpectedResults0, result.series[0].points)
+		    if (comparisonResult !== true) {
+			done(comparisonResult);
+		    }
+		    var listOfExpectedResults1 = flattenedDataValues.filter(
+			(element) => (element.component == 1)
+		    );
+		    comparisonResult = comparePoints(listOfExpectedResults1, result.series[1].points);
+		    if (comparisonResult !== true) {
+			done(comparisonResult);
+		    }
+		    else {
+			done();
+		    }
+		})
 		.catch((err) => {done(err);});
 	},
 	"cleanup": function(done){
