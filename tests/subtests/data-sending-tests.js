@@ -30,6 +30,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var componentId = [];
   var dataValues1Time;
   var dataValues2Time;
+  var dataValues3Time;
+  const MIN_NUMBER = 0.0001;
 
   var dataValues1 = [
     [{
@@ -47,67 +49,67 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       ts: 3
     }],
     [{
-        component: 0,
-        value: 13.4,
-        ts: 4
-      },
-      {
-        component: 0,
-        value: 14.5,
-        ts: 5
-      },
-      {
-        component: 0,
-        value: 15.6,
-        ts: 6
-      }
+      component: 0,
+      value: 13.4,
+      ts: 4
+    },
+    {
+      component: 0,
+      value: 14.5,
+      ts: 5
+    },
+    {
+      component: 0,
+      value: 15.6,
+      ts: 6
+    }
     ],
     [{
-        component: 0,
-        value: 16.7,
-        ts: 7
-      },
-      {
-        component: 0,
-        value: 17.8,
-        ts: 8
-      },
-      {
-        component: 0,
-        value: 18.9,
-        ts: 9
-      },
-      {
-        component: 0,
-        value: 20.0,
-        ts: 10
-      }
+      component: 0,
+      value: 16.7,
+      ts: 7
+    },
+    {
+      component: 0,
+      value: 17.8,
+      ts: 8
+    },
+    {
+      component: 0,
+      value: 18.9,
+      ts: 9
+    },
+    {
+      component: 0,
+      value: 20.0,
+      ts: 10
+    }
     ],
     [{
-        component: 0,
-        value: 21.1,
-        ts: 11
-      },
-      {
-        component: 0,
-        value: 22.2,
-        ts: 12
-      },
-      {
-        component: 0,
-        value: 23.3,
-        ts: 13
-      },
-      {
-        component: 0,
-        value: 24.4,
-        ts: 14
-      },
-      {
-        component: 0,
-        value: 25.5,
-        ts: 15
-      }
+      component: 0,
+      value: 21.1,
+      ts: 11
+    },
+    {
+      component: 0,
+      value: 22.2,
+      ts: 12
+    },
+    {
+      component: 0,
+      value: 23.3,
+      ts: 13
+    },
+    {
+      component: 0,
+      value: 24.4,
+      ts: 14
+    },
+    {
+      component: 0,
+      value: 25.5,
+      ts: 15
+    }
 
     ]
   ];
@@ -120,52 +122,52 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       ts: 1000
     }],
     [{
-        component: 1,
-        value: 10,
-        ts: 1020
-      },
-      {
-        component: 0,
-        value: 12.3,
-        ts: 1030
-      }
+      component: 1,
+      value: 10,
+      ts: 1020
+    },
+    {
+      component: 0,
+      value: 12.3,
+      ts: 1030
+    }
     ],
     [{
-        component: 0,
-        value: 13.4,
-        ts: 1040
-      },
-      {
-        component: 1,
-        value: 20,
-        ts: 1050
-      },
-      {
-        component: 0,
-        value: 15.6,
-        ts: 1060
-      }
+      component: 0,
+      value: 13.4,
+      ts: 1040
+    },
+    {
+      component: 1,
+      value: 20,
+      ts: 1050
+    },
+    {
+      component: 0,
+      value: 15.6,
+      ts: 1060
+    }
     ],
     [{
-        component: 1,
-        value: 30,
-        ts: 1070
-      },
-      {
-        component: 0,
-        value: 17.8,
-        ts: 1070
-      },
-      {
-        component: 0,
-        value: 18.9,
-        ts: 1090
-      },
-      {
-        component: 1,
-        value: 40,
-        ts: 1100
-      }
+      component: 1,
+      value: 30,
+      ts: 1070
+    },
+    {
+      component: 0,
+      value: 17.8,
+      ts: 1070
+    },
+    {
+      component: 0,
+      value: 18.9,
+      ts: 1090
+    },
+    {
+      component: 1,
+      value: 40,
+      ts: 1100
+    }
     ],
     [{
       component: 1,
@@ -173,21 +175,68 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       ts: 1170
     }]
   ]
+
+  var dataValues3 = [
+    [{
+      component: 0,
+      value: 10,
+      ts: 10000,
+      loc: [99.12345, 12.3456, 456.789]
+    }],
+    [{
+      component: 0,
+      value: 11,
+      ts: 20000,
+      loc: [9.8765, 432.1, 09.876]
+    }],
+    [{
+      component: 0,
+      value: 12,
+      ts: 30000,
+    }],
+    [{
+      component: 0,
+      value: 13,
+      ts: 40000,
+      loc: [0.0, 0.0, 0.0]
+    }],
+    [{
+      component: 0,
+      value: 14,
+      ts: 50000,
+      loc: [200.345, 300.21]
+    }]
+  ];
+
+  var locEqual = function(dataValue, element) {
+    if (dataValue.loc == undefined) {
+      if ((element.lat == undefined || element.lat === "") && (element.lat == undefined || element.lon === "") && (element.alt == undefined || element.alt === "")) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    if ((dataValue.loc[0] == undefined || (dataValue.loc[0] - Number(element.lat)) <= MIN_NUMBER)
+      && (dataValue.loc[1] == undefined || (dataValue.loc[1].toString() - Number(element.lon)) <= MIN_NUMBER)
+      && (dataValue.loc[2] == undefined || (dataValue.loc[2].toString() - Number(element.alt)) <= MIN_NUMBER)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   var comparePoints = function(dataValues, points) {
     var result = true;
     var reason = "";
     points.forEach(function(element, index) {
       if ((element.ts != dataValues[index].ts) ||
-        (element.value != dataValues[index].value)) {
+        (element.value != dataValues[index].value) || !locEqual(dataValues[index], element)) {
         result = false;
         reason = "Point " + JSON.stringify(element) + " does not fit to expected value " +
-          JSON.stringify({
-            ts: dataValues[index].ts,
-            value: dataValues[index].value
-          });
+          JSON.stringify(dataValues[index]);
       }
     });
-    if (result) return true;
+    if (result === true) return true;
     else return reason;
   }
 
@@ -200,6 +249,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     })
     return results;
   }
+
+
   //********************* Main Object *****************//
   //---------------------------------------------------//
   return {
@@ -230,7 +281,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     },
     "receiveAggregatedDataPoints": function(done) {
       var listOfExpectedResults = flattenArray(dataValues1);
-      promtests.searchData(dataValues1Time, deviceToken, accountId, deviceId, componentId[0])
+      promtests.searchData(dataValues1Time, deviceToken, accountId, deviceId, componentId[0], {})
         .then((result) => {
           if (result.series.length != 1) done("Wrong number of point series!");
           var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
@@ -249,7 +300,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var proms = [];
       dataValues2Time = dataValues2[0][0].ts;
       dataValues2.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
       });
       Promise.all(proms)
         .then(() => {
@@ -262,21 +313,21 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     "receiveAggregatedMultipleDataPoints": function(done) {
 
       var flattenedDataValues = flattenArray(dataValues2);
-      var listOfExpectedResults = []; 
+      var listOfExpectedResults = [];
       listOfExpectedResults[0] = flattenedDataValues.filter(
         (element) => (element.component == 0)
-        );
+      );
       listOfExpectedResults[1] = flattenedDataValues.filter(
         (element) => (element.component == 1)
-        );
-      promtests.searchData(dataValues2Time, deviceToken, accountId, deviceId, componentId)
+      );
+      promtests.searchData(dataValues2Time, deviceToken, accountId, deviceId, componentId, {})
         .then((result) => {
           if (result.series.length != 2) done("Wrong number of point series!");
           var mapping = [0, 1];
           if (result.series[0].componentId !== componentId[0]) {
             mapping = [1, 0];
           }
-          
+
           var comparisonResult = comparePoints(listOfExpectedResults[mapping[0]], result.series[0].points)
           if (comparisonResult !== true) {
             done(comparisonResult);
@@ -295,7 +346,38 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           done(err);
         });
     },
-    "cleanup": function(done) {}
+    "sendDataPointsWithLoc": function(done) {
+      var proms = [];
+      dataValues3Time = dataValues3[0][0].ts;
+      dataValues3.forEach(function(element) {
+        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+      });
+      Promise.all(proms)
+        .then(() => {
+          done()
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveDataPointsWithLoc": function(done) {
+      var flattenedDataValues = flattenArray(dataValues3);
+      promtests.searchData(dataValues3Time, deviceToken, accountId, deviceId, componentId[0], { "queryMeasureLocation": true })
+        .then((result) => {
+          if (result.series.length != 1) done("Wrong number of point series!");
+          var comparisonResult = comparePoints(flattenedDataValues, result.series[0].points);
+          if (comparisonResult !== true) {
+            done(comparisonResult);
+          } else {
+            done();
+          }
+        })
+        .catch((err) => {
+          done(err);
+        });
+
+    },
+    "cleanup": function(done) { }
   };
 };
 
@@ -304,6 +386,8 @@ var descriptions = {
   "receiveAggregatedDataPoints": "Shall receive multiple datapoints for one component",
   "sendAggregatedMultipleDataPoints": "Shall send multiple datapoints for 2 components",
   "receiveAggregatedMultipleDataPoints": "Shall receive multiple datapoints for 2 components",
+  "sendDataPointsWithLoc": "Sending data points with location metadata",
+  "receiveDataPointsWithLoc": "Receiving data points with location metadata",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 

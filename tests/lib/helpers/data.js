@@ -73,7 +73,7 @@ function getObservation(ts, userToken, accountId, deviceId, cid, cb) {
 }
 
 
-function searchData(from, userToken, accountId, deviceId, cid, cb) {
+function searchData(from, userToken, accountId, deviceId, cid, addCriteria, cb) {
     if (!cb) {
         throw "Callback required";
     }
@@ -81,9 +81,12 @@ function searchData(from, userToken, accountId, deviceId, cid, cb) {
     var metrics = [{ "id": cid }];
 
     if (Array.isArray(cid)) {
-	metrics = cid.map((element) => ({"id": element}))
+	     metrics = cid.map((element) => ({"id": element}))
     }
     
+    var queryMeasureLocation = (! undefined == addCriteria.queryMeasureLocation) && 
+                                    (addCriteria.queryMeasureLocation);
+                                    
     var data = {
         userToken: userToken,
         accountId: accountId,
@@ -92,7 +95,8 @@ function searchData(from, userToken, accountId, deviceId, cid, cb) {
             targetFilter: {
                 deviceList: [deviceId]
             },
-            metrics: metrics
+            metrics: metrics,
+            queryMeasureLocation: queryMeasureLocation
         }
     };
 
@@ -154,14 +158,16 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
     }
 
     valueList.forEach(function(element){
-	data.body.data.push(
-	    {
-                componentId: cidList[element.component],
-                value: element.value.toString(),
-                on: element.ts
-            });
+      var toPush = {
+        componentId: cidList[element.component],
+        value: element.value.toString(),
+        on: element.ts
+      }
+      if (element.loc) {
+        toPush.loc = element.loc;
+      }
+      data.body.data.push(toPush);
     });
-
     api.data.submitData(data, function(err, response) {
         if (err) {
             cb(err)
