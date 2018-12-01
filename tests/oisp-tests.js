@@ -728,7 +728,7 @@ describe("Creating rules ... \n".bold, function() {
     }).timeout(20000);
 });
 
-var ignoreme = function(){ 
+
 describe("Sending observations and checking rules ...\n".bold, function() {
 
     it('Shall send observation and check rules', function(done) {
@@ -841,33 +841,36 @@ describe("Sending observations and checking rules ...\n".bold, function() {
     }).timeout(30 * 1000);
 
     it('Shall check observation', function(done) {
-        helpers.data.searchData(firstObservationTime, userToken, accountId, deviceId, componentId, function(err, data) {
+        helpers.data.searchData(firstObservationTime, userToken, accountId, deviceId, componentId, function(err, result) {
             if (err) {
                 done(new Error("Cannot get data: " + err))
             }
-
-            if (data && data.length >= temperatureValues.length) {
-                for (var i = 0; i < data.length; i++) {
-                    for (var j = 0; j < temperatureValues.length; j++) {
-                        if (temperatureValues[j].ts == data[i].ts && temperatureValues[j].value == data[i].value) {
-                            temperatureValues[j].ts = null;
-                        }
+	    
+	    var data = {}
+            if (result && result.series && result.series.length == 1){
+		data = result.series[0].points;
+            }
+	    else {
+		done(new Error("Cannot get data."));
+	    }
+            if (data && data.length == temperatureValues.length) {
+		for (var j = 0; j < temperatureValues.length; j++) {
+                    if (temperatureValues[j].ts == data[j].ts && temperatureValues[j].value == data[j].value) {
+			temperatureValues[j].ts = null;
                     }
+		}
+            }
+	    
+	    var err = "";
+            for (var i = 0; i < temperatureValues.length; i++) {
+		if (temperatureValues[i].ts != null) {
+                    err += "[" + i + "]=" + temperatureValues[i].value + " ";
                 }
-
-                var err = "";
-                for (var i = 0; i < temperatureValues.length; i++) {
-                    if (temperatureValues[i].ts != null) {
-                        err += "[" + i + "]=" + temperatureValues[i].value + " ";
-                    }
-                }
-                if (err.length == 0) {
-                    done();
-                } else {
-                    done(new Error("Got wrong data for " + err))
-                }
+            }
+            if (err.length == 0) {
+		done();
             } else {
-                done(new Error("Cannot get data"))
+                done(new Error("Got wrong data for " + err))
             }
 
         })
@@ -921,7 +924,6 @@ describe("Do statistics rule subtests ...".bold,
 	     }).timeout(10000);
          });
 
-}
 
 
 describe("Do data sending subtests ...".bold,
@@ -943,7 +945,7 @@ describe("Do data sending subtests ...".bold,
              }).timeout(10000);
          });
 
-var ignoremetoo = function(){
+
 describe("Geting and manage alerts ... \n".bold, function(){
 
     it('Shall get list of alerts', function(done){
@@ -1427,4 +1429,4 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
  
 })   
-}
+

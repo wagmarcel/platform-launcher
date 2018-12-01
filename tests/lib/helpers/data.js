@@ -72,43 +72,8 @@ function getObservation(ts, userToken, accountId, deviceId, cid, cb) {
     });
 }
 
+
 function searchData(from, userToken, accountId, deviceId, cid, cb) {
-    if (!cb) {
-        throw "Callback required";
-    }
-
-    var metrics = [{ "id": cid }];
-
-    if (Array.isArray(cid)) {
-	metrics = cid.map((element) => ({"id": element}))
-    }
-    
-    var data = {
-        userToken: userToken,
-        accountId: accountId,
-        body: {
-            from: from,
-            targetFilter: {
-                deviceList: [deviceId]
-            },
-            metrics: metrics
-        }
-    };
-
-    api.data.searchData(data, function(err, response) {
-        if (err) {
-            cb(err)
-        } else {
-            if (response && response.series) {
-                cb(null, response.series[0].points)
-            } else {
-		cb(null, {});
-	    }
-        }
-    });
-}
-
-function searchDataFull(from, userToken, accountId, deviceId, cid, cb) {
     if (!cb) {
         throw "Callback required";
     }
@@ -236,7 +201,6 @@ function searchDataAdvanced(from, userToken, accountId, deviceId, cid, cb) {
 module.exports={
     getObservation: getObservation,
     searchData: searchData,
-    searchDataFull: searchDataFull,
     submitData: submitData,
     submitDataList: submitDataList,
     searchDataAdvanced: searchDataAdvanced
