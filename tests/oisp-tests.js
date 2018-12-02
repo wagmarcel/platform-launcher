@@ -841,7 +841,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
     }).timeout(30 * 1000);
 
     it('Shall check observation', function(done) {
-        helpers.data.searchData(firstObservationTime, userToken, accountId, deviceId, componentId, {}, function(err, result) {
+        helpers.data.searchData(firstObservationTime, -1, userToken, accountId, deviceId, componentId, false, {}, function(err, result) {
             if (err) {
                 done(new Error("Cannot get data: " + err))
             }
@@ -948,6 +948,12 @@ describe("Do data sending subtests ...".bold,
      }).timeout(10000);
      it(descriptions.receiveDataPointsWithLoc,function(done) {
        test.receiveDataPointsWithLoc(done);
+     }).timeout(10000);
+     it(descriptions.sendDataPointsWithAttributes,function(done) {
+       test.sendDataPointsWithAttributes(done);
+     }).timeout(10000);
+     it(descriptions.receiveDataPointsWithAttributes,function(done) {
+       test.receiveDataPointsWithAttributes(done);
      }).timeout(10000);
    });
 

@@ -73,7 +73,7 @@ function getObservation(ts, userToken, accountId, deviceId, cid, cb) {
 }
 
 
-function searchData(from, userToken, accountId, deviceId, cid, addCriteria, cb) {
+function searchData(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, cb) {
     if (!cb) {
         throw "Callback required";
     }
@@ -84,22 +84,32 @@ function searchData(from, userToken, accountId, deviceId, cid, addCriteria, cb) 
 	     metrics = cid.map((element) => ({"id": element}))
     }
     
-    var queryMeasureLocation = (! undefined == addCriteria.queryMeasureLocation) && 
-                                    (addCriteria.queryMeasureLocation);
-                                    
+    if (targetFilter == undefined) {
+      targetFilter = {}
+    }
+    if (targetFilter.deviceList == undefined) {
+      targetFilter.deviceList = [deviceId];
+    } else {
+      if (targetFilter.deviceList.indexOf(deviceId) == -1) {
+        targetFilter.deviceList.push(deviceId);
+      }
+    }
+    
     var data = {
         userToken: userToken,
         accountId: accountId,
         body: {
             from: from,
-            targetFilter: {
-                deviceList: [deviceId]
-            },
+            targetFilter: targetFilter,
             metrics: metrics,
             queryMeasureLocation: queryMeasureLocation
         }
     };
 
+    if (to !== undefined && to > 0) {
+      data.body.to = to;
+    }
+  
     api.data.searchData(data, function(err, response) {
         if (err) {
             cb(err)
@@ -165,6 +175,9 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
       }
       if (element.loc) {
         toPush.loc = element.loc;
+      }
+      if (element.attributes !== undefined){
+        toPush.attributes = element.attributes;
       }
       data.body.data.push(toPush);
     });

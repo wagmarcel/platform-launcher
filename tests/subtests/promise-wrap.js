@@ -222,9 +222,9 @@ var submitData = function(value, deviceToken, accountId, deviceId, cid){
 }
 
 
-var searchData = function(from, userToken, accountId, deviceId, cid, addCriteria){
+var searchData = function(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter){
     return new Promise((resolve, reject) => {
-	helpers.data.searchData(from, userToken, accountId, deviceId, cid, addCriteria, function(err, response){
+	helpers.data.searchData(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, function(err, response){
 	    if (err) {
 		reject(err);
 	    } else {

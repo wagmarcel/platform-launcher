@@ -31,6 +31,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var dataValues1Time;
   var dataValues2Time;
   var dataValues3Time;
+  var dataValues4Time;
   const MIN_NUMBER = 0.0001;
 
   var dataValues1 = [
@@ -208,6 +209,52 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }]
   ];
 
+  var dataValues4 = [
+    [{
+      component: 1,
+      value: 99,
+      ts: 100000,
+      loc: [1.2444, 10.987, 456.789],
+      attributes: {
+        "key1": "value1"
+      }
+    }],
+    [{
+      component: 1,
+      value: 98,
+      ts: 200000,
+      attributes: {
+        "key1": "value1",
+        "key2": "value2",
+        "key3": "value3"
+      }
+    }],
+    [{
+      component: 1,
+      value: 97,
+      ts: 300000,
+      attributes: {
+        "key3": "value1",
+        "key4": "value2"
+      }
+    }],
+    [{
+      component: 1,
+      value: 96,
+      ts: 400000,
+      loc: [0.0, 0.0, 0.0]
+    }],
+    [{
+      component: 1,
+      value: 95,
+      ts: 500000,
+      loc: [200.345, 300.21],
+      attributes: {
+        "key5": "key1"
+      }
+    }]
+  ];
+
   var locEqual = function(dataValue, element) {
     if (dataValue.loc == undefined) {
       if ((element.lat == undefined || element.lat === "") && (element.lat == undefined || element.lon === "") && (element.alt == undefined || element.alt === "")) {
@@ -281,7 +328,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     },
     "receiveAggregatedDataPoints": function(done) {
       var listOfExpectedResults = flattenArray(dataValues1);
-      promtests.searchData(dataValues1Time, deviceToken, accountId, deviceId, componentId[0], {})
+      promtests.searchData(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId[0], false, {})
         .then((result) => {
           if (result.series.length != 1) done("Wrong number of point series!");
           var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
@@ -320,7 +367,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       listOfExpectedResults[1] = flattenedDataValues.filter(
         (element) => (element.component == 1)
       );
-      promtests.searchData(dataValues2Time, deviceToken, accountId, deviceId, componentId, {})
+      promtests.searchData(dataValues2Time, -1, deviceToken, accountId, deviceId, componentId, false, {})
         .then((result) => {
           if (result.series.length != 2) done("Wrong number of point series!");
           var mapping = [0, 1];
@@ -362,7 +409,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     },
     "receiveDataPointsWithLoc": function(done) {
       var flattenedDataValues = flattenArray(dataValues3);
-      promtests.searchData(dataValues3Time, deviceToken, accountId, deviceId, componentId[0], { "queryMeasureLocation": true })
+      promtests.searchData(dataValues3Time, -1, deviceToken, accountId, deviceId, componentId[0], true, {})
         .then((result) => {
           if (result.series.length != 1) done("Wrong number of point series!");
           var comparisonResult = comparePoints(flattenedDataValues, result.series[0].points);
@@ -371,6 +418,38 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           } else {
             done();
           }
+        })
+        .catch((err) => {
+          done(err);
+        });
+
+    },
+    "sendDataPointsWithAttributes": function(done) {
+      var proms = [];
+      dataValues4Time = dataValues4[0][0].ts;
+      dataValues4.forEach(function(element) {
+        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+      });
+      Promise.all(proms)
+        .then(() => {
+          done()
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveDataPointsWithAttributes": function(done) {
+      var flattenedDataValues = flattenArray(dataValues3);
+      promtests.searchData(dataValues4Time, -1, deviceToken, accountId, deviceId, componentId[0], true, {})
+        .then((result) => {
+          if (result.series.length != 1) done("Wrong number of point series!");
+          //var comparisonResult = comparePoints(flattenedDataValues, result.series[0].points);
+          console.log("Marcel283 ", JSON.stringify(result));
+          //if (comparisonResult !== true) {
+          //  done(comparisonResult);
+          //} else {
+            done();
+          //}
         })
         .catch((err) => {
           done(err);
@@ -388,6 +467,8 @@ var descriptions = {
   "receiveAggregatedMultipleDataPoints": "Shall receive multiple datapoints for 2 components",
   "sendDataPointsWithLoc": "Sending data points with location metadata",
   "receiveDataPointsWithLoc": "Receiving data points with location metadata",
+  "sendDataPointsWithAttributes": "Sending data points with attributes",
+  "receiveDataPointsWithAttributes": "Receiving data points with attributes",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
