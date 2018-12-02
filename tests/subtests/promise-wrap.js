@@ -234,6 +234,19 @@ var searchData = function(from, to, userToken, accountId, deviceId, cid, queryMe
     });
 }
 
+
+var searchDataAdvanced = function(from, to, userToken, accountId, deviceId, cidList, showMeasureLocation, returnedMeasureAttributes, aggregations, countOnly){
+    return new Promise((resolve, reject) => {
+	helpers.data.searchDataAdvanced(from, to, userToken, accountId, deviceId, cidList, showMeasureLocation, returnedMeasureAttributes, aggregations, countOnly, function(err, response){
+	    if (err) {
+		reject(err);
+	    } else {
+		resolve(response);
+	    }
+	});
+    });
+}
+
 module.exports = {
     checkObservations: checkObservations,
     addComponent: addComponent,
@@ -245,5 +258,6 @@ module.exports = {
     deleteRule: deleteRule,
     submitDataList: submitDataList,
     submitData: submitData,
-    searchData: searchData
+    searchData: searchData,
+    searchDataAdvanced: searchDataAdvanced
 };

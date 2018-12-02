@@ -192,7 +192,7 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
     });
 }
 
-function searchDataAdvanced(from, userToken, accountId, deviceId, cid, cb) {
+function searchDataAdvanced(from, to, userToken, accountId, deviceId, cidList, showMeasureLocation, returnedMeasureAttributes, aggregations, countOnly, cb) {
     if (!cb) {
         throw "Callback required";
     }
@@ -203,10 +203,21 @@ function searchDataAdvanced(from, userToken, accountId, deviceId, cid, cb) {
         body: {
             deviceIds: [deviceId],
             from: from,
-            componentIds: [cid]
+            showMeasureLocation: showMeasureLocation,
+            componentIds: cidList
         }
     };
 
+    if (returnedMeasureAttributes !== undefined && returnedMeasureAttributes != []) {
+      data.body.returnedMeasureAttributes = returnedMeasureAttributes;
+    }
+    if (aggregations !== undefined && aggregations != "") {
+      data.body.aggregations = aggregations;
+    }
+    if (countOnly !== undefined) {
+      data.body.countOnly = countOnly;
+    }
+    
     api.data.searchDataAdvanced(data, function(err, response) {
         if (err) {
             cb(err)

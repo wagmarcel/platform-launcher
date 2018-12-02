@@ -254,6 +254,22 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       }
     }]
   ];
+  
+  var createObjectFromData = function(sample, sampleHeader){
+    var o = {};
+    sample.forEach(function(element, index) {
+      if (element != "") {
+        var key = sampleHeader[index];
+        if (key === "Value") {
+          key = "value";
+        } else if (key === "Timestamp") {
+          key = "ts";
+        }
+        o[key] = element;
+      }
+    })
+    return o;
+  }
 
   var locEqual = function(dataValue, element) {
     if (dataValue.loc == undefined) {
@@ -272,12 +288,26 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }
   }
 
+var attrEqual = function(dataValue, element) {
+  var result = true;
+  if (dataValue.attributes !== undefined) {
+    Object.keys(dataValue.attributes).forEach(function(el) {
+      if (element[el] != dataValue.attributes[el]) {
+        result = false;
+      }
+    })
+  }
+  return result;
+}
+
   var comparePoints = function(dataValues, points) {
     var result = true;
     var reason = "";
     points.forEach(function(element, index) {
       if ((element.ts != dataValues[index].ts) ||
-        (element.value != dataValues[index].value) || !locEqual(dataValues[index], element)) {
+        (element.value != dataValues[index].value) || 
+        !locEqual(dataValues[index], element) ||
+        !attrEqual(dataValues[index], element)) {
         result = false;
         reason = "Point " + JSON.stringify(element) + " does not fit to expected value " +
           JSON.stringify(dataValues[index]);
@@ -439,17 +469,24 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         });
     },
     "receiveDataPointsWithAttributes": function(done) {
-      var flattenedDataValues = flattenArray(dataValues3);
-      promtests.searchData(dataValues4Time, -1, deviceToken, accountId, deviceId, componentId[0], true, {})
+      var flattenedDataValues = flattenArray(dataValues4);
+      promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, componentId, true, undefined, undefined, undefined)
         .then((result) => {
-          if (result.series.length != 1) done("Wrong number of point series!");
-          //var comparisonResult = comparePoints(flattenedDataValues, result.series[0].points);
-          console.log("Marcel283 ", JSON.stringify(result));
-          //if (comparisonResult !== true) {
-          //  done(comparisonResult);
-          //} else {
+          if (result.data[0].components.length != 2) done("Wrong number of point series!");
+          var compIndex = 0;
+          if (result.data[0].components[1].componentId == componentId[1]) {
+            compIndex = 1;
+          }
+          var resultObjects = result.data[0].components[compIndex].samples.map(
+            (element) => 
+            createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
+          );
+          var comparisonResult = comparePoints(flattenedDataValues, resultObjects);
+          if (comparisonResult !== true) {
+            done(comparisonResult);
+          } else {
             done();
-          //}
+          }
         })
         .catch((err) => {
           done(err);
