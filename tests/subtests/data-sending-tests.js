@@ -271,7 +271,12 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     return o;
   }
 
-  var locEqual = function(dataValue, element) {
+  var locEqual = function(dataValue, element, onlyExistingAttr) {
+    if (onlyExistingAttr) {
+      if (element.lat === undefined && element.long === undefined) {
+        return true;
+      }
+    }
     if (dataValue.loc == undefined) {
       if ((element.lat == undefined || element.lat === "") && (element.lat == undefined || element.lon === "") && (element.alt == undefined || element.alt === "")) {
         return true;
@@ -288,26 +293,31 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }
   }
 
-var attrEqual = function(dataValue, element) {
+var attrEqual = function(dataValue, element, onlyExistingAttr) {
   var result = true;
   if (dataValue.attributes !== undefined) {
     Object.keys(dataValue.attributes).forEach(function(el) {
-      if (element[el] != dataValue.attributes[el]) {
+      if (!onlyExistingAttr && element[el] != dataValue.attributes[el]) {
         result = false;
+      } else {
+        if (element[el] !== undefined && element[el] != dataValue.attributes[el]){
+          result = false;
+        }
       }
     })
   }
   return result;
 }
 
-  var comparePoints = function(dataValues, points) {
+  var comparePoints = function(dataValues, points, onlyExistingAttributes) {
     var result = true;
     var reason = "";
+    var onlyExistingAttr = onlyExistingAttributes == undefined ? false : onlyExistingAttributes;
     points.forEach(function(element, index) {
       if ((element.ts != dataValues[index].ts) ||
         (element.value != dataValues[index].value) ||
-        !locEqual(dataValues[index], element) ||
-        !attrEqual(dataValues[index], element)) {
+        !locEqual(dataValues[index], element, onlyExistingAttr) ||
+        !attrEqual(dataValues[index], element, onlyExistingAttr)) {
         result = false;
         reason = "Point " + JSON.stringify(element) + " does not fit to expected value " +
           JSON.stringify(dataValues[index]);
@@ -493,6 +503,28 @@ var attrEqual = function(dataValue, element) {
         });
 
     },
+    "receiveDataPointsWithSelectedAttributes": function(done) {
+      var flattenedDataValues = flattenArray(dataValues4);
+      promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, [componentId[1]], false, ["key1"], undefined, undefined)
+        .then((result) => {
+          if (result.data[0].components.length != 1) done("Wrong number of point series!");
+          var compIndex = 0;
+        
+          var resultObjects = result.data[0].components[compIndex].samples.map(
+            (element) =>
+            createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
+          );
+          var comparisonResult = comparePoints(flattenedDataValues, resultObjects, true);
+          if (comparisonResult !== true) {
+            done(comparisonResult);
+          } else {
+            done();
+          }
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
     "cleanup": function(done) { }
   };
 };
@@ -505,7 +537,8 @@ var descriptions = {
   "sendDataPointsWithLoc": "Sending data points with location metadata",
   "receiveDataPointsWithLoc": "Receiving data points with location metadata",
   "sendDataPointsWithAttributes": "Sending data points with attributes",
-  "receiveDataPointsWithAttributes": "Receiving data points with attributes",
+  "receiveDataPointsWithAttributes": "Receiving data points with all attributes",
+  "receiveDataPointsWithSelectedAttributes": "Receiving data points with selected attributes",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
