@@ -337,6 +337,27 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
     return results;
   }
 
+  var calcAggregationsPerComponent = function(flattenedArray){    
+    var aggregation = {
+      MAX: 0,
+      MIN: 1,
+      COUNT: 2,
+      SUM: 3,
+      SUMOFSQUARES: 4
+    }
+    return flattenedArray.reduce(function(acc, val) {
+        if (val.value > acc[val.component][aggregation.MAX]) {
+          acc[val.component][aggregation.MAX] = val.value;
+        }
+        if (val.value < acc[val.component][aggregation.MIN]) {
+          acc[val.component][aggregation.MIN] = val.value;
+        }
+        acc[val.component][aggregation.COUNT]++;
+        acc[val.component][aggregation.SUM] += val.value;
+        acc[val.component][aggregation.SUMOFSQUARES] += val.value * val.value;
+        return acc;
+    }, [[Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0], [Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0]])
+  } 
 
   //********************* Main Object *****************//
   //---------------------------------------------------//
@@ -535,6 +556,22 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           if (result.data[0].components.length != 2) done("Wrong number of point series!");
           
           assert.equal(result.rowCount, expectedRowCount);
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveAggregations": function(done) {
+      var aggr1 = calcAggregationsPerComponent(flattenArray(dataValues1));
+      var aggr2 = calcAggregationsPerComponent(flattenArray(dataValues2));
+      var aggr3 = calcAggregationsPerComponent(flattenArray(dataValues3));
+      var aggr4 = calcAggregationsPerComponent(flattenArray(dataValues4));
+      promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, "only", false)
+        .then((result) => {
+          if (result.data[0].components.length != 2) done("Wrong number of point series!");
+          
+          console.log("Marcel923", aggr1, aggr2, aggr3, aggr4, JSON.stringify(result));
           done();
         })
         .catch((err) => {
