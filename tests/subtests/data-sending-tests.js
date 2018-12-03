@@ -525,6 +525,22 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           done(err);
         });
     },
+    "receiveDataPointsCount": function(done) {
+      var expectedRowCount = flattenArray(dataValues1).length 
+        + flattenArray(dataValues2).length
+        + flattenArray(dataValues3).length
+        + flattenArray(dataValues4).length;
+      promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, undefined, true)
+        .then((result) => {
+          if (result.data[0].components.length != 2) done("Wrong number of point series!");
+          
+          assert.equal(result.rowCount, expectedRowCount);
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
     "cleanup": function(done) { }
   };
 };
@@ -538,7 +554,13 @@ var descriptions = {
   "receiveDataPointsWithLoc": "Receiving data points with location metadata",
   "sendDataPointsWithAttributes": "Sending data points with attributes",
   "receiveDataPointsWithAttributes": "Receiving data points with all attributes",
+  "receiveDataPointsCount": "Receive only count of points",
+  "receiveAggregations": "Receive Max, Min, etc. aggregations",
+  "receiveSubset": "receive subset based on timestamps",
+  "sendMaxAmountOfSamples": "Send maximal allowed samples per request (1000)",
+  "receiveMaxAmountOfSamples": "Receive maximal allowed samples per request (1000)",
   "receiveDataPointsWithSelectedAttributes": "Receiving data points with selected attributes",
+  
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 

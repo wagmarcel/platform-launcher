@@ -945,6 +945,9 @@ describe("Do data sending subtests ...".bold,
      it(descriptions.receiveDataPointsWithSelectedAttributes,function(done) {
        test.receiveDataPointsWithSelectedAttributes(done);
      }).timeout(10000);
+     it(descriptions.receiveDataPointsCount,function(done) {
+       test.receiveDataPointsCount(done);
+     }).timeout(10000);
    });
 
 var ignoremetoo = function(){
