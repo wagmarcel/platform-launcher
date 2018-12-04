@@ -255,6 +255,14 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }]
   ];
 
+  var aggregation = {
+    MAX: 0,
+    MIN: 1,
+    COUNT: 2,
+    SUM: 3,
+    SUMOFSQUARES: 4
+  }
+  
   var createObjectFromData = function(sample, sampleHeader){
     var o = {};
     sample.forEach(function(element, index) {
@@ -338,13 +346,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
   }
 
   var calcAggregationsPerComponent = function(flattenedArray){    
-    var aggregation = {
-      MAX: 0,
-      MIN: 1,
-      COUNT: 2,
-      SUM: 3,
-      SUMOFSQUARES: 4
-    }
+  
     return flattenedArray.reduce(function(acc, val) {
         if (val.value > acc[val.component][aggregation.MAX]) {
           acc[val.component][aggregation.MAX] = val.value;
@@ -567,11 +569,36 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
       var aggr2 = calcAggregationsPerComponent(flattenArray(dataValues2));
       var aggr3 = calcAggregationsPerComponent(flattenArray(dataValues3));
       var aggr4 = calcAggregationsPerComponent(flattenArray(dataValues4));
+      var allAggregation = [aggr1, aggr2, aggr3, aggr4].reduce(function(acc, val){
+        [0, 1].forEach(function(index){
+            if (acc[index][aggregation.MAX] < val[index][aggregation.MAX]) {
+              acc[index][aggregation.MAX] = val[index][aggregation.MAX];
+            }
+            if (val[index][aggregation.COUNT] 
+              && acc[index][aggregation.MIN] > val[index][aggregation.MIN]) {
+              acc[index][aggregation.MIN] = val[index][aggregation.MIN];
+            }
+            acc[index][aggregation.COUNT] += val[index][aggregation.COUNT];
+            acc[index][aggregation.SUM] += val[index][aggregation.SUM];
+            acc[index][aggregation.SUMOFSQUARES] += val[index][aggregation.SUMOFSQUARES];
+        });
+        return acc;
+      },[[Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0], [Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0]])
+      
       promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, "only", false)
         .then((result) => {
           if (result.data[0].components.length != 2) done("Wrong number of point series!");
-          
-          console.log("Marcel923", aggr1, aggr2, aggr3, aggr4, JSON.stringify(result));
+          var mapping = [0, 1];
+          if (result.data[0].components[0].componentId !== componentId[0]) {
+            mapping = [1, 0];
+          }
+          [0, 1].forEach(function(index){
+            assert.equal(allAggregation[index][aggregation.MAX], result.data[0].components[mapping[index]].max);
+            assert.equal(allAggregation[index][aggregation.MIN], result.data[0].components[mapping[index]].min);
+            assert.equal(allAggregation[index][aggregation.COUNT], result.data[0].components[mapping[index]].count);
+            assert.equal(allAggregation[index][aggregation.SUM], result.data[0].components[mapping[index]].sum);
+            assert.equal(allAggregation[index][aggregation.SUMOFSQUARES], result.data[0].components[mapping[index]].sumOfSquares);
+          })
           done();
         })
         .catch((err) => {
