@@ -605,6 +605,17 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           done(err);
         });
     },
+    "receiveSubset": function(done) {
+      promtests.searchDataAdvanced(dataValues2Time + 30, dataValues2Time + 60, deviceToken, accountId, deviceId, [componentId[0]], false, undefined, undefined, false)
+        .then((result) => {
+          if (result.data[0].components.length != 1) done("Wrong number of point series!");
+          assert.equal(result.rowCount, 3);
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
     "cleanup": function(done) { }
   };
 };

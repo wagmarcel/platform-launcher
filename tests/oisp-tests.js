@@ -951,6 +951,9 @@ describe("Do data sending subtests ...".bold,
      it(descriptions.receiveAggregations,function(done) {
        test.receiveAggregations(done);
      }).timeout(10000);
+     it(descriptions.receiveSubset,function(done) {
+       test.receiveSubset(done);
+     }).timeout(10000);
    });
 
 var ignoremetoo = function(){
