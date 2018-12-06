@@ -954,6 +954,12 @@ describe("Do data sending subtests ...".bold,
      it(descriptions.receiveSubset,function(done) {
        test.receiveSubset(done);
      }).timeout(10000);
+     it(descriptions.sendMaxAmountOfSamples,function(done) {
+       test.sendMaxAmountOfSamples(done);
+     }).timeout(10000);
+     it(descriptions.receiveMaxAmountOfSamples,function(done) {
+       test.receiveMaxAmountOfSamples(done);
+     }).timeout(10000);
    });
 
 var ignoremetoo = function(){

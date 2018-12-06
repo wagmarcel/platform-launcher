@@ -33,6 +33,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var dataValues3Time;
   var dataValues4Time;
   const MIN_NUMBER = 0.0001;
+  const MAX_SAMPLES = 1000;
 
   var dataValues1 = [
     [{
@@ -616,6 +617,42 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           done(err);
         });
     },
+    "sendMaxAmountOfSamples": function(done) {
+      var dataList = [];
+      
+      for (var i = 0; i < MAX_SAMPLES; i++){
+        var ts = (i + 1) * 1000000
+        var obj = {
+          component:0,
+          ts: ts,
+          value: i
+        }
+        dataList.push(obj);
+      }
+      promtests.submitDataList(dataList, deviceToken, accountId, deviceId, componentId)
+        .then(() => {
+          done()
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveMaxAmountOfSamples": function(done) {
+      promtests.searchDataAdvanced(1000000, MAX_SAMPLES * 1000000, deviceToken, accountId, deviceId, [componentId[0]], false, undefined, undefined, false)
+        .then((result) => {
+          if (result.data[0].components.length != 1) done("Wrong number of point series!");
+          assert.equal(result.rowCount, MAX_SAMPLES);
+          var samples = result.data[0].components[0].samples;
+          samples.forEach(function(element, i){
+              assert.equal(element[1], i);
+              assert.equal(element[0], (i + 1) * 1000000);
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+      },
     "cleanup": function(done) { }
   };
 };
@@ -632,10 +669,9 @@ var descriptions = {
   "receiveDataPointsCount": "Receive only count of points",
   "receiveAggregations": "Receive Max, Min, etc. aggregations",
   "receiveSubset": "receive subset based on timestamps",
-  "sendMaxAmountOfSamples": "Send maximal allowed samples per request (1000)",
-  "receiveMaxAmountOfSamples": "Receive maximal allowed samples per request (1000)",
+  "sendMaxAmountOfSamples": "Send maximal allowed samples per request",
+  "receiveMaxAmountOfSamples": "Receive maximal allowed samples per request",
   "receiveDataPointsWithSelectedAttributes": "Receiving data points with selected attributes",
-  
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
