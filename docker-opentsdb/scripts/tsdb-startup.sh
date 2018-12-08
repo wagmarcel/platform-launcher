@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ZKCLUSTER = $(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkCluster' )
-ZKBASE = $(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkNode' )
-echo tsdb --zkquorum ${ZKCLUSTER} --zkbasedir ${ZKBASE} $@
+ZKCLUSTER=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkCluster')
+ZKBASE=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkNode')
+PORT=$(echo ${OISP_OPENTSDB_CONFIG} | jq '.port')
+tsdb $@ --zkquorum ${ZKCLUSTER} --zkbasedir ${ZKBASE} --port ${PORT}

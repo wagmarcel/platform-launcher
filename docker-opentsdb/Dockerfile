@@ -24,13 +24,13 @@ ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 RUN apt-get update -    && apt-get upgrade -y
 RUN	apt-get install -y --no-install-recommends wget jq supervisor openjdk-8-jdk-headless dh-autoreconf
+RUN echo https://github.com/OpenTSDB/opentsdb/releases/download/v${OPENTSDB_VERSION}/opentsdb-${OPENTSDB_VERSION}.tar.gz
 RUN	cd /opt && \
-		wget -q  https://github.com/OpenTSDB/opentsdb/releases/download/v${OTSDB_VERSION}/opentsdb-${OTSDB_VERSION}.tar.gz
-RUN	cd /opt && tar xzf opentsdb-${OTSDB_VERSION}.tar.gz && \
-		mv opentsdb-${OTSDB_VERSION} /opt/otsdb
+		wget -q  https://github.com/OpenTSDB/opentsdb/releases/download/v${OPENTSDB_VERSION}/opentsdb-${OPENTSDB_VERSION}.tar.gz
+RUN	cd /opt && tar xzf opentsdb-${OPENTSDB_VERSION}.tar.gz && \
+		mv opentsdb-${OPENTSDB_VERSION} /opt/opentsdb
 RUN cd /opt/opentsdb && ./bootstrap && ./configure --prefix=/usr && make install && \
   mkdir /etc/opentsdb && cp /opt/opentsdb/src/opentsdb.conf /etc/opentsdb
-ADDLasdfsafsad ./scripts/wait-for-it.sh  /opt/wait-for-it.sh && ADD ./scripts/tsdb-startup.sh /opt
-asfdas
-afs
+ADD ./scripts/* /opt/
+RUN chmod 550 /opt/*.sh
 EXPOSE 4242
