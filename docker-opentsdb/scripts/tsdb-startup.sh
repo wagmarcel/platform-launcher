@@ -21,6 +21,11 @@ echo "Found ZKCLUSTER=${ZKCLUSTER} ZKBASE=${ZKBASE} PORT=${PORT}"
 export ZOOKEEPER=${ZKCLUSTER}
 export HDFS_NAMENODE=not-needed # not needed
 /opt/replace-hostname.sh
+export HBASE_HOME=/opt/hbase
+export COMPRESSION=NONE
+echo status | /opt/hbase/bin/hbase shell
+sleep 10
+/opt/opentsdb/src/create_table.sh
+echo "Result $?"
 echo tsdb tsd $@ --auto-metric --cachedir=/tmp --staticroot=/usr/share/opentsdb/static/ --zkquorum=${ZKCLUSTER} --zkbasedir=${ZKBASE} --port=${PORT}
-#while [ 1 ]; do sleep 100000; done
 tsdb tsd $@ --auto-metric --cachedir=/tmp --staticroot=/usr/share/opentsdb/static/ --zkquorum=${ZKCLUSTER} --zkbasedir=${ZKBASE} --port=${PORT}
