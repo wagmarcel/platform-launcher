@@ -243,7 +243,8 @@ services:
   opentsdb:
     image: oisp/opentsdb:${DOCKER_TAG}
     build:
-      context: ./docker-opentsdb
+      context: .
+      dockerfile: ./docker-opentsdb/Dockerfile
       labels:
         - oisp=true
         - ois.git_commit=${GIT_COMMIT_OPENTSDB}
@@ -256,3 +257,4 @@ services:
     environment:
       - OISP_ZOOKEEPER_CONFIG=${OISP_ZOOKEEPER_CONFIG}
       - OISP_OPENTSDB_CONFIG=${OISP_OPENTSDB_CONFIG}
+

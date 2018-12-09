@@ -18,8 +18,10 @@ FROM ubuntu:xenial
 # avoid debconf and initrd
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
-
+ENV HBASE_VERSION 1.2.4
+ENV HBASE_DIST http://archive.apache.org/dist/hbase
 ENV OPENTSDB_VERSION 2.3.1
+
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 RUN apt-get update -qq && apt-get upgrade -y
@@ -30,6 +32,20 @@ RUN	cd /opt && \
 RUN	cd /opt && tar xzf opentsdb-${OPENTSDB_VERSION}.tar.gz && \
 		mv opentsdb-${OPENTSDB_VERSION} /opt/opentsdb
 RUN cd /opt/opentsdb && ./bootstrap && ./configure --prefix=/usr && make install
-ADD ./scripts/* /opt/
+ADD ./docker-opentsdb/scripts/* /opt/
 RUN chmod 550 /opt/*.sh
+
+RUN cd /opt && \
+  wget -q  $HBASE_DIST/$HBASE_VERSION/hbase-$HBASE_VERSION-bin.tar.gz && \
+  tar xzf hbase-$HBASE_VERSION-bin.tar.gz && \
+  mv hbase-${HBASE_VERSION} hbase && \
+  cd /opt/hbase && \
+  rm -rf docs *.txt LEGAL && rm -f */*.cmd
+  
+  ADD ./docker-hbase/config/hbase-site.xml /opt/hbase/conf/
+
+  ADD ./docker-hbase/config/zoo.cfg /opt/hbase/conf/
+
+  ADD ./docker-hbase/scripts/replace-hostname.sh /opt/
+  
 EXPOSE 4242

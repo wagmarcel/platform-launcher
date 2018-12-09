@@ -18,6 +18,9 @@ ZKCLUSTER=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkCluster' | tr -d '"')
 ZKBASE=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkNodeHbase' | tr -d '"')
 PORT=$(echo ${OISP_OPENTSDB_CONFIG} | jq '.port')
 echo "Found ZKCLUSTER=${ZKCLUSTER} ZKBASE=${ZKBASE} PORT=${PORT}"
+export ZOOKEEPER=${ZKCLUSTER}
+export HDFS_NAMENODE=not-needed # not needed
+/opt/replace-hostname.sh
 echo tsdb tsd $@ --auto-metric --cachedir=/tmp --staticroot=/usr/share/opentsdb/static/ --zkquorum=${ZKCLUSTER} --zkbasedir=${ZKBASE} --port=${PORT}
 #while [ 1 ]; do sleep 100000; done
 tsdb tsd $@ --auto-metric --cachedir=/tmp --staticroot=/usr/share/opentsdb/static/ --zkquorum=${ZKCLUSTER} --zkbasedir=${ZKBASE} --port=${PORT}
