@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ZKCLUSTER=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkCluster')
-ZKBASE=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkNode')
+echo "Starting $0"
+ZKCLUSTER=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkCluster' | tr -d '"')
+ZKBASE=$(echo ${OISP_ZOOKEEPER_CONFIG} | jq   '.zkNodeHbase' | tr -d '"')
 PORT=$(echo ${OISP_OPENTSDB_CONFIG} | jq '.port')
-tsdb $@ --zkquorum ${ZKCLUSTER} --zkbasedir ${ZKBASE} --port ${PORT}
+echo "Found ZKCLUSTER=${ZKCLUSTER} ZKBASE=${ZKBASE} PORT=${PORT}"
+echo tsdb tsd $@ --auto-metric --cachedir=/tmp --staticroot=/usr/share/opentsdb/static/ --zkquorum=${ZKCLUSTER} --zkbasedir=${ZKBASE} --port=${PORT}
+#while [ 1 ]; do sleep 100000; done
+tsdb tsd $@ --auto-metric --cachedir=/tmp --staticroot=/usr/share/opentsdb/static/ --zkquorum=${ZKCLUSTER} --zkbasedir=${ZKBASE} --port=${PORT}

@@ -39,6 +39,8 @@ export NGINX='nginx'
 export REDIS='redis'
 export REDIS_PORT='6379'
 
+OPENTSDB_PORT=4242
+
 export SMTP_HOST="${SMTP_HOST:-auth.smtp.1and1.co.uk}"
 export SMTP_PORT="${SMTP_PORT:-587}"
 export SMTP_USERNAME="${SMTP_USERNAME:-test.sender@streammyiot.com}"
@@ -251,7 +253,7 @@ export OISP_KAFKA_CONFIG=\
 export OISP_ZOOKEEPER_CONFIG=\
 '{
   "zkCluster": "'${ZOOKEEPER_KAFKA}:${ZOOKEEPER_KAFKA_PORT}'",
-  "zkNode": "/tmp"
+  "zkNodeHbase": "/hbase"
 '}
 
 export OISP_KERBEROS_CONFIG=\
@@ -275,4 +277,9 @@ export OISP_HADOOP_PROPERTIES=\
   "ha.zookeeper.quorum": "'$ZOOKEEPER_HBASE'",
   "hbase.zookeeper.property.clientPort": "'$ZOOKEEPER_HBASE_PORT'",
   "hbase.zookeeper.quorum": "'$ZOOKEEPER_HBASE'"
+}'
+
+export OISP_OPENTSDB_CONFIG=\
+'{
+  "port": '$OPENTSDB_PORT'
 }'
