@@ -322,6 +322,9 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
     var result = true;
     var reason = "";
     var onlyExistingAttr = onlyExistingAttributes == undefined ? false : onlyExistingAttributes;
+    if (points.length != dataValues.length) {
+      return "Wrong number of returned points";
+    }
     points.forEach(function(element, index) {
       if ((element.ts != dataValues[index].ts) ||
         (element.value != dataValues[index].value) ||
