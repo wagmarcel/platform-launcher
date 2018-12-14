@@ -327,7 +327,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
     }
     points.forEach(function(element, index) {
       if ((element.ts != dataValues[index].ts) ||
-        (element.value != dataValues[index].value) ||
+        ((Math.abs(element.value - dataValues[index].value)) > MIN_NUMBER) ||
         !locEqual(dataValues[index], element, onlyExistingAttr) ||
         !attrEqual(dataValues[index], element, onlyExistingAttr)) {
         result = false;
@@ -408,7 +408,6 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
         .catch((err) => {
           done(err);
         });
-
     },
     "sendAggregatedMultipleDataPoints": function(done) {
       var proms = [];
