@@ -21,7 +21,7 @@ export ZOOKEEPER_KAFKA_PORT='2181'
 export ZOOKEEPER_HBASE='zookeeper'
 export ZOOKEEPER_HBASE_PORT='2181'
 
-HBASE_ROOTDIR=/hbase
+HBASE_ROOTDIR='/hbase'
 export POSTGRES='postgres'
 export POSTGRES_DB_REGULAR="iot"
 export POSTGRES_DB=${POSTGRES_DB_REGULAR} # postgres needs always regular DB name for initialization. It automatically initiates the test DB as well.
@@ -50,6 +50,14 @@ export SMTP_PASSWORD="${SMTP_PASSWORD:-xxxxx}"
 
 export COMPOSE_PROJECT_NAME="oisp"
 
+
+OPENTSDB_PROPERTIES='{
+  "uri": "'$OPENTSDB_URI'",
+  "port": "'$OPENTSDB_PORT'"
+}'
+
+
+#################### VCAP is deprecated, will be removed in next version
 export VCAP_SERVICES='{
 "postgresql93": [{
     "credentials": {
@@ -220,7 +228,7 @@ export VCAP_SERVICES='{
 export VCAP_APPLICATION='{
     "space_name": "local"
 }'
-
+#########################################
 
 #VCAP variables are left overs from Cloud Foundry times.
 #To allow a transition to Kubernetes, we will define both, VCAP and regular environment variables.
@@ -230,9 +238,12 @@ export VCAP_APPLICATION='{
 #References to other environmental variables which can be parsed as OBJECTS are done with "@@OISP_*_CONFIG"
 #References to other environmental variables which can be parsed as MAPS (e.g. Property Maps) are done with "%%OISP_*_PROPERTIES". MAPS contain only <String, String> pairs.
 
+export OISP_TSDB_PROPERTIES=${OPENTSDB_PROPERTIES}
+
 export OISP_BACKEND_CONFIG=\
 '{
-  "tsdbName": "hbase",
+  "tsdbName": "openTSDB",
+  "tsdbProperties": "%%OISP_TSDB_PROPERTIES",
   "kafkaConfig": "@@OISP_KAFKA_CONFIG",
   "zookeeperConfig": "@@OISP_ZOOKEEPER_CONFIG",
   "kerberosConfig": "@@OISP_KERBEROS_CONFIG",

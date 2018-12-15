@@ -34,83 +34,84 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var dataValues4Time;
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
+  const BASE_TIMESTAMP = 1000000000000
 
   var dataValues1 = [
     [{
       component: 0,
       value: 10.1,
-      ts: 1
+      ts: 1 + BASE_TIMESTAMP
     }],
     [{
       component: 0,
       value: 11.2,
-      ts: 2
+      ts: 2 + BASE_TIMESTAMP
     }, {
       component: 0,
       value: 12.3,
-      ts: 3
+      ts: 3 + BASE_TIMESTAMP
     }],
     [{
       component: 0,
       value: 13.4,
-      ts: 4
+      ts: 4 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 14.5,
-      ts: 5
+      ts: 5 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 15.6,
-      ts: 6
+      ts: 6 + BASE_TIMESTAMP
     }
     ],
     [{
       component: 0,
       value: 16.7,
-      ts: 7
+      ts: 7 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 17.8,
-      ts: 8
+      ts: 8 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 18.9,
-      ts: 9
+      ts: 9 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 20.0,
-      ts: 10
+      ts: 10 + BASE_TIMESTAMP
     }
     ],
     [{
       component: 0,
       value: 21.1,
-      ts: 11
+      ts: 11 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 22.2,
-      ts: 12
+      ts: 12 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 23.3,
-      ts: 13
+      ts: 13 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 24.4,
-      ts: 14
+      ts: 14 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 25.5,
-      ts: 15
+      ts: 15 + BASE_TIMESTAMP
     }
 
     ]
@@ -121,60 +122,60 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     [{
       component: 0,
       value: 10.1,
-      ts: 1000
+      ts: 1000 + BASE_TIMESTAMP
     }],
     [{
       component: 1,
       value: 10,
-      ts: 1020
+      ts: 1020 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 12.3,
-      ts: 1030
+      ts: 1030 + BASE_TIMESTAMP
     }
     ],
     [{
       component: 0,
       value: 13.4,
-      ts: 1040
+      ts: 1040 + BASE_TIMESTAMP
     },
     {
       component: 1,
       value: 20,
-      ts: 1050
+      ts: 1050 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 15.6,
-      ts: 1060
+      ts: 1060 + BASE_TIMESTAMP
     }
     ],
     [{
       component: 1,
       value: 30,
-      ts: 1070
+      ts: 1070 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 17.8,
-      ts: 1070
+      ts: 1070 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 18.9,
-      ts: 1090
+      ts: 1090 + BASE_TIMESTAMP
     },
     {
       component: 1,
       value: 40,
-      ts: 1100
+      ts: 1100 + BASE_TIMESTAMP
     }
     ],
     [{
       component: 1,
       value: 50,
-      ts: 1170
+      ts: 1170 + BASE_TIMESTAMP
     }]
   ]
 
@@ -182,30 +183,30 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     [{
       component: 0,
       value: 10,
-      ts: 10000,
+      ts: 10000 + BASE_TIMESTAMP,
       loc: [99.12345, 12.3456, 456.789]
     }],
     [{
       component: 0,
       value: 11,
-      ts: 20000,
+      ts: 20000 + BASE_TIMESTAMP,
       loc: [9.8765, 432.1, 09.876]
     }],
     [{
       component: 0,
       value: 12,
-      ts: 30000,
+      ts: 30000 + BASE_TIMESTAMP,
     }],
     [{
       component: 0,
       value: 13,
-      ts: 40000,
+      ts: 40000 + BASE_TIMESTAMP,
       loc: [0.0, 0.0, 0.0]
     }],
     [{
       component: 0,
       value: 14,
-      ts: 50000,
+      ts: 50000 + BASE_TIMESTAMP,
       loc: [200.345, 300.21]
     }]
   ];
@@ -214,7 +215,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     [{
       component: 1,
       value: 99,
-      ts: 100000,
+      ts: 100000 + BASE_TIMESTAMP,
       loc: [1.2444, 10.987, 456.789],
       attributes: {
         "key1": "value1"
@@ -223,7 +224,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     [{
       component: 1,
       value: 98,
-      ts: 200000,
+      ts: 200000 + BASE_TIMESTAMP,
       attributes: {
         "key1": "value1",
         "key2": "value2",
@@ -233,7 +234,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     [{
       component: 1,
       value: 97,
-      ts: 300000,
+      ts: 300000 + BASE_TIMESTAMP,
       attributes: {
         "key3": "value1",
         "key4": "value2"
@@ -242,13 +243,13 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     [{
       component: 1,
       value: 96,
-      ts: 400000,
+      ts: 400000 + BASE_TIMESTAMP,
       loc: [0.0, 0.0, 0.0]
     }],
     [{
       component: 1,
       value: 95,
-      ts: 500000,
+      ts: 500000 + BASE_TIMESTAMP,
       loc: [200.345, 300.21],
       attributes: {
         "key5": "key1"
@@ -293,9 +294,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         return false;
       }
     }
-    if ((dataValue.loc[0] == undefined || (dataValue.loc[0] - Number(element.lat)) <= MIN_NUMBER)
-      && (dataValue.loc[1] == undefined || (dataValue.loc[1].toString() - Number(element.lon)) <= MIN_NUMBER)
-      && (dataValue.loc[2] == undefined || (dataValue.loc[2].toString() - Number(element.alt)) <= MIN_NUMBER)) {
+    if ((dataValue.loc[0] == undefined || (Math.abs(dataValue.loc[0] - Number(element.lat))) <= MIN_NUMBER)
+      && (dataValue.loc[1] == undefined || (Math.abs(dataValue.loc[1].toString() - Number(element.lon))) <= MIN_NUMBER)
+      && (dataValue.loc[2] == undefined || (Math.abs(dataValue.loc[2].toString() - Number(element.alt))) <= MIN_NUMBER)) {
       return true;
     } else {
       return false;
@@ -380,7 +381,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
         })
         .then(() => {
           var proms = [];
-          dataValues1Time = 0;
+          dataValues1Time = 0 + BASE_TIMESTAMP;
           dataValues1.forEach(function(element) {
             proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId))
           });
