@@ -597,11 +597,11 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
             mapping = [1, 0];
           }
           [0, 1].forEach(function(index){
-            assert.equal(allAggregation[index][aggregation.MAX], result.data[0].components[mapping[index]].max);
-            assert.equal(allAggregation[index][aggregation.MIN], result.data[0].components[mapping[index]].min);
-            assert.equal(allAggregation[index][aggregation.COUNT], result.data[0].components[mapping[index]].count);
-            assert.equal(allAggregation[index][aggregation.SUM], result.data[0].components[mapping[index]].sum);
-            assert.equal(allAggregation[index][aggregation.SUMOFSQUARES], result.data[0].components[mapping[index]].sumOfSquares);
+            assert.closeTo(allAggregation[index][aggregation.MAX], result.data[0].components[mapping[index]].max, MIN_NUMBER);
+            assert.closeTo(allAggregation[index][aggregation.MIN], result.data[0].components[mapping[index]].min, MIN_NUMBER);
+            assert.closeTo(allAggregation[index][aggregation.COUNT], result.data[0].components[mapping[index]].count, MIN_NUMBER);
+            assert.closeTo(allAggregation[index][aggregation.SUM], result.data[0].components[mapping[index]].sum, MIN_NUMBER);
+            assert.closeTo(allAggregation[index][aggregation.SUMOFSQUARES], result.data[0].components[mapping[index]].sumOfSquares, MIN_NUMBER);
           })
           done();
         })
@@ -624,7 +624,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
       var dataList = [];
 
       for (var i = 0; i < MAX_SAMPLES; i++){
-        var ts = (i + 1) * 1000000
+        var ts = (i + 1) * 1000000 + BASE_TIMESTAMP
         var obj = {
           component:0,
           ts: ts,
@@ -641,7 +641,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
         });
     },
     "receiveMaxAmountOfSamples": function(done) {
-      promtests.searchDataAdvanced(1000000, MAX_SAMPLES * 1000000, deviceToken, accountId, deviceId, [componentId[0]], false, undefined, undefined, false)
+      promtests.searchDataAdvanced(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[0]], false, undefined, undefined, false)
         .then((result) => {
           if (result.data[0].components.length != 1) done("Wrong number of point series!");
           assert.equal(result.rowCount, MAX_SAMPLES);

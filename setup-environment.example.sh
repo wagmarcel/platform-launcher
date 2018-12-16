@@ -41,6 +41,7 @@ export NGINX='nginx'
 export REDIS='redis'
 export REDIS_PORT='6379'
 
+OPENTSDB_URI='opentsdb'
 OPENTSDB_PORT=4242
 
 export SMTP_HOST="${SMTP_HOST:-auth.smtp.1and1.co.uk}"
