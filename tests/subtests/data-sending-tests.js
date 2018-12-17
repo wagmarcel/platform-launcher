@@ -648,7 +648,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           var samples = result.data[0].components[0].samples;
           samples.forEach(function(element, i){
               assert.equal(element[1], i);
-              assert.equal(element[0], (i + 1) * 1000000);
+              assert.equal(element[0], (i + 1) * 1000000 + BASE_TIMESTAMP);
           })
           done();
         })
@@ -656,8 +656,12 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           done(err);
         });
       },
-    "cleanup": function(done) { }
-  };
+      "waitForBackendSynchronization": function(done) {
+        setTimeout(done, 2000);
+
+      },
+      "cleanup": function(done) { }
+    };
 };
 
 var descriptions = {
@@ -675,6 +679,7 @@ var descriptions = {
   "sendMaxAmountOfSamples": "Send maximal allowed samples per request",
   "receiveMaxAmountOfSamples": "Receive maximal allowed samples per request",
   "receiveDataPointsWithSelectedAttributes": "Receiving data points with selected attributes",
+  "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
