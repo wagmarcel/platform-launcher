@@ -973,6 +973,9 @@ describe("Do data sending subtests ...".bold,
      it(descriptions.receiveMaxAmountOfSamples,function(done) {
        test.receiveMaxAmountOfSamples(done);
      }).timeout(10000);
+     it(descriptions.cleanup,function(done) {
+       test.cleanup(done);
+     }).timeout(10000);
    });
 
 describe("Geting and manage alerts ... \n".bold, function(){

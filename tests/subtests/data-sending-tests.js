@@ -660,7 +660,14 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
         setTimeout(done, 2000);
 
       },
-      "cleanup": function(done) { }
+      "cleanup": function(done) {
+        promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
+        .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
+        .then(() => {done()})
+        .catch((err) => {
+          done(err);
+        });
+      }
     };
 };
 
