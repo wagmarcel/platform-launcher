@@ -26,12 +26,14 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var componentNames = ["temperature-sensor-sdt", "humidity-sensor-sdt"];
   var componentTypes = ["temperature.v1.0", "humidity.v1.0"];
   var promtests = require('./promise-wrap');
+  var uuidv4 = require('uuid/v4');
   var rules = [];
   var componentId = [];
   var dataValues1Time;
   var dataValues2Time;
   var dataValues3Time;
   var dataValues4Time;
+  var dataValues5Time;
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
@@ -190,7 +192,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       component: 0,
       value: 11,
       ts: 20000 + BASE_TIMESTAMP,
-      loc: [9.8765, 432.1, 09.876]
+      loc: [9.8765, 432.1, 9.876]
     }],
     [{
       component: 0,
@@ -257,6 +259,40 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }]
   ];
 
+  var dataValues5 = [
+    [{
+      component: 2,
+      value: 10.1,
+      ts: 1000000 + BASE_TIMESTAMP
+    }],
+    [{
+      component: 0,
+      value: 10,
+      ts: 1000020 + BASE_TIMESTAMP
+    },
+    {
+      component: 2,
+      value: 12.3,
+      ts: 1000030 + BASE_TIMESTAMP
+    }
+    ],
+    [{
+      component: 0,
+      value: 13.4,
+      ts: 1000040 + BASE_TIMESTAMP
+    },
+    {
+      component: 0,
+      value: 20,
+      ts: 1000050 + BASE_TIMESTAMP
+    },
+    {
+      component: 2,
+      value: 15.6,
+      ts: 1000060 + BASE_TIMESTAMP
+    }]
+  ];
+
   var aggregation = {
     MAX: 0,
     MIN: 1,
@@ -265,7 +301,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     SUMOFSQUARES: 4
   }
 
-  var createObjectFromData = function(sample, sampleHeader){
+  var createObjectFromData = function(sample, sampleHeader) {
     var o = {};
     sample.forEach(function(element, index) {
       if (element != "") {
@@ -303,21 +339,21 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }
   }
 
-var attrEqual = function(dataValue, element, onlyExistingAttr) {
-  var result = true;
-  if (dataValue.attributes !== undefined) {
-    Object.keys(dataValue.attributes).forEach(function(el) {
-      if (!onlyExistingAttr && element[el] != dataValue.attributes[el]) {
-        result = false;
-      } else {
-        if (element[el] !== undefined && element[el] != dataValue.attributes[el]){
+  var attrEqual = function(dataValue, element, onlyExistingAttr) {
+    var result = true;
+    if (dataValue.attributes !== undefined) {
+      Object.keys(dataValue.attributes).forEach(function(el) {
+        if (!onlyExistingAttr && element[el] != dataValue.attributes[el]) {
           result = false;
+        } else {
+          if (element[el] !== undefined && element[el] != dataValue.attributes[el]) {
+            result = false;
+          }
         }
-      }
-    })
+      })
+    }
+    return result;
   }
-  return result;
-}
 
   var comparePoints = function(dataValues, points, onlyExistingAttributes) {
     var result = true;
@@ -350,19 +386,19 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
     return results;
   }
 
-  var calcAggregationsPerComponent = function(flattenedArray){
+  var calcAggregationsPerComponent = function(flattenedArray) {
 
     return flattenedArray.reduce(function(acc, val) {
-        if (val.value > acc[val.component][aggregation.MAX]) {
-          acc[val.component][aggregation.MAX] = val.value;
-        }
-        if (val.value < acc[val.component][aggregation.MIN]) {
-          acc[val.component][aggregation.MIN] = val.value;
-        }
-        acc[val.component][aggregation.COUNT]++;
-        acc[val.component][aggregation.SUM] += val.value;
-        acc[val.component][aggregation.SUMOFSQUARES] += val.value * val.value;
-        return acc;
+      if (val.value > acc[val.component][aggregation.MAX]) {
+        acc[val.component][aggregation.MAX] = val.value;
+      }
+      if (val.value < acc[val.component][aggregation.MIN]) {
+        acc[val.component][aggregation.MIN] = val.value;
+      }
+      acc[val.component][aggregation.COUNT]++;
+      acc[val.component][aggregation.SUM] += val.value;
+      acc[val.component][aggregation.SUMOFSQUARES] += val.value * val.value;
+      return acc;
     }, [[Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0], [Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0]])
   }
 
@@ -516,7 +552,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           }
           var resultObjects = result.data[0].components[compIndex].samples.map(
             (element) =>
-            createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
+              createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
           );
           var comparisonResult = comparePoints(flattenedDataValues, resultObjects);
           if (comparisonResult !== true) {
@@ -539,7 +575,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
 
           var resultObjects = result.data[0].components[compIndex].samples.map(
             (element) =>
-            createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
+              createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
           );
           var comparisonResult = comparePoints(flattenedDataValues, resultObjects, true);
           if (comparisonResult !== true) {
@@ -573,21 +609,21 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
       var aggr2 = calcAggregationsPerComponent(flattenArray(dataValues2));
       var aggr3 = calcAggregationsPerComponent(flattenArray(dataValues3));
       var aggr4 = calcAggregationsPerComponent(flattenArray(dataValues4));
-      var allAggregation = [aggr1, aggr2, aggr3, aggr4].reduce(function(acc, val){
-        [0, 1].forEach(function(index){
-            if (acc[index][aggregation.MAX] < val[index][aggregation.MAX]) {
-              acc[index][aggregation.MAX] = val[index][aggregation.MAX];
-            }
-            if (val[index][aggregation.COUNT]
-              && acc[index][aggregation.MIN] > val[index][aggregation.MIN]) {
-              acc[index][aggregation.MIN] = val[index][aggregation.MIN];
-            }
-            acc[index][aggregation.COUNT] += val[index][aggregation.COUNT];
-            acc[index][aggregation.SUM] += val[index][aggregation.SUM];
-            acc[index][aggregation.SUMOFSQUARES] += val[index][aggregation.SUMOFSQUARES];
+      var allAggregation = [aggr1, aggr2, aggr3, aggr4].reduce(function(acc, val) {
+        [0, 1].forEach(function(index) {
+          if (acc[index][aggregation.MAX] < val[index][aggregation.MAX]) {
+            acc[index][aggregation.MAX] = val[index][aggregation.MAX];
+          }
+          if (val[index][aggregation.COUNT]
+            && acc[index][aggregation.MIN] > val[index][aggregation.MIN]) {
+            acc[index][aggregation.MIN] = val[index][aggregation.MIN];
+          }
+          acc[index][aggregation.COUNT] += val[index][aggregation.COUNT];
+          acc[index][aggregation.SUM] += val[index][aggregation.SUM];
+          acc[index][aggregation.SUMOFSQUARES] += val[index][aggregation.SUMOFSQUARES];
         });
         return acc;
-      },[[Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0], [Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0]])
+      }, [[Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0], [Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0]])
 
       promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, "only", false)
         .then((result) => {
@@ -596,7 +632,7 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           if (result.data[0].components[0].componentId !== componentId[0]) {
             mapping = [1, 0];
           }
-          [0, 1].forEach(function(index){
+          [0, 1].forEach(function(index) {
             assert.closeTo(allAggregation[index][aggregation.MAX], result.data[0].components[mapping[index]].max, MIN_NUMBER);
             assert.closeTo(allAggregation[index][aggregation.MIN], result.data[0].components[mapping[index]].min, MIN_NUMBER);
             assert.closeTo(allAggregation[index][aggregation.COUNT], result.data[0].components[mapping[index]].count, MIN_NUMBER);
@@ -623,10 +659,10 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
     "sendMaxAmountOfSamples": function(done) {
       var dataList = [];
 
-      for (var i = 0; i < MAX_SAMPLES; i++){
+      for (var i = 0; i < MAX_SAMPLES; i++) {
         var ts = (i + 1) * 1000000 + BASE_TIMESTAMP
         var obj = {
-          component:0,
+          component: 0,
           ts: ts,
           value: i
         }
@@ -646,29 +682,48 @@ var attrEqual = function(dataValue, element, onlyExistingAttr) {
           if (result.data[0].components.length != 1) done("Wrong number of point series!");
           assert.equal(result.rowCount, MAX_SAMPLES);
           var samples = result.data[0].components[0].samples;
-          samples.forEach(function(element, i){
-              assert.equal(element[1], i);
-              assert.equal(element[0], (i + 1) * 1000000 + BASE_TIMESTAMP);
+          samples.forEach(function(element, i) {
+            assert.equal(element[1], i);
+            assert.equal(element[0], (i + 1) * 1000000 + BASE_TIMESTAMP);
           })
           done();
         })
         .catch((err) => {
           done(err);
         });
-      },
-      "waitForBackendSynchronization": function(done) {
-        setTimeout(done, 2000);
+    },
+    "waitForBackendSynchronization": function(done) {
+      setTimeout(done, 2000);
 
-      },
-      "cleanup": function(done) {
-        promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
+    },
+    "sendPartiallyWrongData": function(done) {
+      var proms = [];
+      var codes = [];
+      dataValues5Time = dataValues5[0][0].ts;
+      componentId.push(uuidv4()); // 3rd id is random
+      dataValues5.forEach(function(element) {
+        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
+      });
+      Promise.all(proms.map(p => p.catch(e => e)))
+        .then(results => {
+          var parsedResults = results.map((result) => JSON.parse(result));
+          assert.equal(parsedResults[0].code, 1412);
+          assert.equal(parsedResults[1].code, 6402);
+          assert.equal(parsedResults[2].code, 6402);
+          done();
+        })
+        .catch(err => done(err));
+
+    },
+    "cleanup": function(done) {
+      promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
         .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
-        .then(() => {done()})
+        .then(() => { done() })
         .catch((err) => {
           done(err);
         });
-      }
-    };
+    }
+  };
 };
 
 var descriptions = {
@@ -687,6 +742,7 @@ var descriptions = {
   "receiveMaxAmountOfSamples": "Receive maximal allowed samples per request",
   "receiveDataPointsWithSelectedAttributes": "Receiving data points with selected attributes",
   "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
+  "sendPartiallyWrongData": "Send data with partially unknown cid's",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
