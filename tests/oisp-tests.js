@@ -973,6 +973,15 @@ describe("Do data sending subtests ...".bold,
      it(descriptions.receiveMaxAmountOfSamples,function(done) {
        test.receiveMaxAmountOfSamples(done);
      }).timeout(10000);
+     it(descriptions.sendPartiallyWrongData,function(done) {
+       test.sendPartiallyWrongData(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.receivePartiallySentData,function(done) {
+       test.receivePartiallySentData(done);
+     }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);
      }).timeout(10000);

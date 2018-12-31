@@ -263,33 +263,33 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     [{
       component: 2,
       value: 10.1,
-      ts: 1000000 + BASE_TIMESTAMP
+      ts: 1100000000 + BASE_TIMESTAMP
     }],
     [{
       component: 0,
       value: 10,
-      ts: 1000020 + BASE_TIMESTAMP
+      ts: 1100020000 + BASE_TIMESTAMP
     },
     {
       component: 2,
       value: 12.3,
-      ts: 1000030 + BASE_TIMESTAMP
+      ts: 1100030000 + BASE_TIMESTAMP
     }
     ],
     [{
       component: 0,
       value: 13.4,
-      ts: 1000040 + BASE_TIMESTAMP
+      ts: 1100040000 + BASE_TIMESTAMP
     },
     {
       component: 0,
       value: 20,
-      ts: 1000050 + BASE_TIMESTAMP
+      ts: 1100050000 + BASE_TIMESTAMP
     },
     {
       component: 2,
       value: 15.6,
-      ts: 1000060 + BASE_TIMESTAMP
+      ts: 1100060000 + BASE_TIMESTAMP
     }]
   ];
 
@@ -715,6 +715,23 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         .catch(err => done(err));
 
     },
+    "receivePartiallySentData": function(done) {
+      var listOfExpectedResults = flattenArray(dataValues5)
+      .filter((elem) => elem.component != 2);
+      promtests.searchData(dataValues5Time, -1, deviceToken, accountId, deviceId, componentId[0], false, {})
+        .then((result) => {
+          if (result.series.length != 1) done("Wrong number of point series!");
+          var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
+          if (comparisonResult === true) {
+            done();
+          } else {
+            done(comparisonResult);
+          }
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
     "cleanup": function(done) {
       promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
         .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
@@ -743,6 +760,7 @@ var descriptions = {
   "receiveDataPointsWithSelectedAttributes": "Receiving data points with selected attributes",
   "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
   "sendPartiallyWrongData": "Send data with partially unknown cid's",
+  "receivePartiallySentData": "Recieve the submitted data of the partially wrong data",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
