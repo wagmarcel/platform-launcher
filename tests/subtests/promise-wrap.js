@@ -271,6 +271,66 @@ var invitationCreate = (userToken, accountId, receiverEmail) => {
   });
 };
 
+var invitationAccept = (userToken, accountId, inviteId) => {
+  return new Promise(function(resolve, reject){
+    helpers.invitation.acceptInvitation(userToken, accountId, inviteId, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+var authTokenInfo = (userToken) => {
+  return new Promise(function(resolve, reject){
+    helpers.auth.tokenInfo(userToken, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+var accountCreate = (name, userToken) => {
+  return new Promise(function(resolve, reject){
+    helpers.accounts.createAccount(name, userToken, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+var accountDelete = (userToken, accountId) => {
+  return new Promise(function(resolve, reject){
+    helpers.accounts.deleteAccount(userToken, accountId, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+var inviteDelete = (userToken, accountId, email) => {
+  return new Promise(function(resolve, reject){
+    helpers.invitation.deleteInvitations(userToken, accountId,email, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
 module.exports = {
     checkObservations: checkObservations,
     addComponent: addComponent,
@@ -284,5 +344,11 @@ module.exports = {
     submitData: submitData,
     searchData: searchData,
     searchDataAdvanced: searchDataAdvanced,
-    authGetToken: authGetToken
+    authGetToken: authGetToken,
+    createInvitation: invitationCreate,
+    acceptInvitation: invitationAccept,
+    authTokenInfo: authTokenInfo,
+    createAccount: accountCreate,
+    deleteAccount: accountDelete,
+    deleteInvite: inviteDelete
 };

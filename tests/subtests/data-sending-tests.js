@@ -35,6 +35,12 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var dataValues4Time;
   var dataValues5Time;
   var dataValues6Time;
+  var accountId2;
+  var accountName2 = "badAccount";
+  var userToken2;
+  var username2 = process.env.USERNAME2;
+  var password2 = process.env.PASSWORD2;
+
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
@@ -762,9 +768,77 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         done(err);
       })
     },
+    "sendDataAsAdmin": function(done) {
+      var username = process.env.USERNAME;
+      var password = process.env.PASSWORD;
+      dataValues6Time = dataValues6[0][0].ts;
+      assert.isNotEmpty(username, "no username provided");
+      assert.isNotEmpty(password, "no password provided");
+      promtests.authGetToken(username, password)
+      .then((userToken) => promtests.submitData(dataValues6[0][0].value,
+        userToken, accountId, deviceId, componentId[dataValues6[0][0].component]))
+      .then(() => {
+        done()
+      })
+      .catch((err) => {
+        done(err);
+      })
+    },
+    "sendDataAsUser": function(done) {
+      var username = process.env.USERNAME;
+      var password = process.env.PASSWORD;
+      var username2 = process.env.USERNAME2;
+      var password2 = process.env.PASSWORD2;
+      var admin2Token;
+      var inviteId;
+      assert.isNotEmpty(username, "no username provided");
+      assert.isNotEmpty(password, "no password provided");
+      assert.isNotEmpty(username2, "no username provided");
+      assert.isNotEmpty(password2, "no password provided");
+      //First create a user for the account, accept the invitation and try to send data
+      promtests.authGetToken(username, password)
+      .then((userToken) => {return promtests.createInvitation(userToken, accountId, username2)})
+      .then((result) => {inviteId = result._id; return promtests.authGetToken(username2, password2)})
+      .then((userToken) => {admin2Token = userToken; return promtests.acceptInvitation(userToken, accountId, inviteId)})
+      .then(() => promtests.submitData(dataValues6[1][0].value,
+        admin2Token, accountId, deviceId, componentId[dataValues6[1][0].component]).catch(e => e))
+      .then((result) => {
+        assert.equal(result, "Not Authorized")
+        done()
+      })
+      .catch((err) => {
+        done(err);
+      })
+    },
+    "sendDataAsAdminWithWrongAccount": function(done) {
+
+      assert.isNotEmpty(username2, "no username provided");
+      assert.isNotEmpty(password2, "no password provided");
+      promtests.authGetToken(username2, password2)
+      .then((userToken) => {
+        userToken2 = userToken;
+        return promtests.createAccount(accountName2, userToken)
+      })
+      .then(() => promtests.authTokenInfo(userToken2))
+      .then((tokenInfo) => {
+        accountId2 = tokenInfo.payload.accounts[0].id;
+        return accountId2;})
+      .then((accountId2) =>
+      promtests.submitData(dataValues6[1][0].value,
+        userToken2, accountId2, deviceId, componentId[dataValues6[1][0].component]).catch(e => e))
+      .then((result) => {
+        assert.equal(result, "Not Authorized")
+        done()
+      })
+      .catch((err) => {
+        done(err);
+      })
+    },
     "cleanup": function(done) {
       promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
         .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
+        .then(() => promtests.deleteAccount(userToken2, accountId2))
+        .then(() => promtests.deleteInvite(userToken, accountId, username2))
         .then(() => { done() })
         .catch((err) => {
           done(err);
@@ -793,7 +867,7 @@ var descriptions = {
   "receivePartiallySentData": "Recieve the submitted data of the partially wrong data",
   "sendDataAsAdmin": "Send test data as admin on behalve of a device",
   "sendDataAsUser": "Send test data with user role and get rejected",
-  "sendDataAsUserWithWrongAccount": "Send test data as user with wron accountId",
+  "sendDataAsAdminWithWrongAccount": "Send test data as admin with wrong accountId",
   "receiveDataFromAdmin": "Test whether data sent from admin earlier has been stored",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
