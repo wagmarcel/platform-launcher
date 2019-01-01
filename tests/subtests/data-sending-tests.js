@@ -34,6 +34,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var dataValues3Time;
   var dataValues4Time;
   var dataValues5Time;
+  var dataValues6Time;
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
@@ -292,6 +293,19 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       ts: 1100060000 + BASE_TIMESTAMP
     }]
   ];
+
+  var dataValues6 = [
+    [{
+      component: 0,
+      value: 1,
+      ts: 1200000000 + BASE_TIMESTAMP
+    }],
+    [{
+      component: 0,
+      value: 2,
+      ts: 1200020000 + BASE_TIMESTAMP
+    }]
+  ]
 
   var aggregation = {
     MAX: 0,
@@ -732,6 +746,22 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           done(err);
         });
     },
+    "sendDataAsAdmin": function(done) {
+      var username = process.env.USERNAME;
+      var password = process.env.PASSWORD;
+      dataValues6Time = dataValues6[0][0].ts;
+      assert.isNotEmpty(username, "no username provided");
+      assert.isNotEmpty(password, "no password provided");
+      promtests.authGetToken(username, password)
+      .then((userToken) => promtests.submitData(dataValues6[0][0].value,
+        userToken, accountId, deviceId, componentId[dataValues6[0][0].component]))
+      .then(() => {
+        done()
+      })
+      .catch((err) => {
+        done(err);
+      })
+    },
     "cleanup": function(done) {
       promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
         .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
@@ -761,6 +791,10 @@ var descriptions = {
   "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
   "sendPartiallyWrongData": "Send data with partially unknown cid's",
   "receivePartiallySentData": "Recieve the submitted data of the partially wrong data",
+  "sendDataAsAdmin": "Send test data as admin on behalve of a device",
+  "sendDataAsUser": "Send test data with user role and get rejected",
+  "sendDataAsUserWithWrongAccount": "Send test data as user with wron accountId",
+  "receiveDataFromAdmin": "Test whether data sent from admin earlier has been stored",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 

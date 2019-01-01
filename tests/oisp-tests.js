@@ -982,6 +982,9 @@ describe("Do data sending subtests ...".bold,
      it(descriptions.receivePartiallySentData,function(done) {
        test.receivePartiallySentData(done);
      }).timeout(10000);
+     it(descriptions.sendDataAsAdmin,function(done) {
+       test.sendDataAsAdmin(done);
+     }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);
      }).timeout(10000);

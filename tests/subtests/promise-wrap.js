@@ -247,6 +247,30 @@ var searchDataAdvanced = function(from, to, userToken, accountId, deviceId, cidL
     });
 }
 
+var authGetToken = (username, password) => {
+  return new Promise(function(resolve, reject){
+    helpers.auth.login(username, password, function(err, token) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(token);
+      }
+    });
+  });
+};
+
+var invitationCreate = (userToken, accountId, receiverEmail) => {
+  return new Promise(function(resolve, reject){
+    helpers.invitation.createInvitation(userToken, accountId, receiverEmail, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
 module.exports = {
     checkObservations: checkObservations,
     addComponent: addComponent,
@@ -259,5 +283,6 @@ module.exports = {
     submitDataList: submitDataList,
     submitData: submitData,
     searchData: searchData,
-    searchDataAdvanced: searchDataAdvanced
+    searchDataAdvanced: searchDataAdvanced,
+    authGetToken: authGetToken
 };
