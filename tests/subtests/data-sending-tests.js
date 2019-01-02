@@ -33,8 +33,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var dataValues2Time;
   var dataValues3Time;
   var dataValues4Time;
-  var dataValues5Time;
-  var dataValues6Time;
+  var dataValues5StartTime;
+  var dataValues5StopTime;
+  var dataValues6StartTime;
+  var dataValues6StopTime;
   var accountId2;
   var accountName2 = "badAccount";
   var userToken2;
@@ -301,16 +303,29 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   ];
 
   var dataValues6 = [
-    [{
+    {
       component: 0,
       value: 1,
       ts: 1200000000 + BASE_TIMESTAMP
-    }],
-    [{
+    },
+    {
       component: 0,
       value: 2,
       ts: 1200020000 + BASE_TIMESTAMP
-    }]
+    }
+  ]
+
+  var dataValues7 = [
+    {
+      component: 0,
+      value: 101,
+      ts: 1200000001 + BASE_TIMESTAMP
+    },
+    {
+      component: 0,
+      value: 102,
+      ts: 1200020001 + BASE_TIMESTAMP
+    }
   ]
 
   var aggregation = {
@@ -719,7 +734,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     "sendPartiallyWrongData": function(done) {
       var proms = [];
       var codes = [];
-      dataValues5Time = dataValues5[0][0].ts;
+      dataValues5StartTime = dataValues5[0][0].ts;
+      var dataValues5lastElement = dataValues5[dataValues5.length - 1];
+      var dataValues5lastLength = dataValues5[dataValues5.length - 1].length;
+      dataValues5StopTime = dataValues5lastElement[dataValues5lastLength - 1].ts;
       componentId.push(uuidv4()); // 3rd id is random
       dataValues5.forEach(function(element) {
         proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
@@ -746,7 +764,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     "receivePartiallySentData": function(done) {
       var listOfExpectedResults = flattenArray(dataValues5)
       .filter((elem) => elem.component != 2);
-      promtests.searchData(dataValues5Time, -1, deviceToken, accountId, deviceId, componentId[0], false, {})
+      promtests.searchData(dataValues5StartTime, dataValues5StopTime, deviceToken, accountId, deviceId, componentId[0], false, {})
         .then((result) => {
           if (result.series.length != 1) done("Wrong number of point series!");
           var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
@@ -761,14 +779,14 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         });
     },
     "sendDataAsAdmin": function(done) {
+      dataValues6StartTime = dataValues6[0].ts;
+      dataValues6StopTime = dataValues6[1].ts;
       var username = process.env.USERNAME;
       var password = process.env.PASSWORD;
-      dataValues6Time = dataValues6[0][0].ts;
       assert.isNotEmpty(username, "no username provided");
       assert.isNotEmpty(password, "no password provided");
       promtests.authGetToken(username, password)
-      .then((userToken) => promtests.submitData(dataValues6[0][0].value,
-        userToken, accountId, deviceId, componentId[dataValues6[0][0].component]))
+      .then((userToken) => promtests.submitDataList(dataValues6, userToken, accountId, deviceId, componentId, {}))
       .then(() => {
         done()
       })
@@ -792,8 +810,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       .then((userToken) => {return promtests.createInvitation(userToken, accountId, username2)})
       .then((result) => {inviteId = result._id; return promtests.authGetToken(username2, password2)})
       .then((userToken) => {admin2Token = userToken; return promtests.acceptInvitation(userToken, accountId, inviteId)})
-      .then(() => promtests.submitData(dataValues6[1][0].value,
-        admin2Token, accountId, deviceId, componentId[dataValues6[1][0].component]).catch(e => e))
+      .then(() => promtests.submitDataList(dataValues7,
+        admin2Token, accountId, deviceId, componentId, {}).catch(e => e))
       .then((result) => {
         var parsedResult = JSON.parse(result);
         assert.equal(parsedResult.code, 401)
@@ -816,8 +834,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         accountId2 = tokenInfo.payload.accounts[0].id;
         return accountId2;})
       .then((accountId2) =>
-      promtests.submitData(dataValues6[1][0].value,
-        userToken2, accountId2, deviceId, componentId[dataValues6[1][0].component]).catch(e => e))
+      promtests.submitDataList(dataValues7,
+        userToken2, accountId2, deviceId, componentId, {}).catch(e => e))
       .then((result) => {
         assert.equal(result.code, 401)
         done()
@@ -825,6 +843,22 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       .catch((err) => {
         done(err);
       })
+    },
+    "receiveDataFromAdmin": function(done) {
+      var listOfExpectedResults = dataValues6;
+      promtests.searchData(dataValues6StartTime, dataValues6StopTime, deviceToken, accountId, deviceId, componentId[0], false, {})
+        .then((result) => {
+          if (result.series.length != 1) done("Wrong number of point series!");
+          var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
+          if (comparisonResult === true) {
+            done();
+          } else {
+            done(comparisonResult);
+          }
+        })
+        .catch((err) => {
+          done(err);
+        });
     },
     "cleanup": function(done) {
       promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
