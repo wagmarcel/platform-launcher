@@ -726,7 +726,15 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       });
       Promise.all(proms.map(p => p.catch(e => e)))
         .then(results => {
-          var parsedResults = results.map((result) => JSON.parse(result));
+          var parsedResults = results.map( (result) => {
+            //some results are string, some others objects
+            //Therefore if parsing fails, it must be an object already
+            try {
+              return JSON.parse(result);
+            } catch (e) {
+              return result;
+            }
+          })
           assert.equal(parsedResults[0].code, 1412);
           assert.equal(parsedResults[1].code, 6402);
           assert.equal(parsedResults[2].code, 6402);
@@ -765,23 +773,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         done()
       })
       .catch((err) => {
-        done(err);
-      })
-    },
-    "sendDataAsAdmin": function(done) {
-      var username = process.env.USERNAME;
-      var password = process.env.PASSWORD;
-      dataValues6Time = dataValues6[0][0].ts;
-      assert.isNotEmpty(username, "no username provided");
-      assert.isNotEmpty(password, "no password provided");
-      promtests.authGetToken(username, password)
-      .then((userToken) => promtests.submitData(dataValues6[0][0].value,
-        userToken, accountId, deviceId, componentId[dataValues6[0][0].component]))
-      .then(() => {
-        done()
-      })
-      .catch((err) => {
-        done(err);
+        done(new Error(err));
       })
     },
     "sendDataAsUser": function(done) {
@@ -803,7 +795,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       .then(() => promtests.submitData(dataValues6[1][0].value,
         admin2Token, accountId, deviceId, componentId[dataValues6[1][0].component]).catch(e => e))
       .then((result) => {
-        assert.equal(result, "Not Authorized")
+        var parsedResult = JSON.parse(result);
+        assert.equal(parsedResult.code, 401)
         done()
       })
       .catch((err) => {
@@ -811,7 +804,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       })
     },
     "sendDataAsAdminWithWrongAccount": function(done) {
-
       assert.isNotEmpty(username2, "no username provided");
       assert.isNotEmpty(password2, "no password provided");
       promtests.authGetToken(username2, password2)
@@ -827,7 +819,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       promtests.submitData(dataValues6[1][0].value,
         userToken2, accountId2, deviceId, componentId[dataValues6[1][0].component]).catch(e => e))
       .then((result) => {
-        assert.equal(result, "Not Authorized")
+        assert.equal(result.code, 401)
         done()
       })
       .catch((err) => {
@@ -865,7 +857,7 @@ var descriptions = {
   "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
   "sendPartiallyWrongData": "Send data with partially unknown cid's",
   "receivePartiallySentData": "Recieve the submitted data of the partially wrong data",
-  "sendDataAsAdmin": "Send test data as admin on behalve of a device",
+  "sendDataAsAdmin": "Send test data as admin on behalf of a device",
   "sendDataAsUser": "Send test data with user role and get rejected",
   "sendDataAsAdminWithWrongAccount": "Send test data as admin with wrong accountId",
   "receiveDataFromAdmin": "Test whether data sent from admin earlier has been stored",
