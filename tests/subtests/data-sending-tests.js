@@ -837,7 +837,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       promtests.submitDataList(dataValues7,
         userToken2, accountId2, deviceId, componentId, {}).catch(e => e))
       .then((result) => {
-        assert.equal(result.code, 401)
+        var parsedResult = JSON.parse(result);
+        assert.equal(parsedResult.code, 401)
         done()
       })
       .catch((err) => {
