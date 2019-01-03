@@ -42,7 +42,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var userToken2;
   var username2 = process.env.USERNAME2;
   var password2 = process.env.PASSWORD2;
-
+  var newDeviceId = "d-e-v-i-c-e";
+  var newComponentId;
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
@@ -861,9 +862,38 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           done(err);
         });
     },
+    "sendDataAsDeviceToWrongDeviceId": function(done) {
+      var username = process.env.USERNAME;
+      var password = process.env.PASSWORD;
+      var newDeviceName = "innocentDevice";
+      var componentName = "evilDeviceComponent";
+      var componentType = componentTypes[0];
+      assert.isNotEmpty(username, "no username provided");
+      assert.isNotEmpty(password, "no password provided");
+      //First create a user for the account, accept the invitation and try to send data
+      promtests.authGetToken(username, password)
+      .then((userToken) => promtests.createDevice(newDeviceName, newDeviceId, userToken, accountId))
+      .then(() => promtests.activateDevice(userToken, accountId, newDeviceId))
+      .then((result) => {
+        return promtests.addComponent(componentName, componentType, userToken, accountId, newDeviceId)
+      })
+      .then((id) => {newComponentId = id;})
+      .then(() => promtests.submitDataList(dataValues7,
+        deviceToken, accountId, newDeviceId, newComponentId, {}).catch(e => e))
+      .then((result) => {
+        var parsedResult = JSON.parse(result);
+        assert.equal(parsedResult.code, 401)
+        done()
+      })
+      .catch((err) => {
+        done(err);
+      })
+    },
     "cleanup": function(done) {
       promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
         .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
+        .then(() => promtests.deleteComponent(userToken, accountId, newDeviceId, newComponentId))
+        .then(() => promtests.deleteDevice(userToken, accountId, newDeviceId))
         .then(() => promtests.deleteAccount(userToken2, accountId2))
         .then(() => promtests.deleteInvite(userToken, accountId, username2))
         .then(() => { done() })
@@ -896,6 +926,7 @@ var descriptions = {
   "sendDataAsUser": "Send test data with user role and get rejected",
   "sendDataAsAdminWithWrongAccount": "Send test data as admin with wrong accountId",
   "receiveDataFromAdmin": "Test whether data sent from admin earlier has been stored",
+  "sendDataAsDeviceToWrongDeviceId": "Test whether Device data submission is rejected if it goes to wrong device",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 

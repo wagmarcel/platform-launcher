@@ -988,6 +988,9 @@ describe("Do data sending subtests ...".bold,
      it(descriptions.receivePartiallySentData,function(done) {
        test.receivePartiallySentData(done);
      }).timeout(10000);
+     it(descriptions.sendDataAsDeviceToWrongDeviceId,function(done) {
+       test.sendDataAsDeviceToWrongDeviceId(done);
+     }).timeout(10000);
      it(descriptions.receiveDataFromAdmin,function(done) {
        test.receiveDataFromAdmin(done);
      }).timeout(10000);

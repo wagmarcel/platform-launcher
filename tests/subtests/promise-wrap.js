@@ -331,6 +331,42 @@ var inviteDelete = (userToken, accountId, email) => {
   });
 };
 
+var createDevice = (name, deviceId, userToken, accountId) => {
+  return new Promise(function(resolve, reject){
+    helpers.devices.createDevice(name, deviceId, userToken, accountId, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+var deleteDevice = (userToken, accountId, deviceId) => {
+  return new Promise(function(resolve, reject){
+    helpers.devices.deleteDevice(userToken, accountId, deviceId, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+var activateDevice = (userToken, accountId, deviceId) => {
+  return new Promise(function(resolve, reject){
+    helpers.devices.activateDevice(userToken, accountId, deviceId, function(err, response) {
+      if (err) {
+        reject(err);
+	    } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
 module.exports = {
     checkObservations: checkObservations,
     addComponent: addComponent,
@@ -350,5 +386,8 @@ module.exports = {
     authTokenInfo: authTokenInfo,
     createAccount: accountCreate,
     deleteAccount: accountDelete,
-    deleteInvite: inviteDelete
+    deleteInvite: inviteDelete,
+    createDevice: createDevice,
+    deleteDevice: deleteDevice,
+    activateDevice: activateDevice
 };
