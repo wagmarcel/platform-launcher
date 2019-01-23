@@ -39,6 +39,7 @@ export GEARPUMP='gearpump:8090'
 export BACKEND='backend:8080'
 export FRONTEND='frontend:4001'
 export NGINX='nginx'
+NGINX_PORT='443'
 export REDIS='redis'
 export REDIS_PORT='6379'
 
@@ -47,6 +48,8 @@ OPENTSDB_PORT=4242
 
 MQTT_BROKER_URI='broker'
 MQTT_BROKER_PORT=8883
+MQTT_BROKER_USERNAME='admin'
+MQTT_BROKER_PASSWORD='8dhh1f2471'
 
 FRONTEND_SYSTEMUSER="gateway@intel.com"
 FRONTEND_SYSTEMPASSWORD="7d501829lhbl1or0bb1784462c97bcad6"
@@ -231,13 +234,14 @@ export OISP_WEBSOCKETUSER_CONFIG=\
 
 export OISP_MQTT_GATEWAY_CONFIG=\
 '{
-    "mqttBrokerUrl": "'${MQTT_BROKER_URL}'",
-    "mqttBrokerPort": '${MQTT_BROKER_PORT}'",
-    "mqttBrokerUserName": '"${MQTT_BROKER_USERNAME}"',
-    "mqttBrokerPassword": '"${MQTT_BROKER_PASSWORD}"',
-    "frontendUri": '"${FRONTEND}"',
-    "frontendSystemUser": '"${FRONTEND_SYSTEMUSER}"',
-    "frontendSystemPassword": '"${FRONTEND_SYSTEMPASSWORD}"',
+    "mqttBrokerUrl": "'${MQTT_BROKER_URI}'",
+    "mqttBrokerPort": "'${MQTT_BROKER_PORT}'",
+    "mqttBrokerUsername": "'${MQTT_BROKER_USERNAME}'",
+    "mqttBrokerPassword": "'${MQTT_BROKER_PASSWORD}'",
+    "frontendUri": "'${NGINX}'",
+    "frontendPort": "'${NGINX_PORT}'",
+    "frontendSystemUser": "'${FRONTEND_SYSTEMUSER}'",
+    "frontendSystemPassword": "'${FRONTEND_SYSTEMPASSWORD}'",
     "redisConf": "@@OISP_REDIS_CONFIG",
     "aesKey": "/app/keys/mqtt/mqtt_gw_secret.key"
 }'
