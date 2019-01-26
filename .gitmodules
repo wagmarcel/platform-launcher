@@ -12,4 +12,4 @@
 	url = https://github.com/Open-IoT-Service-Platform/oisp-websocket-server.git
 [submodule "oisp-mqtt-gw"]
 	path = oisp-mqtt-gw
-	url = ./oisp-mqtt-gw
+	url = https://github.com/Open-IoT-Service-Platform/oisp-mqtt-gw.git
