@@ -46,7 +46,7 @@ export REDIS_PORT='6379'
 OPENTSDB_URI='opentsdb'
 OPENTSDB_PORT=4242
 
-MQTT_BROKER_URI='broker'
+MQTT_BROKER_URI='mqtt-broker'
 MQTT_BROKER_PORT=8883
 MQTT_BROKER_USERNAME='admin'
 MQTT_BROKER_PASSWORD='8dhh1f2471'
@@ -249,8 +249,12 @@ export OISP_MQTT_GATEWAY_CONFIG=\
 export OISP_MQTT_BROKER_CONFIG=\
 '{
     "redisConf": "@@OISP_REDIS_CONFIG",
-    "jwtPubKey": "/app/keys/public.pem"
-    "mqttBrokerUserName": '"${MQTT_BROKER_USERNAME}"',
-    "mqttBrokerPassword": '"${MQTT_BROKER_PASSWORD}"',
-    "aesKey": "/app/keys/mqtt/mqtt_gw_secret.key"
+    "jwtPubKey": "/app/keys/public.pem",
+    "mqttBrokerUserName": "'${MQTT_BROKER_USERNAME}'",
+    "mqttBrokerPassword": "'${MQTT_BROKER_PASSWORD}'",
+    "mqttBrokerPort": "'${MQTT_BROKER_PORT}'",
+    "aesKey": "/app/keys/mqtt/mqtt_gw_secret.key",
+    "cafile": "/app/keys/ssl/server.cert",
+    "keyfile": "/app/keys/ssl/server.key",
+    "certfile": "/app/keys/ssl/server.cert"
  }'

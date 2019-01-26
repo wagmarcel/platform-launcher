@@ -291,7 +291,7 @@ services:
       dockerfile: Dockerfile-gateway
     restart: always
     depends_on:
-      - broker
+      - mqtt-broker
     working_dir: /app
     environment:
       - NODE_ENV=local
@@ -302,7 +302,7 @@ services:
       - ./oisp-mqtt-gw/ingestion:/app/ingestion
       - ./oisp-mqtt-gw/lib:/app/lib
     command: ./wait-for-it.sh broker:8883 -t 300 -- ./wait-for-it.sh redis:6379 -t 300
-  broker:
+  mqtt-broker:
     build:
       context: ./oisp-mqtt-gw
       dockerfile: Dockerfile-broker
