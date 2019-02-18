@@ -143,6 +143,17 @@ class Component {
         this.dataIndex = 0;
     }
 
+    addDataAsync(getDataFn) {
+        if ( getDataFn ) {
+            return getDataFn(this.name)
+            .then((data) => {
+                this.data = data;
+                console.log("Data is ", this.data);
+                return this;
+            })
+        }
+    }
+
     upgradeVersion() {
         var version = this.catalog.version.split(".");
         assert.equal(version.length, 2, 'wrong  numeric component version')
@@ -220,17 +231,6 @@ var highTemperatureRule = new Rule("oisp-tests-rule-high-temp",">", 25);
 //-------------------------------------------------------------------------------------------------------
 // Components
 //-------------------------------------------------------------------------------------------------------
-var components = new Components()
-
-components.add( new Component("temperature", "Number", "float", "Degress Celsius", "timeSeries", -150, 150, 
-                    [lowTemperatureRule, highTemperatureRule], 
-                    temperatureData, temperatureCheckData) 
-                );
-
-components.add( new Component("image", "ByteArray", "image", "pixel", "image/jpeg", null, null, 
-                    [], 
-                    imageData, imageCheckData) 
-                );
 
 function temperatureData(componentName) {
     var data = [
@@ -317,7 +317,26 @@ function imageCheckData(sentData, receivedData) {
     console.log("=============imageCheckData")
     return null;
 }
+var components = new Components()
 
+components.add( new Component("temperature", "Number", "float", "Degress Celsius", "timeSeries", -150, 150, 
+                    [lowTemperatureRule, highTemperatureRule], 
+                    temperatureData, temperatureCheckData) 
+                );
+
+var imageComponent = new Component("image",
+                                    "ByteArray",
+                                    "image",
+                                    "pixel",
+                                    "image/jpeg",
+                                    null,
+                                    null,
+                                    [],
+                                    null,
+                                    imageCheckData)
+imageComponent.addDataAsync(imageData)
+.then((component) => components.add(component))
+.then(() => {
 //-------------------------------------------------------------------------------------------------------
 // Tests
 //-------------------------------------------------------------------------------------------------------
@@ -1113,7 +1132,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
         }
         checkObservations(components.first)
        }).timeout(10000);
-
+   });
 });
 
 
