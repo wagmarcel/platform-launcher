@@ -114,6 +114,7 @@ class Component {
         this.data = [];
         if ( getDataFn ) {
             this.data = getDataFn(this.name)
+            console.log("========= "+this.data.length)
         }
         this.checkDataFn = checkDataFn;
         this.dataIndex = 0;
@@ -276,22 +277,39 @@ function temperatureCheckData(sentData, receivedData) {
 function imageData(componentName) {
     var images = [
             new gm(200, 200, "red"),
-            new gm(300, 400, "while"),
-            new gm(200, 200, "bllue")
+            new gm(300, 400, "white"),
+            new gm(200, 200, "blue")
         ];
-    var data = [];
 
-    images.forEach(function(image) {
-        image.toBuffer("JPEG", function(err, buffer) {
-            if ( !err ) { 
-                console.log("===================1")
-                data.push(buffer)
-            }
+    var toBuffer = (gm, type) => {
+      return new Promise((resolve, reject) => {
+        gm.toBuffer(type, function(err, buffer) {
+          if (err) {
+            reject(err)
+          }
+          else {
+            resolve(buffer);
+          }
         })
+      })
+    }
+
+    var proms = [];
+    images.forEach(function(image) {
+        proms.push( toBuffer(image, "JPEG") )
     })
 
-    return data;
-
+    return  Promise.all(proms)
+            .then(buffers => {
+                    var data = []
+                    buffers.forEach(function(buffer) {
+                        data.push(new Data(buffer,null,null))
+                    })
+                    return data;
+            })
+            .catch((err) => {
+              return [];
+            });
 }
 
 function imageCheckData(sentData, receivedData) {
