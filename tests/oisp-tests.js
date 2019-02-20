@@ -29,6 +29,7 @@ var helpers = require("./lib/helpers");
 var colors = require('colors');
 var exec = require('child_process').exec;
 var gm = require('gm').subClass({imageMagick: true});
+var { Data, Rule, Component, Components } = require('./lib/common')
 
 var accountName = "oisp-tests";
 var deviceName = "oisp-tests-device";
@@ -51,159 +52,6 @@ var recipientEmail = imap_username;
 var rules = [];
 
 
-class Data {
-    constructor(value, expectedActuation, expectedEmailReason) {
-        this.value = value;
-        this.expectedActuation = expectedActuation;
-        this.expectedEmailReason = expectedEmailReason; 
-        this.ts = null;
-    }
-}
-
-class Rule {
-    constructor(name, op, value, actions) {
-        this.name = name;
-        this.basicConditionOperator = op;
-        this.basicConditionValue = value.toString();
-        this.actions = [];
-        if ( actions ) {
-            this.actions = actions;
-        }
-        this.id = null;
-        this.cid = null;
-    }
-
-    addAction(type, target) {
-        for(var action of this.actions) {
-            if ( action.type == type ) {
-                action.target.push(target);
-                return;
-            }
-        }
-
-        var action = new Object();
-        action.type = type;
-        action.target = [];
-        action.target.push(target)
-        this.actions.push(action)
-    }
-}
-
-class Component {
-    constructor(name, dataType, format, unit, display, min, max, rules, getDataFn, checkDataFn) {
-        this._name = name;
-        this.catalog = new Object();
-        this.catalog.dimension =  name+"test";
-        this.catalog.version = "1.0";
-        this.catalog.type = "sensor";
-        this.catalog.dataType = dataType;
-        this.catalog.format = format;
-        if ( min ) {
-            this.catalog.min = min;
-        }
-        if ( max ) {
-            this.catalog.max = max;
-        }
-        this.catalog.measureunit = unit;
-        this.catalog.display = display;
-        
-        this.rules = []
-        if ( rules ) {
-            this.rules = rules;
-        }
-        this.data = [];
-        if ( getDataFn ) {
-            this.data = getDataFn(this.name)
-            console.log("========= "+this.data.length)
-        }
-        this.checkDataFn = checkDataFn;
-        this.dataIndex = 0;
-        this.next = null;
-        this.prev = null;
-    }
-
-    get name() {
-        return this._name + "-" + this.catalog.type;
-    }
-
-    get type() {
-        return this._name + ".v" + this.catalog.version;
-    }
-
-    get cId() {
-        return this.catalog.dimension + ".v" + this.catalog.version;
-    }
-
-    reset() {
-        if ( this.data ) {
-            for (var i = 0; i < this.data.length; i++) {
-                this.data[i].ts = null;
-            }
-        }
-        this.dataIndex = 0;
-    }
-
-    upgradeVersion() {
-        var version = this.catalog.version.split(".");
-        assert.equal(version.length, 2, 'wrong  numeric component version')
-        this.catalog.version = version[0] + "." + (parseInt(version[1]) + 1);
-    }
-
-    checkData(data) {
-        if ( data && this.checkDataFn ) {
-            return this.checkDataFn(this.data, data)
-        }
-
-        return "Cannot check data";
-    }
-}
-
-class Components {
-    constructor() {
-        this.list = []
-    }
-
-    add(component) {
-        component.next = null;
-        component.prev = null;
-        if ( this.list.length > 0 ) {
-            this.list[this.list.length-1].next = component;
-            component.prev = this.list[this.list.length-1];
-        }
-
-        this.list.push(component);
-    }
-
-    get size() {
-        return this.list.length;
-    }
-
-    reset() {
-        for (var i=0; i<this.list.size; i++) {
-            this.list[i].reset()
-        }
-    }
-
-    get first() {
-        if ( this.list.length > 0 ) {
-            return this.list[0];
-        }
-        else {
-            return null;
-        }
-    }
-    get last() {
-        if ( this.list.length > 0 ) {
-            return this.list[this.list.length-1];
-        }
-        else {
-            return null;
-        }
-    }
-
-    
-}
-
 
 //-------------------------------------------------------------------------------------------------------
 // Rules
@@ -216,16 +64,15 @@ var highTemperatureRule = new Rule("oisp-tests-rule-high-temp",">", 25);
     highTemperatureRule.addAction("actuation", switchOffCmdName);
     highTemperatureRule.addAction("mail", emailRecipient);
 
- 
 //-------------------------------------------------------------------------------------------------------
 // Components
 //-------------------------------------------------------------------------------------------------------
 var components = new Components()
 
-components.add( new Component("temperature", "Number", "float", "Degress Celsius", "timeSeries", -150, 150, 
+/*components.add( new Component("temperature", "Number", "float", "Degress Celsius", "timeSeries", -150, 150, 
                     [lowTemperatureRule, highTemperatureRule], 
                     temperatureData, temperatureCheckData) 
-                );
+                );*/
 
 components.add( new Component("image", "ByteArray", "image", "pixel", "image/jpeg", null, null, 
                     [], 
@@ -233,6 +80,7 @@ components.add( new Component("image", "ByteArray", "image", "pixel", "image/jpe
                 );
 
 function temperatureData(componentName) {
+   
     var data = [
             new Data(-15, 1, componentName + " <= 15"),
             new Data( -5, 1, componentName + " <= 15"),
@@ -273,48 +121,54 @@ function temperatureCheckData(sentData, receivedData) {
     return err;
 }
 
-/* I would like to return data in synchronous mode */
-function imageData(componentName) {
-    var images = [
-            new gm(200, 200, "red"),
-            new gm(300, 400, "white"),
-            new gm(200, 200, "blue")
-        ];
 
-    var toBuffer = (gm, type) => {
-      return new Promise((resolve, reject) => {
-        gm.toBuffer(type, function(err, buffer) {
-          if (err) {
-            reject(err)
-          }
-          else {
-            resolve(buffer);
-          }
-        })
-      })
+function imageData(componentName, opaque, cb) {
+    if (!cb) {
+        throw "Callback required";
     }
 
-    var proms = [];
+    var images = [
+        new gm(10, 20, "red")
+    ];
+
     images.forEach(function(image) {
-        proms.push( toBuffer(image, "JPEG") )
+        image.toBuffer("JPEG", function(err, buffer) {
+            if (!err) {
+                cb(opaque, new Data(buffer, null, null))
+            }
+        })
     })
 
-    return  Promise.all(proms)
-            .then(buffers => {
-                    var data = []
-                    buffers.forEach(function(buffer) {
-                        data.push(new Data(buffer,null,null))
-                    })
-                    return data;
-            })
-            .catch((err) => {
-              return [];
-            });
+    return null;
 }
+
+
+    
 
 function imageCheckData(sentData, receivedData) {
 
-    console.log("=============imageCheckData")
+    console.log("======== "+sentData.length + " : "+receivedData.length)
+    if ( sentData.length == receivedData.length) {
+        for (var i = 0; i < sentData.length; i++) {
+            buf1.equals(buf2);
+            if (sentData[i].ts == receivedData[i].ts && 
+                sentData[i].value.equals(receivedData[i].value)) {
+                sentData[i].ts = null;
+            }
+        }
+    }
+
+    var err = null;
+    for (var i = 0; i < sentData.length; i++) {
+        if (sentData[i].ts != null) {
+            err += i + " " ;
+        }
+    }
+    if (err) {
+        err = "Got wrong data for items" + err;
+    }
+
+    return err;
     return null;
 }
 
@@ -710,6 +564,92 @@ describe("Creating account and device ...\n".bold, function() {
     })
 })
 
+describe("Managing components catalog ... \n".bold, function() {
+
+    it('Shall create new custom Components Types', function(done) {
+        var createCatalog = function(component) {
+            if ( component ) {
+                helpers.cmpcatalog.createCatalog(userToken, accountId, component.catalog, function(err, response) {
+                    if (err) {
+                        done(new Error("Cannot create component: " + err));
+                    } else {
+                        component.cId = response.id;
+                      //  assert.equal(response.id, component.cId, 'cannot create new component type')
+                        createCatalog(component.next);
+                    }
+                })
+            } else {
+                done()
+            }
+        }
+        createCatalog(components.first);
+    }).timeout(10000);
+
+    it('Shall list all component types for account', function(done) {
+        helpers.cmpcatalog.getCatalog(userToken, accountId, function(err, response) {
+            if (err) {
+                done(new Error("Cannot list component: " + err));
+            } else {
+                assert.equal(response.length, components.size + 3, 'get wrong number of components ')
+                done();
+            }
+        })
+    }).timeout(10000);
+
+    it('Shall get component type details', function(done) {
+        var getCatalogDetail = function(component) {
+            if ( component ) {
+                if ( component.catalog.max ) {
+                    helpers.cmpcatalog.getCatalogDetail(userToken, accountId, component.cId, function(err, response) {
+                        if (err) {
+                            done(new Error("Cannot get component type details " + err));
+                        } else {
+                            assert.equal(response.id, component.cId, 'cannot get component '+component.name)
+                            assert.equal(response.max, component.catalog.max)
+                            getCatalogDetail(component.next)
+                        }
+                    })
+                } else {
+                    getCatalogDetail(component.next)
+                }
+            } else {
+                done()
+            }
+        }
+        getCatalogDetail(components.first)
+    }).timeout(10000);
+
+    it('Shall update a component type', function(done) {
+        var updateCatalog = function(component) {
+            if ( component ) {
+                if ( component.catalog.min != null && 
+                     component.catalog.max != null )  {
+                    var newmin = 10;
+                    var newmax = 1000;
+
+                    helpers.cmpcatalog.updateCatalog(userToken, accountId, component.cId, newmin, newmax, function(err, response) {
+                        if (err) {
+                            done(new Error("Cannot get component type details " + err));
+                        } else {
+                            if ( component.upgradeVersion() == false ) {
+                                done(new Error("Cannot upgrade version for component " + component.name))
+                            }
+                            assert.equal(response.id, component.cId, 'cannot update '+component.name+' component to '+component.catalog.version)
+                            assert.equal(response.max, newmax)
+                            updateCatalog(component.next)
+                        }
+                    })
+                } else {
+                    updateCatalog(component.next)
+                }
+            } else {
+                done()
+            }
+        }
+        updateCatalog(components.first)
+    }).timeout(10000);
+})
+
 describe("Creating and getting components ... \n".bold, function() {
 
     it('Shall add device a component', function(done) {
@@ -717,10 +657,15 @@ describe("Creating and getting components ... \n".bold, function() {
             if ( component ) {
                 helpers.devices.addDeviceComponent(component.name, component.type, deviceToken, accountId, deviceId, function(err, id) {
                     if (err) {
-                        done(new Error("Cannot create component: " + err));
+                        done(new Error("Cannot create component  " +  component + " : " +err));
                     } else {
-                        component.id = id;
-                        addDeviceComponent(component.next);
+                        if ( id ) {
+                            component.id = id;
+                            addDeviceComponent(component.next);
+                        }
+                        else {
+                            done(new Error("Wrong id for component  " +  component ));
+                        }
                     }
                 })
             }
@@ -733,18 +678,22 @@ describe("Creating and getting components ... \n".bold, function() {
     }).timeout(10000);
     
     it('Shall not add device a component with the name that a component of the device already has, or crash', function(done) {
-    	components.list.forEach(function(component) {
-            helpers.devices.addDeviceComponent(component.name, component.type, deviceToken, accountId, deviceId, function(err, id) {
-                if (err) {
-                    done(new Error("Cannot create or try to create component: " + err));
-                } else if (id === undefined) {
-                	// Response with code 409, id should be undefined
-                	done();
-                } else {
-                    done(new Error("No error is thrown and the component is added successfully: " + id));
-                }
-            })
-        })
+        var addDeviceComponent = function(component) {
+            if ( component ) {
+                helpers.devices.addDeviceComponent(component.name, component.type, deviceToken, accountId, deviceId, function(err, id) {
+                    if (err) {
+                        addDeviceComponent(component.next);
+                    } else {
+                        done(new Error("No error is thrown and the component is added successfully: " + id));
+                    }
+                })
+            }
+            else {
+                done();
+            }
+        }
+        addDeviceComponent(components.first);
+
     }).timeout(10000);
 
     it('Shall add device an actuator', function(done) {
@@ -820,88 +769,6 @@ describe("Creating and getting components ... \n".bold, function() {
     
 });
 
-describe("Managing components catalog ... \n".bold, function() {
-
-    it('Shall create new custom Components Types', function(done) {
-        var createCatalog = function(component) {
-            if ( component ) {
-                helpers.cmpcatalog.createCatalog(userToken, accountId, component.catalog, function(err, response) {
-                    if (err) {
-                        done(new Error("Cannot create component: " + err));
-                    } else {
-                        assert.equal(response.id, component.cId, 'cannot create new component type')
-                        createCatalog(component.next);
-                    }
-                })
-            } else {
-                done()
-            }
-        }
-        createCatalog(components.first);
-    }).timeout(10000);
-
-    it('Shall list all component types for account', function(done) {
-        helpers.cmpcatalog.getCatalog(userToken, accountId, function(err, response) {
-            if (err) {
-                done(new Error("Cannot list component: " + err));
-            } else {
-                assert.equal(response.length, components.size + 3, 'get wrong number of components ')
-                done();
-            }
-        })
-    }).timeout(10000);
-
-    it('Shall get component type details', function(done) {
-        var getCatalogDetail = function(component) {
-            if ( component ) {
-                if ( component.catalog.hasOwnProperty('max') ) {
-                    helpers.cmpcatalog.getCatalogDetail(userToken, accountId, component.cId, function(err, response) {
-                        if (err) {
-                            done(new Error("Cannot get component type details " + err));
-                        } else {
-                            assert.equal(response.id, component.cId, 'cannot get component '+component.name)
-                            assert.equal(response.max, component.catalog.max)
-                            getCatalogDetail(component.next)
-                        }
-                    })
-                } else {
-                    getCatalogDetail(component)
-                }
-            } else {
-                done()
-            }
-        }
-        getCatalogDetail(components.first)
-    }).timeout(10000);
-
-    it('Shall update a component type', function(done) {
-        var updateCatalog = function(component) {
-            if ( component ) {
-                if ( component.catalog.min != null && 
-                     component.catalog.max != null )  {
-                    var newmin = 10;
-                    var newmax = 1000;
-
-                    helpers.cmpcatalog.updateCatalog(userToken, accountId, component.cId, newmin, newmax, function(err, response) {
-                        if (err) {
-                            done(new Error("Cannot get component type details " + err));
-                        } else {
-                            component.upgradeVersion();
-                            assert.equal(response.id, component.cId, 'cannot update '+component.name+' component to '+component.catalog.version)
-                            assert.equal(response.max, newmax)
-                            updateCatalog(component.next)
-                        }
-                    })
-                } else {
-                    updateCatalog(component.next)
-                }
-            } else {
-                done()
-            }
-        }
-        updateCatalog(components.first)
-    }).timeout(10000);
-})
 
 describe("Creating rules ... \n".bold, function() {
     it('Shall create rules', function(done) {
@@ -979,6 +846,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
             component.dataIndex++;
             if ( component.dataIndex == component.data.length) {
                 if ( component.next ) {
+                    process.stdout.write("\n\t");
                     component = component.next;
                 } else {
                     process.stdout.write("\n");
@@ -1017,9 +885,13 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
         var sendObservationAndCheckRules = function(component) {
 
+            if ( curComponent != component ) {
+                process.stdout.write(component.type.blue + "\n\t");
+            }
+            curComponent = component;
+
             process.stdout.write(".".green);
 
-            curComponent = component;
             helpers.devices.submitData(component.data[component.dataIndex].value, deviceToken, 
                                        accountId, deviceId, component.id, function(err, ts) {
                 component.data[component.dataIndex].ts = ts;
@@ -1078,23 +950,26 @@ describe("Sending observations and checking rules ...\n".bold, function() {
     	    }).catch( (err) => {done(err)});
         }).timeout(30 * 1000);
 
-    it('Shall check observation', function(done) {
+    it('Shall check observations', function(done) {
         var checkObservations = function(component) {
             if ( component ) {
                 if ( component.data.length > 0 ) {
+
                     helpers.data.searchData(component.data[0].ts, component.data[component.data.length-1].ts, 
                                             userToken, accountId, deviceId, component.id, false, {}, function(err, result) {
+                        console.log("========err " + err)
+                        console.log("========result " + JSON.stringify(result))
+
                         if (err) {
                             done(new Error("Cannot get data: " + err))
                         }
-
                         if (result && result.series && result.series.length == 1) {
                             err = component.checkData(result.series[0].points);
                         }
                 	    else {
                             done(new Error("Cannot get data."));
                 	    }
-                        
+
                         if (err) {
                             done(new Error(err))
                         }
