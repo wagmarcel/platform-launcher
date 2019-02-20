@@ -57,10 +57,17 @@ MQTT_BROKER_PASSWORD='8dhh1f2471'
 FRONTEND_SYSTEMUSER="gateway@intel.com"
 FRONTEND_SYSTEMPASSWORD="7d501829lhbl1or0bb1784462c97bcad6"
 
-SMTP_HOST="${SMTP_HOST:-auth.smtp.1and1.co.uk}"
-SMTP_PORT="${SMTP_PORT:-587}"
-SMTP_USERNAME="${SMTP_USERNAME:-test.sender@streammyiot.com}"
-SMTP_PASSWORD="${SMTP_PASSWORD:-xxxxx}"
+MINIO_ACCESS_KEY="oisp/jkllaksdlkfja"
+MINIO_SECRET_KEY="8aj93h93hf91gs618hbc"
+MINIO_URL="minio"
+MINIO_PORT='9000'
+MINIO_USE_SSL='true'
+
+
+export SMTP_HOST="${SMTP_HOST:-auth.smtp.1and1.co.uk}"
+export SMTP_PORT="${SMTP_PORT:-587}"
+export SMTP_USERNAME="${SMTP_USERNAME:-test.sender@streammyiot.com}"
+export SMTP_PASSWORD="${SMTP_PASSWORD:-xxxxx}"
 
 OPENTSDB_PROPERTIES='{
   "uri": "'$OPENTSDB_URI'",
@@ -85,21 +92,36 @@ export OISP_BACKEND_JAEGER_CONFIG=\
 }'
 
 export OISP_TSDB_PROPERTIES='{}'    #=${OPENTSDB_PROPERTIES} for openTSDB
+#export OISP_TSDB_PROPERTIES=${OPENTSDB_PROPERTIES}
 
 # tsdbName can be
 # hbase
 #   then no tsdbProperties should be an empty class {}
 # opentsdb
 #   then the OISP_TSDB_PROPERTIES should contain url and port for openTSDB service
+# objectStorage can be
+# "minio"
+#   then the OISP_OBJECT_STORAGE_MINIO_CONFIG has to be passed in
 export OISP_BACKEND_CONFIG=\
 '{
   "tsdbName": "hbase",
+  "objectStore": "minio",
   "tsdbProperties": "%%OISP_TSDB_PROPERTIES",
   "kafkaConfig": "@@OISP_KAFKA_CONFIG",
   "zookeeperConfig": "@@OISP_ZOOKEEPER_CONFIG",
   "kerberosConfig": "@@OISP_KERBEROS_CONFIG",
   "hbaseConfig": "@@OISP_HBASE_CONFIG",
-  "jaegerConfig": "@@OISP_BACKEND_JAEGER_CONFIG"
+  "jaegerConfig": "@@OISP_BACKEND_JAEGER_CONFIG",
+  "minioProperties": "%%OISP_OBJECT_STORE_MINIO_PROPERTIES"
+}'
+
+export OISP_OBJECT_STORE_MINIO_CONFIG=\
+'{
+  "endPoint": ${MINIO_URL},
+  "port": ${MINIO_PORT},
+  "useSSL": ${MINIO_USE_SSL},
+  "accessKey": ${MINIO_ACCESS_KEY},
+  "secretKey": ${MINIO_SECRET_KEY}
 }'
 
 export OISP_FRONTEND_CONFIG=\
