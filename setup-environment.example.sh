@@ -57,8 +57,8 @@ MQTT_BROKER_PASSWORD='8dhh1f2471'
 FRONTEND_SYSTEMUSER="gateway@intel.com"
 FRONTEND_SYSTEMPASSWORD="7d501829lhbl1or0bb1784462c97bcad6"
 
-MINIO_ACCESS_KEY="oisp/jkllaksdlkfja"
-MINIO_SECRET_KEY="8aj93h93hf91gs618hbc"
+export OISP_MINIO_ACCESS_KEY="oisp/jkllaksdlkfja"
+export OISP_MINIO_SECRET_KEY="8aj93h93hf91gs618hbc"
 MINIO_URL="minio"
 MINIO_PORT='9000'
 MINIO_USE_SSL='true'
@@ -112,16 +112,16 @@ export OISP_BACKEND_CONFIG=\
   "kerberosConfig": "@@OISP_KERBEROS_CONFIG",
   "hbaseConfig": "@@OISP_HBASE_CONFIG",
   "jaegerConfig": "@@OISP_BACKEND_JAEGER_CONFIG",
-  "minioProperties": "%%OISP_OBJECT_STORE_MINIO_PROPERTIES"
+  "objectStoreProperties": "%%OISP_OBJECT_STORE_MINIO_PROPERTIES"
 }'
 
-export OISP_OBJECT_STORE_MINIO_CONFIG=\
+export OISP_OBJECT_STORE_MINIO_PROPERTIES=\
 '{
-  "endPoint": ${MINIO_URL},
-  "port": ${MINIO_PORT},
-  "useSSL": ${MINIO_USE_SSL},
-  "accessKey": ${MINIO_ACCESS_KEY},
-  "secretKey": ${MINIO_SECRET_KEY}
+  "endPoint": "'${MINIO_URL}'",
+  "port": "'${MINIO_PORT}'",
+  "useSSL": "'${MINIO_USE_SSL}'",
+  "accessKey": "'${OISP_MINIO_ACCESS_KEY}'",
+  "secretKey": "'${OISP_MINIO_SECRET_KEY}'"
 }'
 
 export OISP_FRONTEND_CONFIG=\

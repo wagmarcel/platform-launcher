@@ -128,7 +128,11 @@ endif
                 echo "Creating MQTT/GW secret."; \
                 mkdir -p data/keys/mqtt; \
                 openssl rand -base64  16 > data/keys/mqtt/mqtt_gw_secret.key; \
-        fi;
+    fi;
+	@if [ -f data/S3 ]; then echo "S3 directory existing already. Skipping creating new dir"; else \
+                echo "Creating S3 storage dir."; \
+                mkdir -p data/S3; \
+    fi;
 
 	@touch $@
 
