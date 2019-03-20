@@ -47,6 +47,10 @@ function wsConnect(connector, deviceToken, deviceId, cb) {
     connector.controlCommandListen(data, cb, function() {});
 }
 
+function mqttConnect(connector, deviceToken, deviceId, cb) {
+    
+}
+
 module.exports={
     wsConnect: wsConnect
 }

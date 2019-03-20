@@ -896,7 +896,17 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
         sendObservationAndCheckRules(components.first);
 
-    }).timeout(5*60*1000)
+            //gpoerwawinata
+    //sending data via mqtt
+        var curComponent = null;
+        components.reset();
+
+        proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
+        helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+
+
+        sendObservationAndCheckRules(components.first);
+    }).timeout(8*60*1000)
 
     //---------------------------------------------------------------
 
