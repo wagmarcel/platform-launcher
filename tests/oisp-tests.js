@@ -1175,6 +1175,22 @@ describe("Do data sending subtests ...".bold,
    });
 
 
+describe("Do data sending subtests via mqtt...".bold,
+  function() {
+    var test;
+    var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
+    helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+     it(descriptions.sendAggregatedDataPoints,function(done) {
+       test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+       test.sendAggregatedDataPoints(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.cleanup,function(done) {
+       test.cleanup(done);
+     }).timeout(10000);
+   });
 
 var ignoreme = function() {
 describe("Geting and manage alerts ... \n".bold, function(){
