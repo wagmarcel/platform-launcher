@@ -871,6 +871,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                     process.stdout.write("\t" + component.type.blue + "\n");
                 }
                 curComponent = component;
+                process.stdout.write("curComponent"+ curComponent);
                 if (component.dataIndex == 0) {
                     process.stdout.write("\t");
                 }
@@ -896,17 +897,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
         sendObservationAndCheckRules(components.first);
 
-            //gpoerwawinata
-    //sending data via mqtt
-        var curComponent = null;
-        components.reset();
-
-        proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
-        helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
-
-
-        sendObservationAndCheckRules(components.first);
-    }).timeout(8*60*1000)
+    }).timeout(5*60*1000)
 
     //---------------------------------------------------------------
 
@@ -986,6 +977,164 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
 });
 
+
+describe("Sending observations and checking rules via mqtt ...\n".bold, function() {
+
+    it('Shall send observation and check rules', function(done) {
+        proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
+        assert.notEqual(proxyConnector, null, "Invalid mqtt proxy connector")
+
+        var curComponent = null;
+        component.dataIndex=0;
+
+        var step = function(component) {
+            component.dataIndex++;
+            if ( component.dataIndex == component.data.length) {
+                process.stdout.write("\n");
+                component = component.next;
+            }
+            process.stdout.write("step");
+            process.stdout.write("sending by mqtt components" + component);
+            sendObservationAndCheckRules(component);
+        };
+
+        cbManager.set(function(message) {
+            var expectedActuationValue = curComponent.data[curComponent.dataIndex].expectedActuation.toString();
+            var componentParam = message.content.params.filter(function(param){
+                return param.name == componentParamName;
+            });
+
+            if(componentParam.length == 1) {
+                var param = componentParam[0];
+                var paramValue = param.value.toString();
+
+                if(paramValue == expectedActuationValue) {
+                  step(curComponent);
+                }
+                else
+                {
+                    done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
+                }
+            }
+            else
+            {
+                done(new Error("Did not find component param: " + componentParamName))
+            }
+        });
+
+        helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+
+        var sendObservationAndCheckRules = function(component) {
+            if ( component ) {
+                if ( curComponent != component ) {
+                    process.stdout.write("\t" + component.type.blue + "\n");
+                }
+                curComponent = component;
+                process.stdout.write("curComponent"+ curComponent);
+                if (component.dataIndex == 0) {
+                    process.stdout.write("\t");
+                }
+                process.stdout.write(".".green);
+
+                helpers.devices.submitData(component.data[component.dataIndex].value, deviceToken, 
+                                           accountId, deviceId, component.id, function(err, ts) {
+                    component.data[component.dataIndex].ts = ts;
+
+                    if (err) {
+                        done( "Cannot send observation: "+err)
+                    }
+
+                    if (component.data[component.dataIndex].expectedActuation == null) {
+                        step(component);
+                    }
+                });
+            }
+            else {
+                done();
+            }
+        }
+
+        sendObservationAndCheckRules(components.first);
+
+    }).timeout(5*60*1000)
+
+    //---------------------------------------------------------------
+
+    it('Shall check received emails', function(done) {
+        var expectedEmailReasons = [];
+        components.list.forEach(function(component) {
+            component.data.forEach(function(data) {
+                if ( data.expectedEmailReason ) {
+                    expectedEmailReasons.push(data.expectedEmailReason)
+                }
+            })
+        })
+
+        if ( expectedEmailReasons.length == 0 ) {
+            done()
+        }
+
+        helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, expectedEmailReasons.length)
+            .then(() => helpers.mail.getAllEmailMessages(imap_username, imap_password, imap_host, imap_port))
+            .then( (messages) => {
+            messages.forEach( (message) => {
+                var lines = message.toString().split("\n");
+                var i;
+                lines.forEach((line) => {
+                    var reExecReason = /^- Reason:.*/;
+                    if ( reExecReason.test(line) ) {
+                        var reason = line.split(":")[1].trim();
+                        var index = expectedEmailReasons.findIndex( (element) => {
+                            return (reason == element);
+                        })
+                        if ( index >= 0 ) {
+                            expectedEmailReasons.splice(index, 1);
+                        }
+                    }
+                })
+            })
+            assert.equal(expectedEmailReasons.length, 0, "Received emails do not match expected emails sent from rule-engine");
+            done();
+            }).catch( (err) => {done(err)});
+        }).timeout(30 * 1000);
+
+    it('Shall check observations', function(done) {
+        var checkObservations = function(component) {
+            if ( component ) {
+                if ( component.data.length > 0 ) {
+
+                    helpers.data.searchData(component.data[0].ts, component.data[component.data.length-1].ts, 
+                                            userToken, accountId, deviceId, component.id, false, {}, function(err, result) {
+                        if (err) {
+                            done(new Error("Cannot get data: " + err))
+                        }
+                        else if (result && result.series && result.series.length == 1) {
+                            err = component.checkData(result.series[0].points);
+                        }
+                        else {
+                            done(new Error("Cannot get data."));
+                        }
+
+                        if (err) {
+                            done(new Error(err))
+                        }
+                        else {
+                            checkObservations(component.next)
+                        }
+                    })
+                }
+                else {
+                    checkObservations(component.next)
+                }
+            }
+            else {
+                done()
+            }
+        }
+        checkObservations(components.first)
+       }).timeout(10000);
+
+});
 
 describe("Do time based rule subtests ...".bold,
 	 function() {

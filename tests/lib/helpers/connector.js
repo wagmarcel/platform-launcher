@@ -48,11 +48,21 @@ function wsConnect(connector, deviceToken, deviceId, cb) {
 }
 
 function mqttConnect(connector, deviceToken, deviceId, cb) {
-    
+    if (!cb) {
+        throw "Callback required";
+    }
+
+    var data = {
+        deviceId: deviceId
+    };
+
+    connector.controlCommandListen(data, cb, function() {});
+
 }
 
 module.exports={
-    wsConnect: wsConnect
+    wsConnect: wsConnect,
+    mqttConnect: mqttConnect
 }
 
 
