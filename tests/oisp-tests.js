@@ -871,6 +871,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                     process.stdout.write("\t" + component.type.blue + "\n");
                 }
                 curComponent = component;
+                process.stdout.write("curComponent"+ curComponent);
                 if (component.dataIndex == 0) {
                     process.stdout.write("\t");
                 }
@@ -977,7 +978,6 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
 });
 
-
 describe("Do time based rule subtests ...".bold,
      function() {
          var test;
@@ -1070,9 +1070,9 @@ describe("Do data sending subtests via mqtt...".bold, function() {
         })
     })
 
-    it('Send a single data point', function(done) {
+    it('Send aggregated data points', function(done) {
         test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
-        test.sendSingleDataPoint(done);
+        test.sendAggregatedDataPoints(done);
     }).timeout(10000);
 
     it('Waiting maximal tolerable time backend needs to flush so that points are available', function(done) {

@@ -60,7 +60,6 @@ function mqttConnect(connector, deviceToken, deviceId, cb) {
     };
 
     //connector.controlCommandListen(data, cb, function() {});
-
 }
 
 module.exports={
