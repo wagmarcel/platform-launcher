@@ -1104,6 +1104,7 @@ describe("Do data sending subtests via mqtt...".bold,
   function() {
     var test;
     var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
+    helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
      it(descriptions.sendAggregatedDataPoints,function(done) {
        test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
        test.sendAggregatedDataPoints(done);
