@@ -824,316 +824,159 @@ describe("Creating rules ... \n".bold, function() {
 describe("Sending observations and checking rules ...\n".bold, function() {
 
     it('Shall send observation and check rules', function(done) {
+        assert.notEqual(componentId, null, "Invalid component id")
+        assert.notEqual(rules[switchOnCmdName].id, null, "Invalid switch-on rule id")
+        assert.notEqual(rules[switchOffCmdName].id, null, "Invalid switch-off rule id")
         assert.notEqual(proxyConnector, null, "Invalid websocket proxy connector")
 
-        var curComponent = null;
-        components.reset();
+        var index = 0;
+        var nbActuations = 0;
 
-        var step = function(component) {
-            component.dataIndex++;
-            if ( component.dataIndex == component.data.length) {
-                process.stdout.write("\n");
-                component = component.next;
+        process.stdout.write("    ");
+
+        for (var i = 0; i < temperatureValues.length; i++) {
+            temperatureValues[i].ts = null;
+            if (temperatureValues[i].expectedActuation != null) {
+                nbActuations++;
             }
+        }
 
-            sendObservationAndCheckRules(component);
+        var step = function(){
+            index++;
+
+            if (index == temperatureValues.length) {
+                process.stdout.write("\n");
+                done();
+            } else {
+                sendObservationAndCheckRules(index);
+            }
         };
 
-        cbManager.set(function(message) {
-            var expectedActuationValue = curComponent.data[curComponent.dataIndex].expectedActuation.toString();
+    cbManager.set(function(message) {
+            --nbActuations;
+
+            var expectedActuationValue = temperatureValues[index].expectedActuation.toString();
             var componentParam = message.content.params.filter(function(param){
                 return param.name == componentParamName;
             });
 
-            if(componentParam.length == 1) {
+            if(componentParam.length == 1)
+            {
                 var param = componentParam[0];
                 var paramValue = param.value.toString();
 
-                if(paramValue == expectedActuationValue) {
-                  step(curComponent);
+                if(paramValue == expectedActuationValue)
+        {
+            step();
                 }
                 else
                 {
                     done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
                 }
-            }
+        }
             else
             {
                 done(new Error("Did not find component param: " + componentParamName))
             }
         });
+    helpers.connector.wsConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
 
-        helpers.connector.wsConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+        var sendObservationAndCheckRules = function(index) {
 
-        var sendObservationAndCheckRules = function(component) {
-            if ( component ) {
-                if ( curComponent != component ) {
-                    process.stdout.write("\t" + component.type.blue + "\n");
+            process.stdout.write(".".green);
+
+            helpers.devices.submitData(temperatureValues[index].value, deviceToken, accountId, deviceId, componentId, function(err, ts) {
+                temperatureValues[index].ts = ts;
+
+                if (index == 0) {
+                    firstObservationTime = temperatureValues[index].ts;
                 }
-                curComponent = component;
-                process.stdout.write("curComponent"+ curComponent);
-                if (component.dataIndex == 0) {
-                    process.stdout.write("\t");
+
+                if (err) {
+                    done( "Cannot send observation: "+err)
                 }
-                process.stdout.write(".".green);
 
-                helpers.devices.submitData(component.data[component.dataIndex].value, deviceToken, 
-                                           accountId, deviceId, component.id, function(err, ts) {
-                    component.data[component.dataIndex].ts = ts;
-
-                    if (err) {
-                        done( "Cannot send observation: "+err)
-                    }
-
-                    if (component.data[component.dataIndex].expectedActuation == null) {
-                        step(component);
-                    }
-                });
-            }
-            else {
-                done();
-            }
-        }
-
-        sendObservationAndCheckRules(components.first);
-
-    }).timeout(5*60*1000)
-
-    //---------------------------------------------------------------
-
-    it('Shall check received emails', function(done) {
-        var expectedEmailReasons = [];
-        components.list.forEach(function(component) {
-            component.data.forEach(function(data) {
-                if ( data.expectedEmailReason ) {
-                    expectedEmailReasons.push(data.expectedEmailReason)
+                if (temperatureValues[index].expectedActuation == null) {
+                    step();
                 }
-            })
-        })
-
-        if ( expectedEmailReasons.length == 0 ) {
-            done()
-        }
-
-        helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, expectedEmailReasons.length)
-            .then(() => helpers.mail.getAllEmailMessages(imap_username, imap_password, imap_host, imap_port))
-            .then( (messages) => {
-            messages.forEach( (message) => {
-                var lines = message.toString().split("\n");
-                var i;
-                lines.forEach((line) => {
-                    var reExecReason = /^- Reason:.*/;
-                    if ( reExecReason.test(line) ) {
-                        var reason = line.split(":")[1].trim();
-                        var index = expectedEmailReasons.findIndex( (element) => {
-                            return (reason == element);
-                        })
-                        if ( index >= 0 ) {
-                            expectedEmailReasons.splice(index, 1);
-                        }
-                    }
-                })
-            })
-            assert.equal(expectedEmailReasons.length, 0, "Received emails do not match expected emails sent from rule-engine");
-            done();
-            }).catch( (err) => {done(err)});
-        }).timeout(30 * 1000);
-
-    it('Shall check observations', function(done) {
-        var checkObservations = function(component) {
-            if ( component ) {
-                if ( component.data.length > 0 ) {
-
-                    helpers.data.searchData(component.data[0].ts, component.data[component.data.length-1].ts, 
-                                            userToken, accountId, deviceId, component.id, false, {}, function(err, result) {
-                        if (err) {
-                            done(new Error("Cannot get data: " + err))
-                        }
-                        else if (result && result.series && result.series.length == 1) {
-                            err = component.checkData(result.series[0].points);
-                        }
-                        else {
-                            done(new Error("Cannot get data."));
-                        }
-
-                        if (err) {
-                            done(new Error(err))
-                        }
-                        else {
-                            checkObservations(component.next)
-                        }
-                    })
-                }
-                else {
-                    checkObservations(component.next)
-                }
-            }
-            else {
-                done()
-            }
-        }
-        checkObservations(components.first)
-       }).timeout(10000);
-
-});
-
-
-describe("Sending observations and checking rules via mqtt ...\n".bold, function() {
-
-    it('Shall send observation and check rules', function(done) {
-        proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
-        assert.notEqual(proxyConnector, null, "Invalid mqtt proxy connector")
-
-        var curComponent = null;
-        component.dataIndex=0;
-
-        var step = function(component) {
-            component.dataIndex++;
-            if ( component.dataIndex == component.data.length) {
-                process.stdout.write("\n");
-                component = component.next;
-            }
-            process.stdout.write("step");
-            process.stdout.write("sending by mqtt components" + component);
-            sendObservationAndCheckRules(component);
-        };
-
-        cbManager.set(function(message) {
-            var expectedActuationValue = curComponent.data[curComponent.dataIndex].expectedActuation.toString();
-            var componentParam = message.content.params.filter(function(param){
-                return param.name == componentParamName;
             });
-
-            if(componentParam.length == 1) {
-                var param = componentParam[0];
-                var paramValue = param.value.toString();
-
-                if(paramValue == expectedActuationValue) {
-                  step(curComponent);
-                }
-                else
-                {
-                    done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
-                }
-            }
-            else
-            {
-                done(new Error("Did not find component param: " + componentParamName))
-            }
-        });
-
-        helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
-
-        var sendObservationAndCheckRules = function(component) {
-            if ( component ) {
-                if ( curComponent != component ) {
-                    process.stdout.write("\t" + component.type.blue + "\n");
-                }
-                curComponent = component;
-                process.stdout.write("curComponent"+ curComponent);
-                if (component.dataIndex == 0) {
-                    process.stdout.write("\t");
-                }
-                process.stdout.write(".".green);
-
-                helpers.devices.submitData(component.data[component.dataIndex].value, deviceToken, 
-                                           accountId, deviceId, component.id, function(err, ts) {
-                    component.data[component.dataIndex].ts = ts;
-
-                    if (err) {
-                        done( "Cannot send observation: "+err)
-                    }
-
-                    if (component.data[component.dataIndex].expectedActuation == null) {
-                        step(component);
-                    }
-                });
-            }
-            else {
-                done();
-            }
         }
 
-        sendObservationAndCheckRules(components.first);
+        sendObservationAndCheckRules(index);
 
     }).timeout(5*60*1000)
 
     //---------------------------------------------------------------
 
-    it('Shall check received emails', function(done) {
-        var expectedEmailReasons = [];
-        components.list.forEach(function(component) {
-            component.data.forEach(function(data) {
-                if ( data.expectedEmailReason ) {
-                    expectedEmailReasons.push(data.expectedEmailReason)
-                }
-            })
+    it('Shall check received emails', function(done){
+    helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, 7)
+        .then(() => helpers.mail.getAllEmailMessages(imap_username, imap_password, imap_host, imap_port))
+        .then( (messages) => {
+        var temperatureValuesCopy =  temperatureValues.map( (elem) => elem);
+        messages.forEach( (message) => {
+            var lines = message.toString().split("\n");
+            var i;
+            lines.forEach((line) => {
+                        var reExecReason = /^- Reason:.*/;
+                        if ( reExecReason.test(line) ) {
+                var reason = line.split(":")[1].trim();
+                var index = temperatureValuesCopy.findIndex( (element) => {
+                return (reason == element.expectedEmailReason);
+                })
+                temperatureValuesCopy.splice(index, 1);
+            }
+                    })
         })
+        assert.equal(temperatureValuesCopy.length, 3, "Received emails do not match expected emails sent from rule-engine");
+        done();
+        }).catch( (err) => {done(err)});
+    }).timeout(30 * 1000);
 
-        if ( expectedEmailReasons.length == 0 ) {
-            done()
-        }
+    it('Shall check observation', function(done) {
+        helpers.data.searchData(firstObservationTime, userToken, accountId, deviceId, componentId, function(err, data) {
+            if (err) {
+                done(new Error("Cannot get data: " + err))
+            }
 
-        helpers.mail.waitForNewEmail(imap_username, imap_password, imap_host, imap_port, expectedEmailReasons.length)
-            .then(() => helpers.mail.getAllEmailMessages(imap_username, imap_password, imap_host, imap_port))
-            .then( (messages) => {
-            messages.forEach( (message) => {
-                var lines = message.toString().split("\n");
-                var i;
-                lines.forEach((line) => {
-                    var reExecReason = /^- Reason:.*/;
-                    if ( reExecReason.test(line) ) {
-                        var reason = line.split(":")[1].trim();
-                        var index = expectedEmailReasons.findIndex( (element) => {
-                            return (reason == element);
-                        })
-                        if ( index >= 0 ) {
-                            expectedEmailReasons.splice(index, 1);
+            if (data && data.length >= temperatureValues.length) {
+                for (var i = 0; i < data.length; i++) {
+                    for (var j = 0; j < temperatureValues.length; j++) {
+                        if (temperatureValues[j].ts == data[i].ts && temperatureValues[j].value == data[i].value) {
+                            temperatureValues[j].ts = null;
                         }
                     }
-                })
-            })
-            assert.equal(expectedEmailReasons.length, 0, "Received emails do not match expected emails sent from rule-engine");
-            done();
-            }).catch( (err) => {done(err)});
-        }).timeout(30 * 1000);
-
-    it('Shall check observations', function(done) {
-        var checkObservations = function(component) {
-            if ( component ) {
-                if ( component.data.length > 0 ) {
-
-                    helpers.data.searchData(component.data[0].ts, component.data[component.data.length-1].ts, 
-                                            userToken, accountId, deviceId, component.id, false, {}, function(err, result) {
-                        if (err) {
-                            done(new Error("Cannot get data: " + err))
-                        }
-                        else if (result && result.series && result.series.length == 1) {
-                            err = component.checkData(result.series[0].points);
-                        }
-                        else {
-                            done(new Error("Cannot get data."));
-                        }
-
-                        if (err) {
-                            done(new Error(err))
-                        }
-                        else {
-                            checkObservations(component.next)
-                        }
-                    })
                 }
-                else {
-                    checkObservations(component.next)
+
+                var err = "";
+                for (var i = 0; i < temperatureValues.length; i++) {
+                    if (temperatureValues[i].ts != null) {
+                        err += "[" + i + "]=" + temperatureValues[i].value + " ";
+                    }
                 }
+                if (err.length == 0) {
+                    done();
+                } else {
+                    done(new Error("Got wrong data for " + err))
+                }
+            } else {
+                done(new Error("Cannot get data"))
             }
-            else {
+
+        })
+    }).timeout(10000);
+
+    it('Shall check observation in advance ways', function(done) {
+        helpers.data.searchDataAdvanced(firstObservationTime, userToken, accountId, deviceId, componentId, function(err, response) {
+            if (err) {
+                done(new Error("Cannot get data: " + err))
+            }else {
+                assert.equal(response.data[0].deviceId, deviceId, 'advance search fail')
                 done()
             }
-        }
-        checkObservations(components.first)
-       }).timeout(10000);
 
+        })
+    }).timeout(10000);
+    
 });
 
 describe("Do time based rule subtests ...".bold,
@@ -1173,6 +1016,94 @@ describe("Do data sending subtests ...".bold,
   function() {
     var test;
     var descriptions = require("./subtests/data-sending-tests").descriptions;
+     it(descriptions.sendAggregatedDataPoints,function(done) {
+       test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+       test.sendAggregatedDataPoints(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedDataPoints,function(done) {
+       test.receiveAggregatedDataPoints(done);
+     }).timeout(10000);
+     it(descriptions.sendAggregatedMultipleDataPoints,function(done) {
+       test.sendAggregatedMultipleDataPoints(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedMultipleDataPoints,function(done) {
+       test.receiveAggregatedMultipleDataPoints(done);
+     }).timeout(10000);
+     it(descriptions.sendDataPointsWithLoc,function(done) {
+       test.sendDataPointsWithLoc(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.receiveDataPointsWithLoc,function(done) {
+       test.receiveDataPointsWithLoc(done);
+     }).timeout(10000);
+     it(descriptions.sendDataPointsWithAttributes,function(done) {
+       test.sendDataPointsWithAttributes(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.receiveDataPointsWithAttributes,function(done) {
+       test.receiveDataPointsWithAttributes(done);
+     }).timeout(10000);
+     it(descriptions.receiveDataPointsWithSelectedAttributes,function(done) {
+       test.receiveDataPointsWithSelectedAttributes(done);
+     }).timeout(10000);
+     it(descriptions.receiveDataPointsCount,function(done) {
+       test.receiveDataPointsCount(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregations,function(done) {
+       test.receiveAggregations(done);
+     }).timeout(10000);
+     it(descriptions.receiveSubset,function(done) {
+       test.receiveSubset(done);
+     }).timeout(10000);
+     it(descriptions.sendMaxAmountOfSamples,function(done) {
+       test.sendMaxAmountOfSamples(done);
+     }).timeout(10000);
+     it(descriptions.receiveMaxAmountOfSamples,function(done) {
+       test.receiveMaxAmountOfSamples(done);
+     }).timeout(10000);
+     it(descriptions.sendPartiallyWrongData,function(done) {
+       test.sendPartiallyWrongData(done);
+     }).timeout(10000);
+     it(descriptions.sendDataAsAdmin,function(done) {
+       test.sendDataAsAdmin(done);
+     }).timeout(10000);
+     it(descriptions.sendDataAsAdminWithWrongAccount,function(done) {
+       test.sendDataAsAdminWithWrongAccount(done);
+     }).timeout(10000);
+     it(descriptions.sendDataAsUser,function(done) {
+       test.sendDataAsUser(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.receivePartiallySentData,function(done) {
+       test.receivePartiallySentData(done);
+     }).timeout(10000);
+     it(descriptions.sendDataAsDeviceToWrongDeviceId,function(done) {
+       test.sendDataAsDeviceToWrongDeviceId(done);
+     }).timeout(10000);
+     it(descriptions.receiveDataFromAdmin,function(done) {
+       test.receiveDataFromAdmin(done);
+     }).timeout(10000);
+     it(descriptions.cleanup,function(done) {
+       test.cleanup(done);
+     }).timeout(10000);
+   });
+
+describe("Do data sending subtests via mqtt...".bold,
+  function() {
+    var test;
+    var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
      it(descriptions.sendAggregatedDataPoints,function(done) {
        test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
        test.sendAggregatedDataPoints(done);
