@@ -1100,95 +1100,6 @@ describe("Do data sending subtests ...".bold,
      }).timeout(10000);
    });
 
-describe("Do data sending subtests via mqtt...".bold,
-  function() {
-    var test;
-    var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
-    helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
-     it(descriptions.sendAggregatedDataPoints,function(done) {
-       test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
-       test.sendAggregatedDataPoints(done);
-     }).timeout(10000);
-     it(descriptions.waitForBackendSynchronization,function(done) {
-       test.waitForBackendSynchronization(done);
-     }).timeout(10000);
-     it(descriptions.receiveAggregatedDataPoints,function(done) {
-       test.receiveAggregatedDataPoints(done);
-     }).timeout(10000);
-     it(descriptions.sendAggregatedMultipleDataPoints,function(done) {
-       test.sendAggregatedMultipleDataPoints(done);
-     }).timeout(10000);
-     it(descriptions.waitForBackendSynchronization,function(done) {
-       test.waitForBackendSynchronization(done);
-     }).timeout(10000);
-     it(descriptions.receiveAggregatedMultipleDataPoints,function(done) {
-       test.receiveAggregatedMultipleDataPoints(done);
-     }).timeout(10000);
-     it(descriptions.sendDataPointsWithLoc,function(done) {
-       test.sendDataPointsWithLoc(done);
-     }).timeout(10000);
-     it(descriptions.waitForBackendSynchronization,function(done) {
-       test.waitForBackendSynchronization(done);
-     }).timeout(10000);
-     it(descriptions.receiveDataPointsWithLoc,function(done) {
-       test.receiveDataPointsWithLoc(done);
-     }).timeout(10000);
-     it(descriptions.sendDataPointsWithAttributes,function(done) {
-       test.sendDataPointsWithAttributes(done);
-     }).timeout(10000);
-     it(descriptions.waitForBackendSynchronization,function(done) {
-       test.waitForBackendSynchronization(done);
-     }).timeout(10000);
-     it(descriptions.receiveDataPointsWithAttributes,function(done) {
-       test.receiveDataPointsWithAttributes(done);
-     }).timeout(10000);
-     it(descriptions.receiveDataPointsWithSelectedAttributes,function(done) {
-       test.receiveDataPointsWithSelectedAttributes(done);
-     }).timeout(10000);
-     it(descriptions.receiveDataPointsCount,function(done) {
-       test.receiveDataPointsCount(done);
-     }).timeout(10000);
-     it(descriptions.receiveAggregations,function(done) {
-       test.receiveAggregations(done);
-     }).timeout(10000);
-     it(descriptions.receiveSubset,function(done) {
-       test.receiveSubset(done);
-     }).timeout(10000);
-     it(descriptions.sendMaxAmountOfSamples,function(done) {
-       test.sendMaxAmountOfSamples(done);
-     }).timeout(10000);
-     it(descriptions.receiveMaxAmountOfSamples,function(done) {
-       test.receiveMaxAmountOfSamples(done);
-     }).timeout(10000);
-     it(descriptions.sendPartiallyWrongData,function(done) {
-       test.sendPartiallyWrongData(done);
-     }).timeout(10000);
-     it(descriptions.sendDataAsAdmin,function(done) {
-       test.sendDataAsAdmin(done);
-     }).timeout(10000);
-     it(descriptions.sendDataAsAdminWithWrongAccount,function(done) {
-       test.sendDataAsAdminWithWrongAccount(done);
-     }).timeout(10000);
-     it(descriptions.sendDataAsUser,function(done) {
-       test.sendDataAsUser(done);
-     }).timeout(10000);
-     it(descriptions.waitForBackendSynchronization,function(done) {
-       test.waitForBackendSynchronization(done);
-     }).timeout(10000);
-     it(descriptions.receivePartiallySentData,function(done) {
-       test.receivePartiallySentData(done);
-     }).timeout(10000);
-     it(descriptions.sendDataAsDeviceToWrongDeviceId,function(done) {
-       test.sendDataAsDeviceToWrongDeviceId(done);
-     }).timeout(10000);
-     it(descriptions.receiveDataFromAdmin,function(done) {
-       test.receiveDataFromAdmin(done);
-     }).timeout(10000);
-     it(descriptions.cleanup,function(done) {
-       test.cleanup(done);
-     }).timeout(10000);
-   });
-
 describe("Geting and manage alerts ... \n".bold, function(){
 
     it('Shall get list of alerts', function(done) {
@@ -1786,3 +1697,5 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
  
 })   
+
+
