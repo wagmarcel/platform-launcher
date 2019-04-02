@@ -1699,3 +1699,46 @@ describe("change password and delete receiver ... \n".bold, function(){
 })   
 
 
+describe("Do data sending subtests via mqtt...".bold,
+  function() {
+    var test;
+    var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
+    helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+     it(descriptions.sendAggregatedDataPoints,function(done) {
+       test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+       test.sendAggregatedDataPoints(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.sendAggregatedMultipleDataPoints,function(done) {
+       test.sendAggregatedMultipleDataPoints(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.sendDataPointsWithLoc,function(done) {
+       test.sendDataPointsWithLoc(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.sendDataPointsWithAttributes,function(done) {
+       test.sendDataPointsWithAttributes(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.sendMaxAmountOfSamples,function(done) {
+       test.sendMaxAmountOfSamples(done);
+     }).timeout(10000);
+     it(descriptions.waitForBackendSynchronization,function(done) {
+       test.waitForBackendSynchronization(done);
+     }).timeout(10000);
+     it(descriptions.sendDataAsDeviceToWrongDeviceId,function(done) {
+       test.sendDataAsDeviceToWrongDeviceId(done);
+     }).timeout(10000);
+     it(descriptions.cleanup,function(done) {
+       test.cleanup(done);
+     }).timeout(10000);
+});
