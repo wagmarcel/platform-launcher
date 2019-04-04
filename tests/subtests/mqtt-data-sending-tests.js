@@ -20,10 +20,11 @@
 "use strict";
 
 var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
+  var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
+  var config = require("../test-config-mqtt.json");
   var chai = require('chai');
   var assert = chai.assert;
   var helpers = require("../lib/helpers");
-  var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
   var componentNames = ["temperature-sensor-sdt", "humidity-sensor-sdt"];
   var componentTypes = ["temperature.v1.0", "humidity.v1.0"];
   var promtests = require('./promise-wrap');
@@ -48,7 +49,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
-  
+
+  var proxyConnector = oispSdk(config).lib.proxies.getProxyConnector();
+  console.log("proxyconnector", proxyConnector);
+  helpers.mqttconnector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
 
   var dataValues1 = [
     [{
@@ -443,86 +447,11 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   //********************* Main Object *****************//
   //---------------------------------------------------//
   return {
-    "sendAggregatedDataPoints": function(done) {
-      //To be independent of main tests, own sensors, actuators, and commands have to be created
-      promtests.addComponent(componentNames[0], componentTypes[0], deviceToken, accountId, deviceId)
-        .then((id) => {
-          componentId[0] = id;
-        })
-        .then((id) => promtests.addComponent(componentNames[1], componentTypes[1], deviceToken, accountId, deviceId))
-        .then((id) => {
-          componentId[1] = id;
-        })
-        .then(() => {
-          var proms = [];
-          dataValues1Time = 0 + BASE_TIMESTAMP;
-          dataValues1.forEach(function(element) {
-            proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId))
-          });
-          return Promise.all(proms);
-        })
-        .then(() => {
-          done();
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "sendAggregatedMultipleDataPoints": function(done) {
-      var proms = [];
-      dataValues2Time = dataValues2[0][0].ts;
-      dataValues2.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
-      });
-      Promise.all(proms)
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "sendDataPointsWithLoc": function(done) {
-      var proms = [];
-      dataValues3Time = dataValues3[0][0].ts;
-      dataValues3.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
-      });
-      Promise.all(proms)
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "sendDataPointsWithAttributes": function(done) {
-      var proms = [];
-      dataValues4Time = dataValues4[0][0].ts;
-      dataValues4.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
-      });
-      Promise.all(proms)
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "sendMaxAmountOfSamples": function(done) {
-      var dataList = [];
 
-      for (var i = 0; i < MAX_SAMPLES; i++) {
-        var ts = (i + 1) * 1000000 + BASE_TIMESTAMP
-        var obj = {
-          component: 0,
-          ts: ts,
-          value: i
-        }
-        dataList.push(obj);
-      }
-      promtests.submitDataList(dataList, deviceToken, accountId, deviceId, componentId)
+    "sendSingleDataPoint" : function(done){
+      var proms = [];
+      proms.push(promtests.submitData(dataValues4[0][0], deviceToken, accountId, deviceId, componentId));
+      Promise.all(proms)
         .then(() => {
           done()
         })
@@ -533,130 +462,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     "waitForBackendSynchronization": function(done) {
       setTimeout(done, 2000);
 
-    },
-    "sendPartiallyWrongData": function(done) {
-      var proms = [];
-      var codes = [];
-      dataValues5StartTime = dataValues5[0][0].ts;
-      var dataValues5lastElement = dataValues5[dataValues5.length - 1];
-      var dataValues5lastLength = dataValues5[dataValues5.length - 1].length;
-      dataValues5StopTime = dataValues5lastElement[dataValues5lastLength - 1].ts;
-      componentId.push(uuidv4()); // 3rd id is random
-      dataValues5.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
-      });
-      Promise.all(proms.map(p => p.catch(e => e)))
-        .then(results => {
-          var parsedResults = results.map( (result) => {
-            //some results are string, some others objects
-            //Therefore if parsing fails, it must be an object already
-            try {
-              return JSON.parse(result);
-            } catch (e) {
-              return result;
-            }
-          })
-          assert.equal(parsedResults[0].code, 1412);
-          assert.equal(parsedResults[1].code, 6402);
-          assert.equal(parsedResults[2].code, 6402);
-          done();
-        })
-        .catch(err => done(err));
-
-    },
-    "sendDataAsAdmin": function(done) {
-      dataValues6StartTime = dataValues6[0].ts;
-      dataValues6StopTime = dataValues6[1].ts;
-      var username = process.env.USERNAME;
-      var password = process.env.PASSWORD;
-      assert.isNotEmpty(username, "no username provided");
-      assert.isNotEmpty(password, "no password provided");
-      promtests.authGetToken(username, password)
-      .then((userToken) => promtests.submitDataList(dataValues6, userToken, accountId, deviceId, componentId, {}))
-      .then(() => {
-        done()
-      })
-      .catch((err) => {
-        done(new Error(err));
-      })
-    },
-    "sendDataAsUser": function(done) {
-      var username = process.env.USERNAME;
-      var password = process.env.PASSWORD;
-      var username2 = process.env.USERNAME2;
-      var password2 = process.env.PASSWORD2;
-      var admin2Token;
-      var inviteId;
-      assert.isNotEmpty(username, "no username provided");
-      assert.isNotEmpty(password, "no password provided");
-      assert.isNotEmpty(username2, "no username provided");
-      assert.isNotEmpty(password2, "no password provided");
-      //First create a user for the account, accept the invitation and try to send data
-      promtests.authGetToken(username, password)
-      .then((userToken) => {return promtests.createInvitation(userToken, accountId, username2)})
-      .then((result) => {inviteId = result._id; return promtests.authGetToken(username2, password2)})
-      .then((userToken) => {admin2Token = userToken; return promtests.acceptInvitation(userToken, accountId, inviteId)})
-      .then(() => promtests.submitDataList(dataValues7,
-        admin2Token, accountId, deviceId, componentId, {}).catch(e => e))
-      .then((result) => {
-        var parsedResult = JSON.parse(result);
-        assert.equal(parsedResult.code, 401)
-        done()
-      })
-      .catch((err) => {
-        done(err);
-      })
-    },
-    "sendDataAsAdminWithWrongAccount": function(done) {
-      assert.isNotEmpty(username2, "no username provided");
-      assert.isNotEmpty(password2, "no password provided");
-      promtests.authGetToken(username2, password2)
-      .then((userToken) => {
-        userToken2 = userToken;
-        return promtests.createAccount(accountName2, userToken)
-      })
-      .then(() => promtests.authTokenInfo(userToken2))
-      .then((tokenInfo) => {
-        accountId2 = tokenInfo.payload.accounts[0].id;
-        return accountId2;})
-      .then((accountId2) =>
-      promtests.submitDataList(dataValues7,
-        userToken2, accountId2, deviceId, componentId, {}).catch(e => e))
-      .then((result) => {
-        var parsedResult = JSON.parse(result);
-        assert.equal(parsedResult.code, 401)
-        done()
-      })
-      .catch((err) => {
-        done(err);
-      })
-    },
-    "sendDataAsDeviceToWrongDeviceId": function(done) {
-      var username = process.env.USERNAME;
-      var password = process.env.PASSWORD;
-      var newDeviceName = "innocentDevice";
-      var componentName = "evilDeviceComponent";
-      var componentType = componentTypes[0];
-      assert.isNotEmpty(username, "no username provided");
-      assert.isNotEmpty(password, "no password provided");
-      //First create a user for the account, accept the invitation and try to send data
-      promtests.authGetToken(username, password)
-      .then((userToken) => promtests.createDevice(newDeviceName, newDeviceId, userToken, accountId))
-      .then(() => promtests.activateDevice(userToken, accountId, newDeviceId))
-      .then((result) => {
-        return promtests.addComponent(componentName, componentType, userToken, accountId, newDeviceId)
-      })
-      .then((id) => {newComponentId = id;})
-      .then(() => promtests.submitDataList(dataValues7,
-        deviceToken, accountId, newDeviceId, newComponentId, {}).catch(e => e))
-      .then((result) => {
-        var parsedResult = JSON.parse(result);
-        assert.equal(parsedResult.code, 401)
-        done()
-      })
-      .catch((err) => {
-        done(err);
-      })
     },
     "cleanup": function(done) {
       promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
@@ -674,18 +479,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 };
 
 var descriptions = {
-  "sendAggregatedDataPoints": "Shall send multiple datapoints for one component",
-  "sendAggregatedMultipleDataPoints": "Shall send multiple datapoints for 2 components",
-  "sendDataPointsWithLoc": "Sending data points with location metadata",
-  "sendDataPointsWithAttributes": "Sending data points with attributes",
-  "sendMaxAmountOfSamples": "Send maximal allowed samples per request",
-  "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
-  "sendPartiallyWrongData": "Send data with partially unknown cid's",
-  "sendDataAsAdmin": "Send test data as admin on behalf of a device",
-  "sendDataAsUser": "Send test data with user role and get rejected",
-  "sendDataAsAdminWithWrongAccount": "Send test data as admin with wrong accountId",
-  "sendDataAsDeviceToWrongDeviceId": "Test whether Device data submission is rejected if it goes to wrong device",
-  "cleanup": "Cleanup components, commands, rules created for subtest"
+  "cleanup": "Cleanup components, commands, rules created for subtest",
+  "sendSingleDataPoint": "Send a single data point"
 };
 
 module.exports = {

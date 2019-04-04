@@ -22,35 +22,11 @@
 var chai = require('chai');
 var assert = chai.assert;
 
-var config = require("../../test-config.json");
+var config = require("../../test-config-mqtt.json");
 var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
-var api = oispSdk(config).api.rest;
-
-
-
-function wsConnect(connector, deviceToken, deviceId, cb) {
-    if (!cb) {
-        throw "Callback required";
-    }
-
-    var deviceInfo = {
-        device_id: deviceId,
-        device_token: deviceToken
-    };
-
-    connector.updateDeviceInfo(deviceInfo)
-
-    var data = {
-        deviceId: deviceId
-    };
-
-    connector.controlCommandListen(data, cb, function() {});
-}
-
+var api = oispSdk(config).api.mqtt;
 function mqttConnect(connector, deviceToken, deviceId, cb) {
     console.log("i am hereeee")
-    config = require("../../test-config-mqtt.json");
-    api = oispSdk(config).api.mqtt;
     console.log("i am hereeee", api)
     if (!cb) {
         throw "Callback required";
@@ -65,7 +41,6 @@ function mqttConnect(connector, deviceToken, deviceId, cb) {
 }
 
 module.exports={
-    wsConnect: wsConnect,
     mqttConnect: mqttConnect
 }
 
