@@ -2,42 +2,77 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
-jobs:
-  build:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:8.0
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
+version: 2.1
+executors:
+  my-executor:
+    machine:
+      enabled: true
+      image: ubuntu-1604:201903-01
     working_directory: ~/repo
     environment:
       shell: /bin/bash
       TERM: xterm
-
+commands:
+  setup-build-environment:
+    description: "Setup build Environment"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: Setup build environment
+          command: |
+            cd platform-setup
+            sudo ./setup-ubuntu16.04.sh
+  setup-branch:
+    description: "Setup branch"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: Setup branch
+          command: |
+            if [ "$CIRCLE_BRANCH" = "develop" ]; then
+              git branch --set-upstream-to=origin/develop develop
+              make update
+            fi
+  build-branch:
+    description: "Build branch"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: Build branch
+          command: |
+            yes| make build
+  e2e-test:
+    description: "E2E test"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: E2e Test
+          command: |
+            yes| make test          
+jobs:
+  build:
+    executor: my-executor
     steps:
       - checkout
-
-      - run:
-          name: Check whether most recent commit is signedoff
-          shell: /bin/bash
-          command: |
-            MESSAGE=`git log -1 --pretty=%B`
-            echo "Checking whether signed"
-            if [[ "${MESSAGE}" == *Signed-off-by:*@* ]]; then
-              echo "Commit is signedoff"
-            else
-              echo "Commit is not signedoff"
-              exit 1
-            fi
-
-      # run tests!
+      - setup-build-environment
+      - setup-branch
+      - build-branch
+      - e2e-test
+      
+  pushImages:
+    executor: my-executor
+    steps:       
       - run:
           shell: /bin/bash
-          name: Run remote build & e2e tests
+          name: E2e Test
           command: |
-            ssh -o "StrictHostKeyChecking no" root@ci.streammyiot.com /opt/test/testTest.sh test
+            docker login  -u ${DOCKER_USERNAME} -p {DOCKER_PASSWORD}
+            
+workflows:
+  version: 2.1
+  workflow:
+    jobs:
+      - build
+      - pushImages:
+          requires:
+            - build
