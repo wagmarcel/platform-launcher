@@ -68,7 +68,7 @@ commands:
             if [ "<< parameters.tag >> = "tag" ]; then
               TAG=`git describe --tag`
             fi  
-            DOCKER_TAG=<< parameters.tag >> echo I would now push with ${DOCKER_TAG}          
+            DOCKER_TAG=${TAG} echo I would now push with ${DOCKER_TAG}          
 jobs:
   build:
     executor: my-executor
