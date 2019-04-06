@@ -62,10 +62,10 @@ commands:
           command: |
             docker login  -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
             TAG="latest"
-            if [ "<< parameters.tag >> = "date" ]; then
+            if [ "<< parameters.tag >>" = "date" ]; then
               TAG=`date -I`
             fi
-            if [ "<< parameters.tag >> = "tag" ]; then
+            if [ "<< parameters.tag >>" = "tag" ]; then
               TAG=`git describe --tag`
               echo TAGTAG ${TAG}
               git describe --tag
