@@ -123,8 +123,8 @@ workflows:
       - build:
           filters:
             branches:
-              only:
-                - develop
+              ignore:
+                - master
       - build-master:
           filters:
             branches:
