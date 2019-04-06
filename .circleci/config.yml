@@ -48,7 +48,27 @@ commands:
           shell: /bin/bash
           name: E2e Test
           command: |
-            yes| make test          
+            yes| make test
+  push-images:
+    description: "Push images"
+    parameters:
+      tag:
+        type: String
+        default: "latest"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: E2e Test
+          command: |
+            docker login  -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+            TAG="latest"
+            if [ "<< parameters.tag >> = "date" ]; then
+              TAG=`date -I`
+            fi
+            if [ "<< parameters.tag >> = "tag" ]; then
+              TAG=`git describe --tag`
+            fi  
+            DOCKER_TAG=<< parameters.tag >> echo I would now push with ${DOCKER_TAG}          
 jobs:
   build:
     executor: my-executor
@@ -56,23 +76,53 @@ jobs:
       - checkout
       - setup-build-environment
       - setup-branch
-      - build-branch
-      - e2e-test
-      
-  pushImages:
+      #- build-branch
+      #- e2e-test
+  build-master:
     executor: my-executor
-    steps:       
-      - run:
-          shell: /bin/bash
-          name: E2e Test
-          command: |
-            docker login  -u ${DOCKER_USERNAME} -p {DOCKER_PASSWORD}
-            
+    steps:
+      - checkout
+      - setup-build-environment
+      - setup-branch
+      #- build-branch
+      #- e2e-test
+      - push-images:
+          tag: "tag"
+  build-nightly:
+    executor: my-executor
+    steps:
+      - checkout
+      - setup-build-environment
+      - setup-branch
+      #- build-branch
+      #- e2e-test
+      - push-images:
+          tag: "date"
 workflows:
   version: 2.1
   workflow:
     jobs:
-      - build
-      - pushImages:
-          requires:
-            - build
+      - build:
+          filters:
+            branches:
+              only:
+                - develop
+      - build-master:
+          filters:
+            branches:
+              only:
+                - master
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - develop
+    jobs:
+      - build-nightly:
+          filters:
+            branches:
+              only:
+                - develop
