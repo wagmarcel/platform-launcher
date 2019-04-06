@@ -30,8 +30,32 @@ commands:
           shell: /bin/bash
           name: Setup branch
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-              git branch --set-upstream-to=origin/develop develop
+            sudo apt install jq
+            # First find out PR number (CircleCI is not that sophisticated about it)
+            
+            if [ ! -z "${CIRCLE_PULL_REQUEST}" ]; then
+              #echo Pull request active ${CIRCLE_PULL_REQUEST}
+              PR=${CIRCLE_PR_NUMBER}
+              PR_REPO=${CIRCLE_PR_REPONAME}
+              PR_USERNAME=${CIRCLE_PR_USERNAME}
+              if [ -z "${PR}"]; then
+                #no forked PR
+                PR=$(basename ${CIRCLE_PULL_REQUEST})
+                PR_REPO=${CIRCLE_PROJECT_REPONAME}
+                PR_USERNAME=${CIRCLE_PROJECT_USERNAME}
+              fi
+              #echo Marcel922 ${PR_REPO} + ${PR}
+              #echo Marcel352 ${PR_USERNAME}
+              url="https://api.github.com/repos/${PR_USERNAME}/${PR_REPO}/pulls/${PR}"
+              BASE_BRANCH=$(curl "$url" | jq '.base.ref' | tr -d '"')
+              #echo Marcel643 $url
+              #echo $(curl "$url")
+              echo Marcel822 ${BASE_BRANCH}
+            fi
+            if [ ! "$CIRCLE_BRANCH" = "master" ]; then
+              git branch --set-upstream-to=origin/${CIRCLE_BRANCH} ${CIRCLE_BRANCH}
+            fi
+            if [ "$CIRCLE_BRANCH" = "develop" ] || ["${BASE_BRANCH}" = "develop"]; then
               make update
             fi
   build-branch:
@@ -123,8 +147,8 @@ workflows:
       - build:
           filters:
             branches:
-              only:
-                - develop
+              ignore:
+                - master
       - build-master:
           filters:
             branches:
