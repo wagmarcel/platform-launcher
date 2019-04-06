@@ -30,8 +30,8 @@ commands:
           shell: /bin/bash
           name: Setup branch
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-              git branch --set-upstream-to=origin/develop develop
+            if [ ! "$CIRCLE_BRANCH" = "master" ]; then
+              git branch --set-upstream-to=origin/${CIRCLE_BRANCH} ${CIRCLE_BRANCH}
               make update
             fi
   build-branch:
