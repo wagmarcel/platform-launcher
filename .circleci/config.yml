@@ -28,7 +28,7 @@ commands:
     steps:
       - run:
           shell: /bin/bash
-          name: Setup branch
+          name: Setup branch and check whether PR/master is tagged
           command: |
             sudo apt install jq
             # First find out Base Branch (if any)
