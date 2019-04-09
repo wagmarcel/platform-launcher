@@ -78,12 +78,20 @@ commands:
             DOCKER_TAG="latest"
             if [ "<< parameters.tag >>" = "date" ]; then
               DOCKER_TAG=`date -I`
+              DOCKER_PUSH_LATEST=true              
             fi
             if [ "<< parameters.tag >>" = "tag" ]; then
               DOCKER_TAG=`git describe --tag` || exit 1
             fi
-            echo Now trying to push with Tag ${DOCKER_TAG}
-            make push
+            echo Now trying to push with Tag ${DOCKER_TAG} push latest ${DOCKER_PUSH_LATEST}
+            if [ ! -z "$PUSH_DRYRUN" ]; then
+              make push-images
+              if [ ! -z "$DOCKER_PUSH_LATEST" ]; then
+                DOCKER_TAG="latest" make push-images
+              fi
+            else
+              echo Only dry run mode. Not pushing to dockerhub!
+            fi
   check-signed:
     description: "Check whether latest commit is signed"
     steps:
