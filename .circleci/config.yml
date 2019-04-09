@@ -24,7 +24,7 @@ commands:
             cd platform-setup
             sudo ./setup-ubuntu16.04.sh
   setup-branch:
-    description: "Setup branch"
+    description: "Setup branch and check whether PR/master is tagged corretly"
     steps:
       - run:
           shell: /bin/bash
@@ -46,6 +46,10 @@ commands:
               #If on develop or a PR towards develop assume that all submodules are updated
               echo Detected that PR is related to develop. Will update all subrepos.
               make update
+            fi
+            echo "Checking whether master or PR for master is tagged"
+            if [ "${CIRCLE_BRANCH}" = "master" ] || [ "${BASE_BRANCH}" = "master" ]; then
+              git describe --tags --exact-match || exit 1
             fi
   build-branch:
     description: "Build branch"
@@ -81,7 +85,7 @@ commands:
               DOCKER_PUSH_LATEST=true              
             fi
             if [ "<< parameters.tag >>" = "tag" ]; then
-              DOCKER_TAG=`git describe --tag` || exit 1
+              DOCKER_TAG=`git describe --tags --exact-match` || exit 1
             fi
             echo Now trying to push with Tag ${DOCKER_TAG} push latest ${DOCKER_PUSH_LATEST}
             if [ ! -z "$PUSH_DRYRUN" ]; then
