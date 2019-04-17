@@ -6,22 +6,22 @@
 	},
 	"default_connector": "mqtt",
 	"connector": {
-			"mqtt": {
-	            "host": "localhost",
-	            "port": 8883,
-	            "qos": 1,
-	            "retain": false,
-	            "secure": true,
-	            "strictSSL": true,
-	            "retries": 5,
-	            "topic": {
-	                "metric_topic": "server/metric/{accountid}/{deviceid}",
-	                "health": "server/devices/{deviceid}/health",
-	                "health_status": "device/{deviceid}/health",
-	                "control_command": "device/{gwid}/control",
-	                "ingestion_response": "device/{deviceid}/metric/response",
-	                "actuation": "device/metric/{deviceid}/actuation"
-	            }
+		"mqtt": {
+            "host": "localhost",
+            "port": 8883,
+            "qos": 1,
+            "retain": false,
+            "secure": true,
+            "strictSSL": true,
+            "retries": 5,
+            "topic": {
+                "metric_topic": "server/metric/{accountid}/{deviceid}",
+                "health": "server/devices/{deviceid}/health",
+                "health_status": "device/{deviceid}/health",
+                "control_command": "device/{gwid}/control",
+                "ingestion_response": "device/{deviceid}/metric/response",
+                "actuation": "device/metric/{deviceid}/actuation"
+            }
 		}
 	}
 }

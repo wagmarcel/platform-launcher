@@ -1561,19 +1561,20 @@ describe("Do data sending subtests via mqtt...".bold,
   function() {
     var test;
     var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
-    
+    console.log("bypass1")
     test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+    console.log("bypass2")
+    
+    it(descriptions.sendSingleDataPoint,function(done) {
+    test.sendSingleDataPoint(done);
+    }).timeout(10000);
+    it(descriptions.waitForBackendSynchronization,function(done) {
+    test.waitForBackendSynchronization(done);
+    }).timeout(10000);
 
-     it(descriptions.sendSingleDataPoint,function(done) {
-       test.sendSingleDataPoint(done);
-     }).timeout(10000);
-     it(descriptions.waitForBackendSynchronization,function(done) {
-       test.waitForBackendSynchronization(done);
-     }).timeout(10000);
-     
-     it(descriptions.cleanup,function(done) {
-       test.cleanup(done);
-     }).timeout(10000);
+    it(descriptions.cleanup,function(done) {
+    test.cleanup(done);
+    }).timeout(10000);
 });
 
 

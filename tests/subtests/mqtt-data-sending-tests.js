@@ -49,10 +49,13 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
-
+  console.log("bypassmqttsubtest0")
+  console.log("default_connector", (config.default_connector))
   var proxyConnector = oispSdk(config).lib.proxies.getProxyConnector();
-  console.log("proxyconnector", proxyConnector);
-  helpers.mqttconnector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+  console.log("bypassmqttsubtest1")
+  helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+  //helpers.mqttconnector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+  console.log("bypassmqttsubtest2")
 
   var dataValues1 = [
     [{

@@ -48,7 +48,6 @@ function wsConnect(connector, deviceToken, deviceId, cb) {
 }
 
 function mqttConnect(connector, deviceToken, deviceId, cb) {
-    console.log("i am hereeee")
     config = require("../../test-config-mqtt.json");
     api = oispSdk(config).api.mqtt;
     console.log("i am hereeee", api)
