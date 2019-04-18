@@ -58,11 +58,7 @@ function mqttConnect(connector, deviceToken, deviceId, cb) {
     var data = {
         deviceId: deviceId
     };
-    connector.controlCommandListen(data, callback, function() {
-        if (callback) {
-            callback();
-        }
-    });
+
     //connector.controlCommandListen(data, cb, function() {});
 
 }

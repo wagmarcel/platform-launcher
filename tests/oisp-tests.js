@@ -1557,28 +1557,28 @@ describe("Invite receiver ...\n".bold, function() {
     })
 })
 
-describe("Do data sending subtests via mqtt...".bold,
-  function() {
-    var test;
-    var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
-    console.log("bypass1")
-    test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
-    console.log("bypass2")
-    
-    it(descriptions.sendSingleDataPoint,function(done) {
-    test.sendSingleDataPoint(done);
-    }).timeout(10000);
-    it(descriptions.waitForBackendSynchronization,function(done) {
-    test.waitForBackendSynchronization(done);
-    }).timeout(10000);
+// describe("Do data sending subtests via mqtt...".bold, function() {
 
-    it(descriptions.cleanup,function(done) {
-    test.cleanup(done);
-    }).timeout(10000);
-});
+//     var test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+
+//     it('Send a single data point', function(done) {
+//         console.log("hey")
+//         test.sendSingleDataPoint(done);
+//     }).timeout(10000);
+
+//     it('Waiting maximal tolerable time backend needs to flush so that points are available', function(done) {
+//         test.waitForBackendSynchronization(done);
+//     }).timeout(10000);
+
+//     it('Cleanup components, commands, rules created for subtest', function(done) {
+//         test.cleanup(done);
+//     }).timeout(10000);
+
+// });
 
 
 describe("change password and delete receiver ... \n".bold, function(){
+    //var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('ws');
 
     it('Shall request change receiver password', function(done) {
     var username = process.env.USERNAME;
