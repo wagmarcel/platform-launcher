@@ -170,7 +170,7 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
     valueList.forEach(function(element){
       var toPush = {
         componentId: cidList[element.component],
-        value: element.value.toString(),
+        value: (typeof element.value === 'string') ? element.value : element.value.toString(),
         on: element.ts
       }
       if (element.loc) {

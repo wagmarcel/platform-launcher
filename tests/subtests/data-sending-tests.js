@@ -23,8 +23,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var chai = require('chai');
   var assert = chai.assert;
   var helpers = require("../lib/helpers");
-  var componentNames = ["temperature-sensor-sdt", "humidity-sensor-sdt"];
-  var componentTypes = ["temperature.v1.0", "humidity.v1.0"];
+  var componentNames = ["temperature-sensor-sdt", "humidity-sensor-sdt", "metadata-sensor-sdt", "binarystate-senosr-sdt"];
+  var componentTypes = ["temperature.v1.0", "humidity.v1.0", "metaData.v1.0", "binaryState.v1.0"];
   var promtests = require('./promise-wrap');
   var uuidv4 = require('uuid/v4');
   var rules = [];
@@ -188,6 +188,21 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       component: 1,
       value: 50,
       ts: 1170 + BASE_TIMESTAMP
+    }],
+    [{
+      component: 1,
+      value: 50,
+      ts: 1200 + BASE_TIMESTAMP
+    },
+    {
+        component: 2,
+        value: "hello",
+        ts: 1210 + BASE_TIMESTAMP
+    },
+    {
+      component: 3,
+      value: "1",
+      ts: 1220 + BASE_TIMESTAMP
     }]
   ]
 
@@ -329,6 +344,35 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }
   ]
 
+  var findMapping = function(numComponents, series) {
+    var mapping = numComponents;
+    numComponents.forEach(function(i) { 
+      mapping[i] = componentId.findIndex(
+        (element) => element === series[i].componentId )})
+    return mapping;
+  }
+//flatten sent array and provide numComponents
+  var prepareValues = function(dataValues) {
+    //First get a flat array of aggregated points
+    var flattenedDataValues = flattenArray(dataValues);
+    var numComponents = [];
+    flattenedDataValues.forEach(function(element){ 
+      numComponents[element.component] = element.component
+    })
+    var listOfExpectedResults = [];
+    //Get elements sorted by componentId
+    numComponents.forEach(function(i){
+      listOfExpectedResults[i] = flattenedDataValues.filter(
+        (element) => (element.component == i)
+      );
+    })
+    return {
+      flattenedDataValues: flattenedDataValues,
+      numComponents: numComponents,
+      listOfExpectedResults: listOfExpectedResults
+    }
+  }
+  
   var aggregation = {
     MAX: 0,
     MIN: 1,
@@ -451,6 +495,14 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         .then((id) => {
           componentId[1] = id;
         })
+        .then((id) => promtests.addComponent(componentNames[2], componentTypes[2], deviceToken, accountId, deviceId))
+        .then((id) => {
+          componentId[2] = id;
+        })
+        .then((id) => promtests.addComponent(componentNames[3], componentTypes[3], deviceToken, accountId, deviceId))
+        .then((id) => {
+          componentId[3] = id;
+        })
         .then(() => {
           var proms = [];
           dataValues1Time = 0 + BASE_TIMESTAMP;
@@ -497,36 +549,25 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         });
     },
     "receiveAggregatedMultipleDataPoints": function(done) {
-
-      var flattenedDataValues = flattenArray(dataValues2);
-      var listOfExpectedResults = [];
-      listOfExpectedResults[0] = flattenedDataValues.filter(
-        (element) => (element.component == 0)
-      );
-      listOfExpectedResults[1] = flattenedDataValues.filter(
-        (element) => (element.component == 1)
-      );
+      var pValues = prepareValues(dataValues2);
+      var numComponents = pValues.numComponents;
+      var listOfExpectedResults = pValues.listOfExpectedResults;
+      
       promtests.searchData(dataValues2Time, -1, deviceToken, accountId, deviceId, componentId, false, {})
         .then((result) => {
-          if (result.series.length != 2) done("Wrong number of point series!");
-          var mapping = [0, 1];
-          if (result.series[0].componentId !== componentId[0]) {
-            mapping = [1, 0];
+          if (result.series.length != numComponents.length) {
+            done("Wrong number of point series!");
           }
-
-          var comparisonResult = comparePoints(listOfExpectedResults[mapping[0]], result.series[0].points)
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          }
-          var listOfExpectedResults1 = flattenedDataValues.filter(
-            (element) => (element.component == 1)
-          );
-          comparisonResult = comparePoints(listOfExpectedResults[mapping[1]], result.series[1].points);
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          } else {
-            done();
-          }
+          //Mapping is needed because the results are not in sending order 
+          // e.g. component[0] could be now be in series[3]
+          var mapping = findMapping(numComponents, result.series);
+          mapping.forEach(function(element){
+            var comparisonResult = comparePoints(listOfExpectedResults[mapping[0]], result.series[0].points)
+            if (comparisonResult !== true) {
+              done(comparisonResult);
+            }  
+          });
+          done();
         })
         .catch((err) => {
           done(err);
@@ -907,8 +948,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 var descriptions = {
   "sendAggregatedDataPoints": "Shall send multiple datapoints for one component",
   "receiveAggregatedDataPoints": "Shall receive multiple datapoints for one component",
-  "sendAggregatedMultipleDataPoints": "Shall send multiple datapoints for 2 components",
-  "receiveAggregatedMultipleDataPoints": "Shall receive multiple datapoints for 2 components",
+  "sendAggregatedMultipleDataPoints": "Shall send multiple datapoints for 4 components",
+  "receiveAggregatedMultipleDataPoints": "Shall receive multiple datapoints for 4 components",
   "sendDataPointsWithLoc": "Sending data points with location metadata",
   "receiveDataPointsWithLoc": "Receiving data points with location metadata",
   "sendDataPointsWithAttributes": "Sending data points with attributes",
