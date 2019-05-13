@@ -345,8 +345,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   ]
 
   var findMapping = function(numComponents, series) {
-    var mapping = numComponents;
-    numComponents.forEach(function(i) { 
+    var mapping = {};
+    Object.keys(numComponents).forEach(function(i) { 
       mapping[i] = componentId.findIndex(
         (element) => element === series[i].componentId )})
     return mapping;
@@ -355,13 +355,13 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var prepareValues = function(dataValues) {
     //First get a flat array of aggregated points
     var flattenedDataValues = flattenArray(dataValues);
-    var numComponents = [];
+    var numComponents = {};
     flattenedDataValues.forEach(function(element){ 
       numComponents[element.component] = element.component
     })
     var listOfExpectedResults = [];
     //Get elements sorted by componentId
-    numComponents.forEach(function(i){
+    Object.keys(numComponents).forEach(function(i){
       listOfExpectedResults[i] = flattenedDataValues.filter(
         (element) => (element.component == i)
       );
@@ -556,15 +556,16 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       promtests.searchData(dataValues2Time, -1, deviceToken, accountId, deviceId, componentId, false, {})
         .then((result) => {
           if (result.series.length != numComponents.length) {
-            done("Wrong number of point series!");
+            return done("Wrong number of point series!");
           }
           //Mapping is needed because the results are not in sending order 
           // e.g. component[0] could be now be in series[3]
           var mapping = findMapping(numComponents, result.series);
-          mapping.forEach(function(element){
-            var comparisonResult = comparePoints(listOfExpectedResults[mapping[0]], result.series[0].points)
+          Object.entries(mapping).forEach(function(element){
+            var comparisonResult = comparePoints(listOfExpectedResults[element[1]], result.series[element[0]].points)
             if (comparisonResult !== true) {
               done(comparisonResult);
+              return;
             }  
           });
           done();
@@ -619,24 +620,30 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         });
     },
     "receiveDataPointsWithAttributes": function(done) {
-      var flattenedDataValues = flattenArray(dataValues4);
+      var pValues = prepareValues(dataValues4);
+      var numComponents = pValues.numComponents;
+      var flattenedDataValues = pValues.flattenedDataValues;
       promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, componentId, true, undefined, undefined, undefined)
         .then((result) => {
-          if (result.data[0].components.length != 2) done("Wrong number of point series!");
-          var compIndex = 0;
-          if (result.data[0].components[1].componentId == componentId[1]) {
-            compIndex = 1;
+          var mapping = findMapping(numComponents, result.data[0].components)
+          if (result.data[0].components.length != componentId.length) {
+            return done("Wrong number of point series!");
           }
-          var resultObjects = result.data[0].components[compIndex].samples.map(
-            (element) =>
-              createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
-          );
-          var comparisonResult = comparePoints(flattenedDataValues, resultObjects);
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          } else {
-            done();
-          }
+          var err = false;
+          Object.entries(mapping).forEach(function(mappingElem) {
+            var resultObjects = result.data[0].components[mappingElem[0]].samples.map(
+              (element) =>
+                createObjectFromData(element, result.data[0].components[mappingElem[1]].samplesHeader)
+              );
+              var comparisonResult = comparePoints(flattenedDataValues, resultObjects);
+              if (comparisonResult !== true) {
+                err = 1;
+                return done(comparisonResult);
+              }
+            })
+            if (!err) {
+              return done();
+            }
         })
         .catch((err) => {
           done(err);
