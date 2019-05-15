@@ -97,6 +97,7 @@ function waitForNewEmail(user, password, host, port, num){
     })
 }
 
+
 function getEmailMessage(user, password, host, port, num) {
 
     var imap = new Imap({

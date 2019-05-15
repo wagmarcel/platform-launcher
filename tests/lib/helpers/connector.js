@@ -49,7 +49,7 @@ function wsConnect(connector, deviceToken, deviceId, cb) {
 
 function mqttConnect(connector, deviceToken, deviceId, cb) {
     config = require("../../test-config-mqtt.json");
-    api = oispSdk(config).api.mqtt;
+    api = oispSdk(config).api.mqtt; //what is the use of api, i dont understand
     console.log("i am hereeee", api)
     if (!cb) {
         throw "Callback required";

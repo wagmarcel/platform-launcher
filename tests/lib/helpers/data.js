@@ -139,7 +139,8 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
             }]
         }
     }
-
+    console.log("submit data helper device token", deviceToken)
+    console.log("submit data", data)
     api.data.submitData(data, function(err, response) {
         if (err) {
             cb(err)

@@ -53,10 +53,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   console.log("default_connector", (config.default_connector))
   var proxyConnector = oispSdk(config).lib.proxies;
   //var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
-  console.log("bypassmqttsubtest1")
-  helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
-  //helpers.mqttconnector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
-  console.log("bypassmqttsubtest2")
+  //console.log("bypassmqttsubtest1")
+  //helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
 
   var dataValues1 = [
     [{
@@ -454,26 +452,62 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
     "sendSingleDataPoint" : function(done){
       var proms = [];
-      proms.push(promtests.submitData(dataValues4[0][0], deviceToken, accountId, deviceId, componentId));
-      Promise.all(proms)
+      console.log("hey this is data value")
+      console.log("datavalues2", dataValues2[0][0])
+      console.log("sendsingledatapointtoken", deviceToken)
+      console.log("sendsingledatapointaccid", accountId)
+      //proms.push(promtests.submitData(dataValues2[0][0], deviceToken, accountId, deviceId, componentId));
+      // dataValues1Time = 0 + BASE_TIMESTAMP;
+      // dataValues1.forEach(function(element) {
+      //   proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId))
+      // });
+      // Promise.all(proms)
+      //   .then(() => {
+      //     done()
+      //   })
+      //   .catch((err) => {
+      //     done(err);
+      //   });
+      promtests.addComponent(componentNames[0], componentTypes[0], deviceToken, accountId, deviceId)
+        .then((id) => {
+          componentId[0] = id;
+        })
+        .then((id) => promtests.addComponent(componentNames[1], componentTypes[1], deviceToken, accountId, deviceId))
+        .then((id) => {
+          componentId[1] = id;
+        })
         .then(() => {
-          done()
+          var proms = [];
+          dataValues1Time = 0 + BASE_TIMESTAMP;
+          dataValues1.forEach(function(element) {
+            proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId))
+          });
+          return Promise.all(proms);
+        })
+        .then(() => {
+          done();
         })
         .catch((err) => {
           done(err);
-        });
+        }); 
     },
     "waitForBackendSynchronization": function(done) {
       setTimeout(done, 2000);
 
     },
     "cleanup": function(done) {
+      console.log("asfasf")
+      console.log("function cleanup", componentId[0])
+      console.log("function cleanup", componentId[1])
+      console.log("function cleanup", deviceId)
+      console.log("function cleanup", accountId)
+
       promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
-        .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
-        .then(() => promtests.deleteComponent(userToken, accountId, newDeviceId, newComponentId))
-        .then(() => promtests.deleteDevice(userToken, accountId, newDeviceId))
-        .then(() => promtests.deleteAccount(userToken2, accountId2))
-        .then(() => promtests.deleteInvite(userToken, accountId, username2))
+        // .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
+        // .then(() => promtests.deleteComponent(userToken, accountId, newDeviceId, newComponentId))
+        // .then(() => promtests.deleteDevice(userToken, accountId, newDeviceId))
+        // .then(() => promtests.deleteAccount(userToken2, accountId2))
+        // .then(() => promtests.deleteInvite(userToken, accountId, username2))
         .then(() => { done() })
         .catch((err) => {
           done(err);
