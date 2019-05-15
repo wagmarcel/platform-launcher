@@ -787,7 +787,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
 var descriptions = {
   "cleanup": "Cleanup components, commands, rules created for subtest",
-  "sendSingleDataPoint": "Send a single data point"
+  "sendAggregatedDataPoints": "Shall send multiple datapoints for one component",
+  "sendSingleDataPoint": "Send a single data point",
+  "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available"
 };
 
 module.exports = {

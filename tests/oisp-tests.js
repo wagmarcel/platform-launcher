@@ -1175,24 +1175,8 @@ describe("Do data sending subtests ...".bold,
    });
 
 
-describe("Do data sending subtests via mqtt...".bold,
-  function() {
-    var test;
-    var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
-    helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
-     it(descriptions.sendAggregatedDataPoints,function(done) {
-       test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
-       test.sendAggregatedDataPoints(done);
-     }).timeout(10000);
-     it(descriptions.waitForBackendSynchronization,function(done) {
-       test.waitForBackendSynchronization(done);
-     }).timeout(10000);
-     it(descriptions.cleanup,function(done) {
-       test.cleanup(done);
-     }).timeout(10000);
-   });
-
 var ignoreme = function() {
+
 describe("Geting and manage alerts ... \n".bold, function(){
 
     it('Shall get list of alerts', function(done) {
@@ -1332,7 +1316,18 @@ describe("Geting and manage alerts ... \n".bold, function(){
         closeAlert(components.first)
     })
 
-});
+})
+
+
+
+
+
+
+
+
+
+
+
 
 describe("update rules and create draft rules ... \n".bold, function(){
 
@@ -1735,23 +1730,15 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
 
     it('Shall delete a component', function(done){
-        var deleteComponent = function(component) {
-            if ( component ) {
-                helpers.devices.deleteDeviceComponent (userToken, accountId, deviceId, component.id, function(err, response){
-                    if (err) {
-                        done(new Error("cannot delete a component " + err));
-                    } else {
-                        assert.notEqual(response, null ,'response is null')
-                        assert.equal(response.status, 'Done')
-                        deleteComponent(component.next)
-                    }
-                })
-            }
-            else {
-                done()
-            }
-        }
-        deleteComponent(components.first)
+        helpers.devices.deleteDeviceComponent (userToken, accountId, deviceId, componentId, function(err, response){
+            if (err) {
+                done(new Error("cannot delete a component " + err));
+            } else {
+                assert.notEqual(response, null ,'response is null')
+                assert.equal(response.status, 'Done')
+                done();
+            } 
+        })
     })
 
     it('Shall delete a device', function(done){
@@ -1791,4 +1778,5 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
  
 })   
+
 }

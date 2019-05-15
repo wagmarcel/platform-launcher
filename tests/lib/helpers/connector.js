@@ -47,24 +47,24 @@ function wsConnect(connector, deviceToken, deviceId, cb) {
     connector.controlCommandListen(data, cb, function() {});
 }
 
-function mqttConnect(connector, deviceToken, deviceId, cb) {
-    config = require("../../test-config-mqtt.json");
-    api = oispSdk(config).api.mqtt; //what is the use of api, i dont understand
-    console.log("i am hereeee", api)
-    if (!cb) {
-        throw "Callback required";
-    }
+// function mqttConnect(connector, deviceToken, deviceId, cb) {
+//     config = require("../../test-config-mqtt.json");
+//     api = oispSdk(config).api.mqtt; //what is the use of api, i dont understand
+//     console.log("i am hereeee", api)
+//     if (!cb) {
+//         throw "Callback required";
+//     }
 
-    var data = {
-        deviceId: deviceId
-    };
+//     var data = {
+//         deviceId: deviceId
+//     };
 
-    //connector.controlCommandListen(data, cb, function() {});
-}
+//     //connector.controlCommandListen(data, cb, function() {});
+// }
 
 module.exports={
-    wsConnect: wsConnect,
-    mqttConnect: mqttConnect
+    wsConnect: wsConnect
+   // mqttConnect: mqttConnect
 }
 
 
