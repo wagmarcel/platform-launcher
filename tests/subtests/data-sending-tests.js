@@ -23,8 +23,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var chai = require('chai');
   var assert = chai.assert;
   var helpers = require("../lib/helpers");
-  var componentNames = ["temperature-sensor-sdt", "humidity-sensor-sdt", "metadata-sensor-sdt", "binarystate-senosr-sdt"];
-  var componentTypes = ["temperature.v1.0", "humidity.v1.0", "metaData.v1.0", "binaryState.v1.0"];
+  var componentNames = ["temperature-sensor-sdt", "humidity-sensor-sdt", "metadata-sensor-sdt", "binarystate-senosr-sdt", "binarydata-sensor-sdt"];
+  var componentTypes = ["temperature.v1.0", "humidity.v1.0", "metaData.v1.0", "binaryState.v1.0", "images.v1.0"];
   var promtests = require('./promise-wrap');
   var uuidv4 = require('uuid/v4');
   var rules = [];
@@ -281,6 +281,24 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       attributes: {
         "key5": "key1"
       }
+    }],
+    [{
+      component: 2,
+      value: "test123",
+      ts: 600000 + BASE_TIMESTAMP,
+      loc: [210.345, 260.21],
+      attributes: {
+        "key6": "value6"
+      }
+    }],
+    [{
+      component: 3,
+      value: "1",
+      ts: 700000 + BASE_TIMESTAMP,
+      loc: [100.12, 300.12],
+      attributes: {
+        "key5": "value6"
+      }
     }]
   ];
 
@@ -344,10 +362,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     }
   ]
 
-  var findMapping = function(numComponents, series) {
+  var findMapping = function(foundComponentMap, componentIds, series) {
     var mapping = {};
-    Object.keys(numComponents).forEach(function(i) { 
-      mapping[i] = componentId.findIndex(
+    Object.keys(foundComponentMap).forEach(function(i) { 
+      mapping[i] = componentIds.findIndex(
         (element) => element === series[i].componentId )})
     return mapping;
   }
@@ -503,6 +521,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         .then((id) => {
           componentId[3] = id;
         })
+        .then((id) => promtests.addComponent(componentNames[4], componentTypes[4], deviceToken, accountId, deviceId))
+        .then((id) => {
+          componentId[4] = id;
+        })
         .then(() => {
           var proms = [];
           dataValues1Time = 0 + BASE_TIMESTAMP;
@@ -550,25 +572,28 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     },
     "receiveAggregatedMultipleDataPoints": function(done) {
       var pValues = prepareValues(dataValues2);
-      var numComponents = pValues.numComponents;
+      var foundComponentsMap = pValues.numComponents;
       var listOfExpectedResults = pValues.listOfExpectedResults;
       
       promtests.searchData(dataValues2Time, -1, deviceToken, accountId, deviceId, componentId, false, {})
         .then((result) => {
-          if (result.series.length != numComponents.length) {
+          if (result.series.length != componentId.length) {
             return done("Wrong number of point series!");
           }
           //Mapping is needed because the results are not in sending order 
           // e.g. component[0] could be now be in series[3]
-          var mapping = findMapping(numComponents, result.series);
+          var err = 0;
+          var mapping = findMapping(foundComponentsMap, componentId, result.series);
           Object.entries(mapping).forEach(function(element){
-            var comparisonResult = comparePoints(listOfExpectedResults[element[1]], result.series[element[0]].points)
+            var comparisonResult = comparePoints(listOfExpectedResults[element[0]], result.series[element[1]].points)
             if (comparisonResult !== true) {
+              err = 1 ;
               done(comparisonResult);
-              return;
             }  
           });
-          done();
+          if (!err) {
+            done();
+          }
         })
         .catch((err) => {
           done(err);
@@ -621,17 +646,17 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     },
     "receiveDataPointsWithAttributes": function(done) {
       var pValues = prepareValues(dataValues4);
-      var numComponents = pValues.numComponents;
+      var foundComponentMap = pValues.numComponents;
       var flattenedDataValues = pValues.flattenedDataValues;
       promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, componentId, true, undefined, undefined, undefined)
         .then((result) => {
-          var mapping = findMapping(numComponents, result.data[0].components)
+          var mapping = findMapping(foundComponentMap, componentId, result.data[0].components)
           if (result.data[0].components.length != componentId.length) {
             return done("Wrong number of point series!");
           }
           var err = false;
           Object.entries(mapping).forEach(function(mappingElem) {
-            var resultObjects = result.data[0].components[mappingElem[0]].samples.map(
+            var resultObjects = result.data[0].components[mappingElem[1]].samples.map(
               (element) =>
                 createObjectFromData(element, result.data[0].components[mappingElem[1]].samplesHeader)
               );
