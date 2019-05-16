@@ -196,9 +196,9 @@ var deleteRule = function(userToken, accountId, ruleId){
     });
 };
 
-var submitDataList = function(valueList, deviceToken, accountId, deviceId, cidList){
+var submitDataList = function(api, valueList, deviceToken, accountId, deviceId, cidList){
     return new Promise((resolve, reject) => {
-	helpers.data.submitDataList(valueList, deviceToken, accountId, deviceId, cidList, function(err, response){
+	helpers.data.submitDataList(api, valueList, deviceToken, accountId, deviceId, cidList, function(err, response){
 	    if (err) {
 		reject(err);
 	    } else {

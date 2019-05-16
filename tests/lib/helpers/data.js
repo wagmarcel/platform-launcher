@@ -25,7 +25,7 @@ var assert = chai.assert;
 var config = require("../../test-config.json");
 var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
 var api = oispSdk(config).api.rest;
-
+var Metric = require('../data/Metric.data').init();
 
 
 
@@ -139,8 +139,6 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
             }]
         }
     }
-    console.log("submit data helper device token", deviceToken)
-    console.log("submit data", data)
     api.data.submitData(data, function(err, response) {
         if (err) {
             cb(err)
@@ -152,7 +150,8 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
     });
 }
 
-function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb) {
+function submitDataList(testApi, valueList, deviceToken, accountId, deviceId, cidList, cb) {
+    console.log("submit data list")
     if (!cb) {
         throw "Callback required";
     }
@@ -182,7 +181,21 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
       }
       data.body.data.push(toPush);
     });
-    api.data.submitData(data, function(err, response) {
+    if(testApi!="rest"){
+        //using mqtt proxyconnector
+        var metric = new Metric();
+        metric.accountId = data.body.accountId;
+        metric.did = data.deviceId;
+        metric.gatewayId = data.deviceId;
+        metric.deviceToken = data.userToken;
+        testApi.data(metric, function(response){
+            if (cb) {
+                console.log("sending data via mqtt success")
+                cb(null, response);
+            }
+        });
+    }else{
+        api.data.submitData(data, function(err, response) {
         if (err) {
             cb(err)
         } else {
@@ -191,6 +204,8 @@ function submitDataList(valueList, deviceToken, accountId, deviceId, cidList, cb
             }
         }
     });
+    }
+    
 }
 
 function searchDataAdvanced(from, to, userToken, accountId, deviceId, cidList, showMeasureLocation, returnedMeasureAttributes, aggregations, countOnly, cb) {

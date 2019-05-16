@@ -47,6 +47,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
+  var api="rest"
 
   var dataValues1 = [
     [{
@@ -443,6 +444,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   return {
     "sendAggregatedDataPoints": function(done) {
       //To be independent of main tests, own sensors, actuators, and commands have to be created
+      
       promtests.addComponent(componentNames[0], componentTypes[0], deviceToken, accountId, deviceId)
         .then((id) => {
           componentId[0] = id;
@@ -455,7 +457,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           var proms = [];
           dataValues1Time = 0 + BASE_TIMESTAMP;
           dataValues1.forEach(function(element) {
-            proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId))
+            proms.push(promtests.submitDataList(api, element, deviceToken, accountId, deviceId, componentId))
           });
           return Promise.all(proms);
         })
@@ -486,7 +488,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var proms = [];
       dataValues2Time = dataValues2[0][0].ts;
       dataValues2.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
+        proms.push(promtests.submitDataList(api, element, deviceToken, accountId, deviceId, componentId, {}));
       });
       Promise.all(proms)
         .then(() => {
@@ -536,7 +538,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var proms = [];
       dataValues3Time = dataValues3[0][0].ts;
       dataValues3.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+        proms.push(promtests.submitDataList(api, element, deviceToken, accountId, deviceId, componentId));
       });
       Promise.all(proms)
         .then(() => {
@@ -567,7 +569,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var proms = [];
       dataValues4Time = dataValues4[0][0].ts;
       dataValues4.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+        proms.push(promtests.submitDataList(api, element, deviceToken, accountId, deviceId, componentId));
       });
       Promise.all(proms)
         .then(() => {
@@ -704,7 +706,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         }
         dataList.push(obj);
       }
-      promtests.submitDataList(dataList, deviceToken, accountId, deviceId, componentId)
+      promtests.submitDataList(api, dataList, deviceToken, accountId, deviceId, componentId)
         .then(() => {
           done()
         })
@@ -741,7 +743,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       dataValues5StopTime = dataValues5lastElement[dataValues5lastLength - 1].ts;
       componentId.push(uuidv4()); // 3rd id is random
       dataValues5.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
+        proms.push(promtests.submitDataList(api, element, deviceToken, accountId, deviceId, componentId, {}));
       });
       Promise.all(proms.map(p => p.catch(e => e)))
         .then(results => {
@@ -787,7 +789,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       assert.isNotEmpty(username, "no username provided");
       assert.isNotEmpty(password, "no password provided");
       promtests.authGetToken(username, password)
-      .then((userToken) => promtests.submitDataList(dataValues6, userToken, accountId, deviceId, componentId, {}))
+      .then((userToken) => promtests.submitDataList(api, dataValues6, userToken, accountId, deviceId, componentId, {}))
       .then(() => {
         done()
       })
@@ -811,7 +813,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       .then((userToken) => {return promtests.createInvitation(userToken, accountId, username2)})
       .then((result) => {inviteId = result._id; return promtests.authGetToken(username2, password2)})
       .then((userToken) => {admin2Token = userToken; return promtests.acceptInvitation(userToken, accountId, inviteId)})
-      .then(() => promtests.submitDataList(dataValues7,
+      .then(() => promtests.submitDataList(api, dataValues7,
         admin2Token, accountId, deviceId, componentId, {}).catch(e => e))
       .then((result) => {
         var parsedResult = JSON.parse(result);
@@ -835,7 +837,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         accountId2 = tokenInfo.payload.accounts[0].id;
         return accountId2;})
       .then((accountId2) =>
-      promtests.submitDataList(dataValues7,
+      promtests.submitDataList(api, dataValues7,
         userToken2, accountId2, deviceId, componentId, {}).catch(e => e))
       .then((result) => {
         var parsedResult = JSON.parse(result);
@@ -878,7 +880,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         return promtests.addComponent(componentName, componentType, userToken, accountId, newDeviceId)
       })
       .then((id) => {newComponentId = id;})
-      .then(() => promtests.submitDataList(dataValues7,
+      .then(() => promtests.submitDataList(api, dataValues7,
         deviceToken, accountId, newDeviceId, newComponentId, {}).catch(e => e))
       .then((result) => {
         var parsedResult = JSON.parse(result);

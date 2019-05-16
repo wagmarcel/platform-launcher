@@ -485,7 +485,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           var proms = [];
           dataValues1Time = 0 + BASE_TIMESTAMP;
           dataValues1.forEach(function(element) {
-            proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId))
+            proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId))
           });
           return Promise.all(proms);
         })
@@ -516,7 +516,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var proms = [];
       dataValues2Time = dataValues2[0][0].ts;
       dataValues2.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
+        proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId, {}));
       });
       Promise.all(proms)
         .then(() => {
@@ -566,7 +566,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var proms = [];
       dataValues3Time = dataValues3[0][0].ts;
       dataValues3.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+        proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId));
       });
       Promise.all(proms)
         .then(() => {
@@ -597,7 +597,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var proms = [];
       dataValues4Time = dataValues4[0][0].ts;
       dataValues4.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId));
+        proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId));
       });
       Promise.all(proms)
         .then(() => {
@@ -734,7 +734,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         }
         dataList.push(obj);
       }
-      promtests.submitDataList(dataList, deviceToken, accountId, deviceId, componentId)
+      promtests.submitDataList(proxyConnector, dataList, deviceToken, accountId, deviceId, componentId)
         .then(() => {
           done()
         })
