@@ -477,10 +477,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         .then((id) => {
           componentId[0] = id;
         })
-        .then((id) => promtests.addComponent(componentNames[1], componentTypes[1], deviceToken, accountId, deviceId))
-        .then((id) => {
-          componentId[1] = id;
-        })
+        // .then((id) => promtests.addComponent(componentNames[1], componentTypes[1], deviceToken, accountId, deviceId))
+        // .then((id) => {
+        //   componentId[1] = id;
+        // })
         .then(() => {
           var proms = [];
           dataValues1Time = 0 + BASE_TIMESTAMP;

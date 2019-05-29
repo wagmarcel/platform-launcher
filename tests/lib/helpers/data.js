@@ -183,6 +183,7 @@ function submitDataList(testApi, valueList, deviceToken, accountId, deviceId, ci
     });
     if(testApi!="rest"){
         //using mqtt proxyconnector
+        testApi.setCredential(deviceId, deviceToken);
         var metric = new Metric();
         metric.accountId = data.body.accountId;
         metric.did = data.deviceId;
