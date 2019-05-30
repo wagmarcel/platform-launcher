@@ -142,7 +142,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
       .then((userToken) => promtests.createDevice(newDeviceName, newDeviceId, userToken, accountId))
       .then(() => promtests.activateDevice(userToken, accountId, newDeviceId))
       .then((token) => {
-        deviceToken = token;
+        deviceToken = token.deviceToken;
       })
       .then(() => 
       promtests.addComponent(componentNames[0], componentTypes[0], 
@@ -156,10 +156,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
     },
     "sendAggregatedDataPoints": function(done) {
       //To be independent of main tests, own sensors, actuators, and commands have to be created
-      
-      promtests.mqttSetCredential(mqttCon, deviceToken, deviceId)
+      promtests.mqttSetCredential(mqttCon, deviceToken, newDeviceId)
       .then(() => promtests.mqttSubmitData(mqttCon, dataValues1[0], deviceToken, accountId, 
-        deviceId, componentId[0]))
+        newDeviceId, componentId[0]))
       .then(() => { done();})
       .catch((err) => {done(err);});
     },
