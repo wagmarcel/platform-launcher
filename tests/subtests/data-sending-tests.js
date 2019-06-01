@@ -365,8 +365,12 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var findMapping = function(foundComponentMap, componentIds, series) {
     var mapping = {};
     Object.keys(foundComponentMap).forEach(function(i) { 
-      mapping[i] = componentIds.findIndex(
-        (element) => element === series[i].componentId )})
+      mapping[i] = series.findIndex(
+        element => componentId[i] === element.componentId
+      );
+    });
+      /*componentIds.findIndex(
+        (element) => element === series[i].componentId )})*/
     return mapping;
   }
 //flatten sent array and provide numComponents
@@ -578,7 +582,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       promtests.searchData(dataValues2Time, -1, deviceToken, accountId, deviceId, componentId, false, {})
         .then((result) => {
           if (result.series.length != componentId.length) {
-            return done("Wrong number of point series!");
+            return done("Wrong number  of point series!");
           }
           //Mapping is needed because the results are not in sending order 
           // e.g. component[0] could be now be in series[3]
