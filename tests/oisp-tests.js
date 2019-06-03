@@ -68,10 +68,10 @@ var highTemperatureRule = new Rule("oisp-tests-rule-high-temp",">", 25);
 //-------------------------------------------------------------------------------------------------------
 var components = new Components()
 
-/*components.add( new Component("temperatures", "Number", "float", "Degress Celsius", "timeSeries", -150, 150, 
+components.add( new Component("temperatures", "Number", "float", "Degress Celsius", "timeSeries", -150, 150, 
                     [lowTemperatureRule, highTemperatureRule],
                     temperatureData, temperatureCheckData)
-                );*/
+                );
 
 components.add( new Component("images", "ByteArray", "image/jpeg", "pixel", "binaryDataRenderer", null, null, 
                     [],
