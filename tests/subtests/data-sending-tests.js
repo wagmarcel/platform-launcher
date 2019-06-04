@@ -659,18 +659,21 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
             return done("Wrong number of point series!");
           }
           var err = false;
-          Object.entries(mapping).forEach(function(mappingElem) {
-            var resultObjects = result.data[0].components[mappingElem[1]].samples.map(
-              (element) =>
-                createObjectFromData(element, result.data[0].components[mappingElem[1]].samplesHeader)
-              );
-              var comparisonResult = comparePoints(flattenedDataValues, resultObjects);
-              if (comparisonResult !== true) {
-                err = 1;
-                return done(comparisonResult);
-              }
-            })
-            if (!err) {
+          var resultObjects = Object.entries(mapping).reduce((accum, mappingElem) => {
+            var testresult =
+            result.data[0].components[mappingElem[1]].samples.reduce((accum_inner, comp) => {
+              accum_inner.push(createObjectFromData(comp,
+                result.data[0].components[mappingElem[1]].samplesHeader));
+                return accum_inner;
+              }, [])
+              return accum.concat(testresult);
+            }, []);
+          var comparisonResult = comparePoints(flattenedDataValues, resultObjects);
+          if (comparisonResult !== true) {
+            err = 1;
+            return done(comparisonResult);
+          }
+          if (!err) {
               return done();
             }
         })
