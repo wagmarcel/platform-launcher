@@ -1017,64 +1017,70 @@ console.log("before mqtt subtest", userToken)
 };
 describe("Do data sending subtests via mqtt...".bold, function() {
 
+    // var test;
+    // var deviceId = "mqtt-test-dev-01"
+    // var deviceToken;
+
+    // it('Shall create device', function(done) {
+    //     assert.notEqual(accountId, null, "Invalid account id")
+
+    //     helpers.devices.createDevice(deviceName, deviceId, userToken, accountId, function(err, response) {
+    //         if (err) {
+    //             done(new Error("Cannot create device: " + err));
+    //         } else {
+    //             assert.equal(response.deviceId, deviceId, 'incorrect device id')
+    //             assert.equal(response.name, deviceName, 'incorrect device name')
+    //             done();
+    //         }
+    //     })
+    // })
+
+
+    // it('Shall update info of a device', function(done) {
+    //     var deviceInfo = {
+    //         gatewayId: deviceId,
+    //         name: deviceName,
+    //         loc: [ 45.12345, -130.654321, 121.1],
+    //         tags: ["tag001", "tag002"],   
+    //         attributes: {
+    //             vendor: "intel",
+    //             platform: "x64",
+    //             os: "linux"
+    //         }
+    //     }
+    //     helpers.devices.updateDeviceDetails(userToken, accountId, deviceId, deviceInfo, function(err, response) {
+    //         if (err) {
+    //             done(new Error("Cannot update device info: " + err));
+    //         } else {
+    //             assert.notEqual(response, null ,'response is null')
+    //             assert.deepEqual(response.attributes, deviceInfo.attributes, 'device info is not updated')
+    //             done();
+    //         }
+    //     })
+    // })
+
+    // it('Shall activate device', function(done) {
+    //     assert.notEqual(deviceId, null, "Invalid device id")
+
+    //     helpers.devices.activateDevice(userToken, accountId, deviceId, function(err, response) {
+    //         if (err) {
+    //             done(new Error("Cannot activate device " + err));
+    //         } else {
+    //             assert.isString(response.deviceToken, 'device token is not string')
+    //             deviceToken = response.deviceToken;
+    //             done();
+    //         }
+    //     })
+    // })
     var test;
-    var deviceId = "mqtt-test-dev-01"
-    var deviceToken;
-
-    it('Shall create device', function(done) {
-        assert.notEqual(accountId, null, "Invalid account id")
-
-        helpers.devices.createDevice(deviceName, deviceId, userToken, accountId, function(err, response) {
-            if (err) {
-                done(new Error("Cannot create device: " + err));
-            } else {
-                assert.equal(response.deviceId, deviceId, 'incorrect device id')
-                assert.equal(response.name, deviceName, 'incorrect device name')
-                done();
-            }
-        })
-    })
-
-
-    it('Shall update info of a device', function(done) {
-        var deviceInfo = {
-            gatewayId: deviceId,
-            name: deviceName,
-            loc: [ 45.12345, -130.654321, 121.1],
-            tags: ["tag001", "tag002"],   
-            attributes: {
-                vendor: "intel",
-                platform: "x64",
-                os: "linux"
-            }
-        }
-        helpers.devices.updateDeviceDetails(userToken, accountId, deviceId, deviceInfo, function(err, response) {
-            if (err) {
-                done(new Error("Cannot update device info: " + err));
-            } else {
-                assert.notEqual(response, null ,'response is null')
-                assert.deepEqual(response.attributes, deviceInfo.attributes, 'device info is not updated')
-                done();
-            }
-        })
-    })
-
-    it('Shall activate device', function(done) {
-        assert.notEqual(deviceId, null, "Invalid device id")
-
-        helpers.devices.activateDevice(userToken, accountId, deviceId, function(err, response) {
-            if (err) {
-                done(new Error("Cannot activate device " + err));
-            } else {
-                assert.isString(response.deviceToken, 'device token is not string')
-                deviceToken = response.deviceToken;
-                done();
-            }
-        })
-    })
-
+   var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
+   it(descriptions.setup, function(done) {
+     test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+     test.setup(done);
+   }).timeout(10000);
+   
     it('Send aggregated data points', function(done) {
-        test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+        //test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
         test.sendAggregatedDataPoints(done);
     }).timeout(10000);
 
@@ -1082,7 +1088,7 @@ describe("Do data sending subtests via mqtt...".bold, function() {
         test.waitForBackendSynchronization(done);
     }).timeout(10000);
 
-    it('Cleanup components, commands, rules created for subtest', function(done) {
+    it(descriptions.setup, function(done) {
         test.cleanup(done);
     }).timeout(10000);
 

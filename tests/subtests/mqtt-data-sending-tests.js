@@ -40,18 +40,19 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var dataValues6StartTime;
   var dataValues6StopTime;
   var accountId2;
-  var accountName2 = "badAccount";
+  var accountName2 = "badAccount-mqtt";
   var userToken2;
   var username2 = process.env.USERNAME2;
   var password2 = process.env.PASSWORD2;
-  var newDeviceId = "d-e-v-i-c-e";
+  var newDeviceId = "d-e-v-i-c-e-mqtt";
+  var newDeviceName ="devicename-mqtt"
   var newComponentId;
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
   console.log("bypassmqttsubtest0")
   console.log("default_connector", (config.default_connector))
-  var proxyConnector = oispSdk(config).lib.proxies.getProxyConnector();
+  var proxyConnector = oispSdk(config).lib.proxies.getProxyConnector('mqtt');
   //var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
   //console.log("bypassmqttsubtest1")
   helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
@@ -449,7 +450,20 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   //********************* Main Object *****************//
   //---------------------------------------------------//
   return {
-
+    "setup": function(done) {
+      var username = process.env.USERNAME;
+      var password = process.env.PASSWORD;
+      
+      promtests.authGetToken(username, password)
+      .then((userToken) => promtests.createDevice(newDeviceName, newDeviceId, userToken, accountId))
+      .then(() => promtests.activateDevice(userToken, accountId, newDeviceId))
+      .then((token) => {
+        deviceToken = token.deviceToken;
+        console.log("getting the new device token")
+      })
+      .then(() => done())
+      .catch((err) => {done(err);});
+    },
 
     "sendSingleDataPoint" : function(done){
       var proms = [];
@@ -472,29 +486,42 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       },
 
     "sendAggregatedDataPoints": function(done) {
-      //To be independent of main tests, own sensors, actuators, and commands have to be created
-      promtests.addComponent(componentNames[0], componentTypes[0], deviceToken, accountId, deviceId)
-        .then((id) => {
-          componentId[0] = id;
-        })
-        // .then((id) => promtests.addComponent(componentNames[1], componentTypes[1], deviceToken, accountId, deviceId))
-        // .then((id) => {
-        //   componentId[1] = id;
+
+      // promtests.submitData(proxyConnector, dataValues1[0], deviceToken, accountId, 
+      //   newDeviceId, componentId[0])
+      // .then(() => { done();})
+      // .catch((err) => {done(err);});
+
+      promtests.addComponent(componentNames[0], componentTypes[0], 
+        userToken, accountId, newDeviceId)
+      .then((id) => {componentId[0] = id;})
+      .then(() => promtests.addComponent(componentNames[1], componentTypes[1],
+        userToken, accountId, newDeviceId))
+      .then((id) => {componentId[1] = id;})
+        // // .then((id) => promtests.addComponent(componentNames[1], componentTypes[1], deviceToken, accountId, deviceId))
+        // // .then((id) => {
+        // //   componentId[1] = id;
+        // // })
+        // .then(() => {
+        //   console.log("datasendingmqtt:", deviceId,":", deviceToken)
+        //   var proms = [];
+        //   dataValues1Time = 0 + BASE_TIMESTAMP;
+        //   dataValues1.forEach(function(element) {
+        //     proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, newDeviceId, componentId[0]))
+        //   });
+        //   return Promise.all(proms);
         // })
-        .then(() => {
-          var proms = [];
-          dataValues1Time = 0 + BASE_TIMESTAMP;
-          dataValues1.forEach(function(element) {
-            proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId))
-          });
-          return Promise.all(proms);
-        })
+        .then(() => promtests.submitData(proxyConnector, dataValues1[0], deviceToken, accountId, 
+        newDeviceId, componentId[0]))
         .then(() => {
           done();
         })
         .catch((err) => {
           done(err);
         });
+
+
+
     },
     "receiveAggregatedDataPoints": function(done) {
       var listOfExpectedResults = flattenArray(dataValues1);
@@ -765,22 +792,11 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     },
 
     "cleanup": function(done) {
-      console.log("asfasf")
-      console.log("function cleanup", componentId[0])
-      console.log("function cleanup", componentId[1])
-      console.log("function cleanup", deviceId)
-      console.log("function cleanup", accountId)
-
-      promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[0])
-        // .then(() => promtests.deleteComponent(deviceToken, accountId, deviceId, componentId[1]))
-        // .then(() => promtests.deleteComponent(userToken, accountId, newDeviceId, newComponentId))
-        // .then(() => promtests.deleteDevice(userToken, accountId, newDeviceId))
-        // .then(() => promtests.deleteAccount(userToken2, accountId2))
-        // .then(() => promtests.deleteInvite(userToken, accountId, username2))
-        .then(() => { done() })
-        .catch((err) => {
-          done(err);
-        });
+      promtests.deleteComponent(userToken, accountId, newDeviceId, componentId[0])
+      .then(() => promtests.deleteComponent(userToken, accountId, newDeviceId, componentId[1]))
+      .then(() => promtests.deleteDevice(userToken, accountId, newDeviceId))
+      .then(() => {done() })
+      .catch((err) => {done(err);});
     }
   };
 };
@@ -789,7 +805,8 @@ var descriptions = {
   "cleanup": "Cleanup components, commands, rules created for subtest",
   "sendAggregatedDataPoints": "Shall send multiple datapoints for one component",
   "sendSingleDataPoint": "Send a single data point",
-  "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available"
+  "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
+  "setup": "Setup device and components for subtest"
 };
 
 module.exports = {

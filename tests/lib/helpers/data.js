@@ -120,9 +120,10 @@ function searchData(from, to, userToken, accountId, deviceId, cid, queryMeasureL
 }
 
 
-function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
+function submitData(testApi, value, deviceToken, accountId, deviceId, cid, cb) {
+    console.log("callback value", cb)
     if (!cb) {
-        throw "Callback required";
+        throw "Callback requiredaasfasf";
     }
     var ts = new Date().getTime();
 
@@ -139,7 +140,54 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
             }]
         }
     }
-    api.data.submitData(data, function(err, response) {
+    
+    // api.data.submitData(data, function(err, response) {
+    //     if (err) {
+    //         cb(err)
+    //     } else {
+    //         if (response) {
+    //             cb(null, response)
+    //         }
+    //     }
+    // });
+    if(testApi!="rest"){
+        //using mqtt proxyconnector
+        console.log("testapi 1")
+        console.log(deviceId,":", deviceToken)
+        testApi.setCredential(deviceId, deviceToken);
+        // var metric = new Metric();
+        // metric.accountId = data.body.accountId;
+        // metric.did = data.deviceId;
+        // metric.gatewayId = data.deviceId;
+        // metric.deviceToken = data.userToken;
+    var data = {
+        userToken: deviceToken,
+        deviceId: deviceId,
+        accountId: accountId,
+        did: deviceId,
+        body: {
+            accountId: accountId,
+            on: ts,
+            data: [{
+                componentId: cid,
+                value: value.toString(),
+                on: ts
+            }]
+        }
+    }
+        data.convertToMQTTPayload = function(){
+      return "Hello world";
+    }
+        testApi.data(data, function(response){
+            if (cb) {
+                console.log("sending data via mqtt success")
+                cb(null, response);
+            }
+
+        });
+    }else{
+        console.log("testapi 2")
+        api.data.submitData(data, function(err, response) {
         if (err) {
             cb(err)
         } else {
@@ -148,10 +196,11 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
             }
         }
     });
+    }
 }
 
 function submitDataList(testApi, valueList, deviceToken, accountId, deviceId, cidList, cb) {
-    console.log("submit data list")
+    console.log("callback value", cb)
     if (!cb) {
         throw "Callback required";
     }
@@ -169,7 +218,8 @@ function submitDataList(testApi, valueList, deviceToken, accountId, deviceId, ci
 
     valueList.forEach(function(element){
       var toPush = {
-        componentId: cidList[element.component],
+        //componentId: cidList[element.component],
+        componentId: cidList,
         value: element.value.toString(),
         on: element.ts
       }
@@ -181,31 +231,6 @@ function submitDataList(testApi, valueList, deviceToken, accountId, deviceId, ci
       }
       data.body.data.push(toPush);
     });
-    if(testApi!="rest"){
-        //using mqtt proxyconnector
-        testApi.setCredential(deviceId, deviceToken);
-        var metric = new Metric();
-        metric.accountId = data.body.accountId;
-        metric.did = data.deviceId;
-        metric.gatewayId = data.deviceId;
-        metric.deviceToken = data.userToken;
-        testApi.data(metric, function(response){
-            if (cb) {
-                console.log("sending data via mqtt success")
-                cb(null, response);
-            }
-        });
-    }else{
-        api.data.submitData(data, function(err, response) {
-        if (err) {
-            cb(err)
-        } else {
-            if (response) {
-                cb(null, response)
-            }
-        }
-    });
-    }
     
 }
 

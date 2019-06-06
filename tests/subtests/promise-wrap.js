@@ -209,9 +209,9 @@ var submitDataList = function(api, valueList, deviceToken, accountId, deviceId, 
 }
 
 
-var submitData = function(value, deviceToken, accountId, deviceId, cid){
+var submitData = function(api, value, deviceToken, accountId, deviceId, cid){
     return new Promise((resolve, reject) => {
-	helpers.data.submitData(value, deviceToken, accountId, deviceId, cid, function(err, response){
+	helpers.data.submitData(api, value, deviceToken, accountId, deviceId, cid, function(err, response){
 	    if (err) {
 		reject(err);
 	    } else {
@@ -367,6 +367,29 @@ var activateDevice = (userToken, accountId, deviceId) => {
   });
 };
 
+var mqttSetCredential = (connector, userToken, deviceId) => {
+  return new Promise(function(resolve, reject){
+    helpers.mqtt.setCredential(connector, userToken, deviceId, function(err, response) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+var mqttSubmitData = (connector, value, deviceToken, accountId, deviceId, cid) => {
+  return new Promise(function(resolve, reject){
+    helpers.mqtt.submitData(connector, value, deviceToken, accountId, deviceId, cid, function(err, response) {
+      if (err && err.status === 0) {
+        resolve("OK");
+      } else {
+        reject("wrong status");
+      }
+    });
+  });
+};
 module.exports = {
     checkObservations: checkObservations,
     addComponent: addComponent,
