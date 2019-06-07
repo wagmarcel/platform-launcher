@@ -297,7 +297,8 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       ts: 700000 + BASE_TIMESTAMP,
       loc: [100.12, 300.12],
       attributes: {
-        "key5": "value6"
+        "key5": "value6",
+        "key1": "value1"
       }
     }]
   ];
@@ -374,9 +375,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     return mapping;
   }
 //flatten sent array and provide numComponents
-  var prepareValues = function(dataValues) {
+  var prepareValues = function(dataValues, keys) {
     //First get a flat array of aggregated points
-    var flattenedDataValues = flattenArray(dataValues);
+    var flattenedDataValues = flattenArray(dataValues, keys);
     var numComponents = {};
     flattenedDataValues.forEach(function(element){ 
       numComponents[element.component] = element.component
@@ -478,7 +479,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     else return reason;
   }
 
-  var flattenArray = function(array) {
+  var flattenArray = function(array, keys) {
     var results = array.map(function(element) {
       return element;
     });
@@ -683,21 +684,37 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
     },
     "receiveDataPointsWithSelectedAttributes": function(done) {
+      var keys = ["key1"];
+      var pValues = prepareValues(dataValues4);
+      var foundComponentMap = pValues.numComponents;
       var flattenedDataValues = flattenArray(dataValues4);
-      promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, [componentId[1]], false, ["key1"], undefined, undefined)
+      promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, componentId, false, keys, undefined, undefined)
         .then((result) => {
-          if (result.data[0].components.length != 1) done("Wrong number of point series!");
+          if (result.data[0].components.length != 5) {
+            return done("Wrong number of point series!");
+          }
+          var mapping = findMapping(foundComponentMap, componentId, result.data[0].components);
           var compIndex = 0;
 
-          var resultObjects = result.data[0].components[compIndex].samples.map(
-            (element) =>
-              createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
-          );
+          var err = false;
+          var resultObjects = Object.entries(mapping).reduce((accum, mappingElem) => {
+            if (mappingElem[1] < 0) {
+              return accum;
+            } 
+            var testresult =
+            result.data[0].components[mappingElem[1]].samples.reduce((accum_inner, comp) => {
+              accum_inner.push(createObjectFromData(comp,
+                result.data[0].components[mappingElem[1]].samplesHeader));
+                return accum_inner;
+              }, [])
+              return accum.concat(testresult);
+            }, []);
           var comparisonResult = comparePoints(flattenedDataValues, resultObjects, true);
           if (comparisonResult !== true) {
-            done(comparisonResult);
-          } else {
-            done();
+            err = 1;
+            return done(comparisonResult);
+          } else if (!err){
+            return done();
           }
         })
         .catch((err) => {
@@ -711,7 +728,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         + flattenArray(dataValues4).length;
       promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, undefined, true)
         .then((result) => {
-          if (result.data[0].components.length != 2) done("Wrong number of point series!");
+          if (result.data[0].components.length != 5) {
+            return done("Wrong number of point series!");
+          }
 
           assert.equal(result.rowCount, expectedRowCount);
           done();
