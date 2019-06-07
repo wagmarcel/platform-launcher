@@ -19,7 +19,7 @@
 
 "use strict";
 
-var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
+var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqttConnector) {
   var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
   var config = require("../test-config-mqtt.json");
   var chai = require('chai');
@@ -50,12 +50,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000
-  console.log("bypassmqttsubtest0")
-  console.log("default_connector", (config.default_connector))
-  var proxyConnector = oispSdk(config).lib.proxies.getProxyConnector('mqtt');
-  //var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('mqtt');
-  //console.log("bypassmqttsubtest1")
-  helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
+  //console.log("bypassmqttsubtest0")
+  //console.log("default_connector", (config.default_connector))
+  // helpers.connector.mqttConnect(proxyConnector, deviceToken, deviceId, cbManager.cb);
 
   var dataValues1 = [
     [{
@@ -459,333 +456,26 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       .then(() => promtests.activateDevice(userToken, accountId, newDeviceId))
       .then((token) => {
         deviceToken = token.deviceToken;
-        console.log("getting the new device token")
       })
+      .then(() => 
+      promtests.addComponent(componentNames[0], componentTypes[0], 
+        userToken, accountId, newDeviceId))
+      .then((id) => {componentId[0] = id;})
+      .then(() => promtests.addComponent(componentNames[1], componentTypes[1],
+        userToken, accountId, newDeviceId))
+      .then((id) => {componentId[1] = id;})
       .then(() => done())
       .catch((err) => {done(err);});
     },
 
     "sendSingleDataPoint" : function(done){
-      var proms = [];
-      console.log("hey this is data value")
-      console.log("datavalues2", dataValues2[0][0])
-      console.log("sendsingledatapointtoken", deviceToken)
-      console.log("sendsingledatapointaccid", accountId)
-      //proms.push(promtests.submitData(dataValues2[0][0], deviceToken, accountId, deviceId, componentId));
-      // dataValues1Time = 0 + BASE_TIMESTAMP;
-      // dataValues1.forEach(function(element) {
-      //   proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId))
-      // });
-      // Promise.all(proms)
-      //   .then(() => {
-      //     done()
-      //   })
-      //   .catch((err) => {
-      //     done(err);
-      //   });
-      },
-
-    "sendAggregatedDataPoints": function(done) {
-
-      // promtests.submitData(proxyConnector, dataValues1[0], deviceToken, accountId, 
-      //   newDeviceId, componentId[0])
-      // .then(() => { done();})
-      // .catch((err) => {done(err);});
-
-      promtests.addComponent(componentNames[0], componentTypes[0], 
-        userToken, accountId, newDeviceId)
-      .then((id) => {componentId[0] = id;})
-      .then(() => promtests.addComponent(componentNames[1], componentTypes[1],
-        userToken, accountId, newDeviceId))
-      .then((id) => {componentId[1] = id;})
-        // // .then((id) => promtests.addComponent(componentNames[1], componentTypes[1], deviceToken, accountId, deviceId))
-        // // .then((id) => {
-        // //   componentId[1] = id;
-        // // })
-        // .then(() => {
-        //   console.log("datasendingmqtt:", deviceId,":", deviceToken)
-        //   var proms = [];
-        //   dataValues1Time = 0 + BASE_TIMESTAMP;
-        //   dataValues1.forEach(function(element) {
-        //     proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, newDeviceId, componentId[0]))
-        //   });
-        //   return Promise.all(proms);
-        // })
-        .then(() => promtests.submitData(proxyConnector, dataValues1[0], deviceToken, accountId, 
+      promtests.mqttSetCredential(mqttConnector, deviceToken, newDeviceId)
+      .then(() => promtests.mqttSubmitData(mqttConnector, dataValues1[0], deviceToken, accountId, 
         newDeviceId, componentId[0]))
-        .then(() => {
-          done();
-        })
-        .catch((err) => {
-          done(err);
-        });
+      .then(() => { done();})
+      .catch((err) => {done(err);});
+    },
 
-
-
-    },
-    "receiveAggregatedDataPoints": function(done) {
-      var listOfExpectedResults = flattenArray(dataValues1);
-      promtests.searchData(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId[0], false, {})
-        .then((result) => {
-          if (result.series.length != 1) done("Wrong number of point series!");
-          var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
-          if (comparisonResult === true) {
-            done();
-          } else {
-            done(comparisonResult);
-          }
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "sendAggregatedMultipleDataPoints": function(done) {
-      var proms = [];
-      dataValues2Time = dataValues2[0][0].ts;
-      dataValues2.forEach(function(element) {
-        proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId, {}));
-      });
-      Promise.all(proms)
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "receiveAggregatedMultipleDataPoints": function(done) {
-
-      var flattenedDataValues = flattenArray(dataValues2);
-      var listOfExpectedResults = [];
-      listOfExpectedResults[0] = flattenedDataValues.filter(
-        (element) => (element.component == 0)
-      );
-      listOfExpectedResults[1] = flattenedDataValues.filter(
-        (element) => (element.component == 1)
-      );
-      promtests.searchData(dataValues2Time, -1, deviceToken, accountId, deviceId, componentId, false, {})
-        .then((result) => {
-          if (result.series.length != 2) done("Wrong number of point series!");
-          var mapping = [0, 1];
-          if (result.series[0].componentId !== componentId[0]) {
-            mapping = [1, 0];
-          }
-
-          var comparisonResult = comparePoints(listOfExpectedResults[mapping[0]], result.series[0].points)
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          }
-          var listOfExpectedResults1 = flattenedDataValues.filter(
-            (element) => (element.component == 1)
-          );
-          comparisonResult = comparePoints(listOfExpectedResults[mapping[1]], result.series[1].points);
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          } else {
-            done();
-          }
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "sendDataPointsWithLoc": function(done) {
-      var proms = [];
-      dataValues3Time = dataValues3[0][0].ts;
-      dataValues3.forEach(function(element) {
-        proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId));
-      });
-      Promise.all(proms)
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "receiveDataPointsWithLoc": function(done) {
-      var flattenedDataValues = flattenArray(dataValues3);
-      promtests.searchData(dataValues3Time, -1, deviceToken, accountId, deviceId, componentId[0], true, {})
-        .then((result) => {
-          if (result.series.length != 1) done("Wrong number of point series!");
-          var comparisonResult = comparePoints(flattenedDataValues, result.series[0].points);
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          } else {
-            done();
-          }
-        })
-        .catch((err) => {
-          done(err);
-        });
-
-    },
-    "sendDataPointsWithAttributes": function(done) {
-      var proms = [];
-      dataValues4Time = dataValues4[0][0].ts;
-      dataValues4.forEach(function(element) {
-        proms.push(promtests.submitDataList(proxyConnector, element, deviceToken, accountId, deviceId, componentId));
-      });
-      Promise.all(proms)
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "receiveDataPointsWithAttributes": function(done) {
-      var flattenedDataValues = flattenArray(dataValues4);
-      promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, componentId, true, undefined, undefined, undefined)
-        .then((result) => {
-          if (result.data[0].components.length != 2) done("Wrong number of point series!");
-          var compIndex = 0;
-          if (result.data[0].components[1].componentId == componentId[1]) {
-            compIndex = 1;
-          }
-          var resultObjects = result.data[0].components[compIndex].samples.map(
-            (element) =>
-              createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
-          );
-          var comparisonResult = comparePoints(flattenedDataValues, resultObjects);
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          } else {
-            done();
-          }
-        })
-        .catch((err) => {
-          done(err);
-        });
-
-    },
-    "receiveDataPointsWithSelectedAttributes": function(done) {
-      var flattenedDataValues = flattenArray(dataValues4);
-      promtests.searchDataAdvanced(dataValues4Time, -1, deviceToken, accountId, deviceId, [componentId[1]], false, ["key1"], undefined, undefined)
-        .then((result) => {
-          if (result.data[0].components.length != 1) done("Wrong number of point series!");
-          var compIndex = 0;
-
-          var resultObjects = result.data[0].components[compIndex].samples.map(
-            (element) =>
-              createObjectFromData(element, result.data[0].components[compIndex].samplesHeader)
-          );
-          var comparisonResult = comparePoints(flattenedDataValues, resultObjects, true);
-          if (comparisonResult !== true) {
-            done(comparisonResult);
-          } else {
-            done();
-          }
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "receiveDataPointsCount": function(done) {
-      var expectedRowCount = flattenArray(dataValues1).length
-        + flattenArray(dataValues2).length
-        + flattenArray(dataValues3).length
-        + flattenArray(dataValues4).length;
-      promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, undefined, true)
-        .then((result) => {
-          if (result.data[0].components.length != 2) done("Wrong number of point series!");
-
-          assert.equal(result.rowCount, expectedRowCount);
-          done();
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "receiveAggregations": function(done) {
-      var aggr1 = calcAggregationsPerComponent(flattenArray(dataValues1));
-      var aggr2 = calcAggregationsPerComponent(flattenArray(dataValues2));
-      var aggr3 = calcAggregationsPerComponent(flattenArray(dataValues3));
-      var aggr4 = calcAggregationsPerComponent(flattenArray(dataValues4));
-      var allAggregation = [aggr1, aggr2, aggr3, aggr4].reduce(function(acc, val) {
-        [0, 1].forEach(function(index) {
-          if (acc[index][aggregation.MAX] < val[index][aggregation.MAX]) {
-            acc[index][aggregation.MAX] = val[index][aggregation.MAX];
-          }
-          if (val[index][aggregation.COUNT]
-            && acc[index][aggregation.MIN] > val[index][aggregation.MIN]) {
-            acc[index][aggregation.MIN] = val[index][aggregation.MIN];
-          }
-          acc[index][aggregation.COUNT] += val[index][aggregation.COUNT];
-          acc[index][aggregation.SUM] += val[index][aggregation.SUM];
-          acc[index][aggregation.SUMOFSQUARES] += val[index][aggregation.SUMOFSQUARES];
-        });
-        return acc;
-      }, [[Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0], [Number.MIN_VALUE, Number.MAX_VALUE, 0, 0, 0]])
-
-      promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, "only", false)
-        .then((result) => {
-          if (result.data[0].components.length != 2) done("Wrong number of point series!");
-          var mapping = [0, 1];
-          if (result.data[0].components[0].componentId !== componentId[0]) {
-            mapping = [1, 0];
-          }
-          [0, 1].forEach(function(index) {
-            assert.closeTo(allAggregation[index][aggregation.MAX], result.data[0].components[mapping[index]].max, MIN_NUMBER);
-            assert.closeTo(allAggregation[index][aggregation.MIN], result.data[0].components[mapping[index]].min, MIN_NUMBER);
-            assert.closeTo(allAggregation[index][aggregation.COUNT], result.data[0].components[mapping[index]].count, MIN_NUMBER);
-            assert.closeTo(allAggregation[index][aggregation.SUM], result.data[0].components[mapping[index]].sum, MIN_NUMBER);
-            assert.closeTo(allAggregation[index][aggregation.SUMOFSQUARES], result.data[0].components[mapping[index]].sumOfSquares, MIN_NUMBER);
-          })
-          done();
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "receiveSubset": function(done) {
-      promtests.searchDataAdvanced(dataValues2Time + 30, dataValues2Time + 60, deviceToken, accountId, deviceId, [componentId[0]], false, undefined, undefined, false)
-        .then((result) => {
-          if (result.data[0].components.length != 1) done("Wrong number of point series!");
-          assert.equal(result.rowCount, 3);
-          done();
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "sendMaxAmountOfSamples": function(done) {
-      var dataList = [];
-
-      for (var i = 0; i < MAX_SAMPLES; i++) {
-        var ts = (i + 1) * 1000000 + BASE_TIMESTAMP
-        var obj = {
-          component: 0,
-          ts: ts,
-          value: i
-        }
-        dataList.push(obj);
-      }
-      promtests.submitDataList(proxyConnector, dataList, deviceToken, accountId, deviceId, componentId)
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
-    "receiveMaxAmountOfSamples": function(done) {
-      promtests.searchDataAdvanced(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[0]], false, undefined, undefined, false)
-        .then((result) => {
-          if (result.data[0].components.length != 1) done("Wrong number of point series!");
-          assert.equal(result.rowCount, MAX_SAMPLES);
-          var samples = result.data[0].components[0].samples;
-          samples.forEach(function(element, i) {
-            assert.equal(element[1], i);
-            assert.equal(element[0], (i + 1) * 1000000 + BASE_TIMESTAMP);
-          })
-          done();
-        })
-        .catch((err) => {
-          done(err);
-        });
-
-    },
     "waitForBackendSynchronization": function(done) {
       setTimeout(done, 2000);
 

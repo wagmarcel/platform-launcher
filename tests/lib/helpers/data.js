@@ -25,7 +25,6 @@ var assert = chai.assert;
 var config = require("../../test-config.json");
 var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
 var api = oispSdk(config).api.rest;
-var Metric = require('../data/Metric.data').init();
 
 
 

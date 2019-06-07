@@ -207,7 +207,29 @@ var submitDataList = function(api, valueList, deviceToken, accountId, deviceId, 
 	});
     });
 }
+var mqttSetCredential = (connector, userToken, deviceId) => {
+   return new Promise(function(resolve, reject){
+     helpers.mqtt.setCredential(connector, userToken, deviceId, function(err, response) {
+       if (err) {
+         reject(err);
+      } else {
+         resolve(response);
+       }
+     });
+   });
+ };
 
+var mqttSubmitData = (connector, value, deviceToken, accountId, deviceId, cid) => {
+ return new Promise(function(resolve, reject){
+   helpers.mqtt.submitData(connector, value, deviceToken, accountId, deviceId, cid, function(err, response) {
+     if (err && err.status === 0) {
+       resolve("OK");
+     } else {
+       reject("wrong status");
+     }
+   });
+ });
+};
 
 var submitData = function(api, value, deviceToken, accountId, deviceId, cid){
     return new Promise((resolve, reject) => {
@@ -412,5 +434,7 @@ module.exports = {
     deleteInvite: inviteDelete,
     createDevice: createDevice,
     deleteDevice: deleteDevice,
-    activateDevice: activateDevice
+    activateDevice: activateDevice,
+    mqttSetCredential: mqttSetCredential,
+    mqttSubmitData: mqttSubmitData
 };

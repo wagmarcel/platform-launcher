@@ -20,8 +20,10 @@ var assert = chai.assert;
 var expect = chai.expect;
 
 var config = require("./test-config.json");
+var mqttConfig = require("./test-config-mqtt.json");
 var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
 var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('ws');
+var mqttConnector = oispSdk(mqttConfig).lib.proxies.getProxyConnector('mqtt');
 var kafka = require('kafka-node');
 var cfenvReader = require('./lib/cfenv/reader');
 var helpers = require("./lib/helpers");
@@ -978,8 +980,6 @@ describe("Sending observations and checking rules ...\n".bold, function() {
 
 });
 
-};
-var ignoreme2 = function(){
 describe("Do time based rule subtests ...".bold,
      function() {
          var test;
@@ -1012,94 +1012,34 @@ describe("Do statistics rule subtests ...".bold,
          test.cleanup(done);
          }).timeout(10000);
          });
-console.log("before mqtt subtest", userToken)
-
 };
-describe("Do data sending subtests via mqtt...".bold, function() {
-
-    // var test;
-    // var deviceId = "mqtt-test-dev-01"
-    // var deviceToken;
-
-    // it('Shall create device', function(done) {
-    //     assert.notEqual(accountId, null, "Invalid account id")
-
-    //     helpers.devices.createDevice(deviceName, deviceId, userToken, accountId, function(err, response) {
-    //         if (err) {
-    //             done(new Error("Cannot create device: " + err));
-    //         } else {
-    //             assert.equal(response.deviceId, deviceId, 'incorrect device id')
-    //             assert.equal(response.name, deviceName, 'incorrect device name')
-    //             done();
-    //         }
-    //     })
-    // })
 
 
-    // it('Shall update info of a device', function(done) {
-    //     var deviceInfo = {
-    //         gatewayId: deviceId,
-    //         name: deviceName,
-    //         loc: [ 45.12345, -130.654321, 121.1],
-    //         tags: ["tag001", "tag002"],   
-    //         attributes: {
-    //             vendor: "intel",
-    //             platform: "x64",
-    //             os: "linux"
-    //         }
-    //     }
-    //     helpers.devices.updateDeviceDetails(userToken, accountId, deviceId, deviceInfo, function(err, response) {
-    //         if (err) {
-    //             done(new Error("Cannot update device info: " + err));
-    //         } else {
-    //             assert.notEqual(response, null ,'response is null')
-    //             assert.deepEqual(response.attributes, deviceInfo.attributes, 'device info is not updated')
-    //             done();
-    //         }
-    //     })
-    // })
-
-    // it('Shall activate device', function(done) {
-    //     assert.notEqual(deviceId, null, "Invalid device id")
-
-    //     helpers.devices.activateDevice(userToken, accountId, deviceId, function(err, response) {
-    //         if (err) {
-    //             done(new Error("Cannot activate device " + err));
-    //         } else {
-    //             assert.isString(response.deviceToken, 'device token is not string')
-    //             deviceToken = response.deviceToken;
-    //             done();
-    //         }
-    //     })
-    // })
+describe("Do MQTT data sending subtests".bold, function() {
     var test;
-   var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
-   it(descriptions.setup, function(done) {
-     test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
-     test.setup(done);
-   }).timeout(10000);
-   
-    it('Send aggregated data points', function(done) {
-        //test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
-        test.sendAggregatedDataPoints(done);
+    var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
+    it(descriptions.setup, function(done) {
+        test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager, mqttConnector);
+        test.setup(done);
     }).timeout(10000);
-
-    it('Waiting maximal tolerable time backend needs to flush so that points are available', function(done) {
+    it(descriptions.sendSingleDataPoint, function(done) {
+        test.sendSingleDataPoint(done);
+    }).timeout(10000);
+    it(descriptions.waitForBackendSynchronization, function(done) {
         test.waitForBackendSynchronization(done);
     }).timeout(10000);
-
-    it(descriptions.setup, function(done) {
-        test.cleanup(done);
+    it(descriptions.cleanup, function(done) {
+          test.cleanup(done);
     }).timeout(10000);
-
 });
 
+var ignoreme = function() {
 describe("Do data sending subtests ...".bold,
   function() {
     var test;
     var descriptions = require("./subtests/data-sending-tests").descriptions;
     
-    /*it(descriptions.sendAggregatedDataPoints,function(done) {
+    it(descriptions.sendAggregatedDataPoints,function(done) {
        test = require("./subtests/data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
        test.sendAggregatedDataPoints(done);
      }).timeout(10000);
@@ -1180,11 +1120,8 @@ describe("Do data sending subtests ...".bold,
      }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);
-     }).timeout(10000);*/
+     }).timeout(10000);
    });
-
-
-var ignoreme = function() {
 
 describe("Geting and manage alerts ... \n".bold, function(){
 
@@ -1326,17 +1263,6 @@ describe("Geting and manage alerts ... \n".bold, function(){
     })
 
 })
-
-
-
-
-
-
-
-
-
-
-
 
 describe("update rules and create draft rules ... \n".bold, function(){
 
