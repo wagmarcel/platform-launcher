@@ -25,6 +25,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var helpers = require("../lib/helpers");
   var componentNames = ["temperature-sensor-sdt", "humidity-sensor-sdt", "metadata-sensor-sdt", "binarystate-senosr-sdt", "binarydata-sensor-sdt"];
   var componentTypes = ["temperature.v1.0", "humidity.v1.0", "metaData.v1.0", "binaryState.v1.0", "images.v1.0"];
+  var aggregateable = [1, 1, 0, 0, 0];
   var promtests = require('./promise-wrap');
   var uuidv4 = require('uuid/v4');
   var rules = [];
@@ -305,7 +306,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
   var dataValues5 = [
     [{
-      component: 2,
+      component: componentNames.length,
       value: 10.1,
       ts: 1100000000 + BASE_TIMESTAMP
     }],
@@ -315,7 +316,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       ts: 1100020000 + BASE_TIMESTAMP
     },
     {
-      component: 2,
+      component: componentNames.length,
       value: 12.3,
       ts: 1100030000 + BASE_TIMESTAMP
     }
@@ -331,7 +332,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       ts: 1100050000 + BASE_TIMESTAMP
     },
     {
-      component: 2,
+      component: componentNames.length,
       value: 15.6,
       ts: 1100060000 + BASE_TIMESTAMP
     }]
@@ -483,15 +484,20 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     var results = array.map(function(element) {
       return element;
     });
-    results = results.reduce(function(acc, cur) {
+    results = results
+    .reduce(function(acc, cur) {
       return acc.concat(cur)
     })
+    .filter((elem) => elem.component < componentId.length)
     return results;
   }
 
   var calcAggregationsPerComponent = function(flattenedArray) {
 
     return flattenedArray.reduce(function(acc, val) {
+        if (aggregateable[val.component] === 0) {
+        return acc;
+      }
       if (val.value > acc[val.component][aggregation.MAX]) {
         acc[val.component][aggregation.MAX] = val.value;
       }
@@ -549,7 +555,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var listOfExpectedResults = flattenArray(dataValues1);
       promtests.searchData(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId[0], false, {})
         .then((result) => {
-          if (result.series.length != 1) done("Wrong number of point series!");
+          if (result.series.length != 1) return done("Wrong number of point series!");
           var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
           if (comparisonResult === true) {
             done();
@@ -622,7 +628,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var flattenedDataValues = flattenArray(dataValues3);
       promtests.searchData(dataValues3Time, -1, deviceToken, accountId, deviceId, componentId[0], true, {})
         .then((result) => {
-          if (result.series.length != 1) done("Wrong number of point series!");
+          if (result.series.length != 1) return done("Wrong number of point series!");
           var comparisonResult = comparePoints(flattenedDataValues, result.series[0].points);
           if (comparisonResult !== true) {
             done(comparisonResult);
@@ -740,6 +746,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         });
     },
     "receiveAggregations": function(done) {
+      var foundComponentMap = {0: 0, 1: 1}; // Only component 1 and 2 are numbers and can aggregate
       var aggr1 = calcAggregationsPerComponent(flattenArray(dataValues1));
       var aggr2 = calcAggregationsPerComponent(flattenArray(dataValues2));
       var aggr3 = calcAggregationsPerComponent(flattenArray(dataValues3));
@@ -762,11 +769,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
       promtests.searchDataAdvanced(dataValues1Time, -1, deviceToken, accountId, deviceId, componentId, false, undefined, "only", false)
         .then((result) => {
-          if (result.data[0].components.length != 2) done("Wrong number of point series!");
-          var mapping = [0, 1];
-          if (result.data[0].components[0].componentId !== componentId[0]) {
-            mapping = [1, 0];
+          if (result.data[0].components.length != 5) {
+            return done("Wrong number of point series!");
           }
+          var mapping = findMapping(foundComponentMap, componentId, result.data[0].components);
           [0, 1].forEach(function(index) {
             assert.closeTo(allAggregation[index][aggregation.MAX], result.data[0].components[mapping[index]].max, MIN_NUMBER);
             assert.closeTo(allAggregation[index][aggregation.MIN], result.data[0].components[mapping[index]].min, MIN_NUMBER);
@@ -814,7 +820,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     "receiveMaxAmountOfSamples": function(done) {
       promtests.searchDataAdvanced(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[0]], false, undefined, undefined, false)
         .then((result) => {
-          if (result.data[0].components.length != 1) done("Wrong number of point series!");
+          if (result.data[0].components.length != 1) return done("Wrong number of point series!");
           assert.equal(result.rowCount, MAX_SAMPLES);
           var samples = result.data[0].components[0].samples;
           samples.forEach(function(element, i) {
@@ -838,9 +844,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var dataValues5lastElement = dataValues5[dataValues5.length - 1];
       var dataValues5lastLength = dataValues5[dataValues5.length - 1].length;
       dataValues5StopTime = dataValues5lastElement[dataValues5lastLength - 1].ts;
-      componentId.push(uuidv4()); // 3rd id is random
+      var wrongId = uuidv4(); // 3rd id is random
       dataValues5.forEach(function(element) {
-        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId, {}));
+        proms.push(promtests.submitDataList(element, deviceToken, accountId, deviceId, componentId.concat(wrongId), {}));
       });
       Promise.all(proms.map(p => p.catch(e => e)))
         .then(results => {
@@ -866,7 +872,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       .filter((elem) => elem.component != 2);
       promtests.searchData(dataValues5StartTime, dataValues5StopTime, deviceToken, accountId, deviceId, componentId[0], false, {})
         .then((result) => {
-          if (result.series.length != 1) done("Wrong number of point series!");
+          if (result.series.length != 1) {
+            return done("Wrong number of point series!");
+          }
           var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
           if (comparisonResult === true) {
             done();
@@ -949,7 +957,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var listOfExpectedResults = dataValues6;
       promtests.searchData(dataValues6StartTime, dataValues6StopTime, deviceToken, accountId, deviceId, componentId[0], false, {})
         .then((result) => {
-          if (result.series.length != 1) done("Wrong number of point series!");
+          if (result.series.length != 1) return done("Wrong number of point series!");
           var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
           if (comparisonResult === true) {
             done();
