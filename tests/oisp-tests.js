@@ -1028,9 +1028,9 @@ describe("Do MQTT data sending subtests".bold, function() {
     it(descriptions.waitForBackendSynchronization, function(done) {
         test.waitForBackendSynchronization(done);
     }).timeout(10000);
-    it(descriptions.cleanup, function(done) {
+    /*it(descriptions.cleanup, function(done) {
           test.cleanup(done);
-    }).timeout(10000);
+    }).timeout(10000);*/
 });
 
 var ignoreme = function() {

@@ -40,31 +40,29 @@ function submitData(connector, value, deviceToken, accountId, deviceId, cid, cb)
         throw "Callback required";
     }
     var ts = new Date().getTime();
-
+    console.log("submit data value on helpers.mqtt", value)
+    console.log("value", value[0].value)
     var data = {
+        cid: cid,
         userToken: deviceToken,
         deviceId: deviceId,
         accountId: accountId,
         did: deviceId,
-        body: {
-            accountId: accountId,
-            on: ts,
-            data: [{
-                componentId: cid,
-                value: value.toString(),
-                on: ts
-            }]
-        }
+        on: ts,
+        value: value[0].value,
+        // body: {
+        //     accountId: accountId,
+        //     on: ts,
+        //     value: value[0].value,
+        //     data: [{
+        //         componentId: cid,
+        //         value: value[0].value,
+        //         on: ts
+        //     }]
+        // }
     }
     var metric = new Metric();
-    metric.accountId = accountId;
-    metric.did = deviceId;
-    metric.gatewayId = deviceId;
-    metric.deviceToken = deviceToken;
-    data.convertToMQTTPayload = function(){
-      return "Hello world";
-      //need to change this into real convertmqttpayload
-    }
+    metric.set(data);
     connector.data(metric, function(err, response) {
         if (err) {
             cb(err)

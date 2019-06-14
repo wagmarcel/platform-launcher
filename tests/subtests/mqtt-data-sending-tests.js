@@ -459,10 +459,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
       })
       .then(() => 
       promtests.addComponent(componentNames[0], componentTypes[0], 
-        userToken, accountId, newDeviceId))
+        deviceToken, accountId, newDeviceId))
       .then((id) => {componentId[0] = id;})
       .then(() => promtests.addComponent(componentNames[1], componentTypes[1],
-        userToken, accountId, newDeviceId))
+        deviceToken, accountId, newDeviceId))
       .then((id) => {componentId[1] = id;})
       .then(() => done())
       .catch((err) => {done(err);});
