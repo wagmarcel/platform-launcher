@@ -59,7 +59,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
       component: 0,
       value: 10.1,
       ts: 1 + BASE_TIMESTAMP
-    }],
+    }]/*,
     [{
       component: 0,
       value: 11.2,
@@ -132,7 +132,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
       ts: 15 + BASE_TIMESTAMP
     }
 
-    ]
+  ]*/
   ];
 
 
@@ -405,8 +405,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
       return "Wrong number of returned points";
     }
     points.forEach(function(element, index) {
-      if ((element.ts != dataValues[index].ts) ||
-        ((Math.abs(element.value - dataValues[index].value)) > MIN_NUMBER) ||
+      if ((Math.abs(element.value - dataValues[index].value) > MIN_NUMBER) ||
         !locEqual(dataValues[index], element, onlyExistingAttr) ||
         !attrEqual(dataValues[index], element, onlyExistingAttr)) {
         result = false;
@@ -476,6 +475,23 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
       .catch((err) => {done(err);});
     },
 
+    "retrieveSentData" : function(done){
+      var listOfExpectedResults = flattenArray(dataValues1);
+      promtests.searchData(Date.now() - 1000000, -1, deviceToken, accountId, newDeviceId, componentId[0], false, {})
+        .then((result) => {
+          if (result.series.length != 1) done("Wrong number of point series!");
+          var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
+          if (comparisonResult === true) {
+            done();
+          } else {
+            done(comparisonResult);
+          }
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+
     "waitForBackendSynchronization": function(done) {
       setTimeout(done, 2000);
 
@@ -495,6 +511,7 @@ var descriptions = {
   "cleanup": "Cleanup components, commands, rules created for subtest",
   "sendAggregatedDataPoints": "Shall send multiple datapoints for one component",
   "sendSingleDataPoint": "Send a single data point",
+  "retrieveSentData": "Retrieve sent data points",
   "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
   "setup": "Setup device and components for subtest"
 };

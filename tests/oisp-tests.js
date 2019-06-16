@@ -1025,6 +1025,9 @@ describe("Do MQTT data sending subtests".bold, function() {
     it(descriptions.sendSingleDataPoint, function(done) {
         test.sendSingleDataPoint(done);
     }).timeout(10000);
+    it(descriptions.retrieveSentData, function(done) {
+        test.retrieveSentData(done);
+    }).timeout(10000);
     it(descriptions.waitForBackendSynchronization, function(done) {
         test.waitForBackendSynchronization(done);
     }).timeout(10000);
