@@ -18,59 +18,17 @@
 var chai = require('chai');
 var assert = chai.assert;
 var fs = require('fs');
-var expect = chai.expect;
 
 var config = require("./test-config.json");
-var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
-var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('ws');
 var kafka = require('kafka-node');
-var cfenvReader = require('./lib/cfenv/reader');
 var helpers = require("./lib/helpers");
-var colors = require('colors');
-var exec = require('child_process').exec;
-var gm = require('gm').subClass({ imageMagick: true });
-var { Data, Rule, Component, Components } = require('./lib/common')
+
 
 var accountName = "oisp-tests";
-var deviceName = "oisp-tests-device";
-
-var actuatorName = "powerswitch-actuator";
-var actuatorType = "powerswitch.v1.0";
-
-var switchOnCmdName = "switch-on";
-var switchOffCmdName = "switch-off";
-
-
-var emailRecipient = "test.receiver@streammyiot.com"
-
-var imap_username = process.env.IMAP_USERNAME;
-var imap_password = process.env.IMAP_PASSWORD;
-var imap_host = process.env.IMAP_HOST;
-var imap_port = process.env.IMAP_PORT;
-
-var recipientEmail = imap_username;
-var rules = [];
-
-
-
 
 //-------------------------------------------------------------------------------------------------------
 // Tests
 //-------------------------------------------------------------------------------------------------------
-var userToken;
-var userToken2;
-var receiverToken;
-var receiveruserId;
-var receiveraccountId;
-var userId;
-var accountId;
-var deviceId;
-var deviceToken;
-var actuatorId;
-var rulelist;
-var componentParamName;
-
-
 process.stdout.write("_____________________________________________________________________\n".bold);
 process.stdout.write("                                                                     \n");
 process.stdout.write("                           OISP TEST PREP                            \n".green.bold);
@@ -159,7 +117,7 @@ describe("get user token and activation code ...\n".bold, function() {
 
     var activationCode;
     var accountId;
-    var accountInfo;
+    var userToken;
     var username = process.env.USERNAME;
     var password = process.env.PASSWORD;
 
@@ -213,7 +171,7 @@ describe("get user token and activation code ...\n".bold, function() {
             "activationCode": activationCode
         }
         console.log(prepConf);
-        fs.writeFileSync("oisp-prep-only.conf", JSON.stringify(prepConf))
+        //fs.writeFileSync("oisp-prep-only.conf", JSON.stringify(prepConf))
         done();
     })
 })
