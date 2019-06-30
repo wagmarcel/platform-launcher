@@ -222,11 +222,16 @@ docker-clean:
 		[Nn]* ) echo "Not removing containers";; \
 	esac \
 
+## test-prep-only: Prepare test for 3rd party apps like oisp-iot-agent but do not start full e2e test
+##
+test-prep-only: export TEST_PREP_ONLY := "1"
+test-prep-only: test
+
 ## test: Run OISP E2E tests.
 ##
 test: export TEST := "1"
 test: .init
-	make start-test && source ./tests/.env && cd tests && make test;
+	make start-test && source ./tests/.env && cd tests && make TEST_PREP_ONLY=${TEST_PREP_ONLY} test;
 
 ## remove: Remove all OISP images from local machine.
 ##     $CONTAINERS arg (as whitespace seperated list) specifies which containers should be removed,
