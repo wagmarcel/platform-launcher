@@ -22,9 +22,14 @@ var fs = require('fs');
 var config = require("./test-config.json");
 var kafka = require('kafka-node');
 var helpers = require("./lib/helpers");
+var colors = require('colors');
 
 
 var accountName = "oisp-tests";
+
+var userToken;
+var accountId;
+var deviceId;
 
 //-------------------------------------------------------------------------------------------------------
 // Tests
@@ -40,14 +45,8 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
 
     before(function(done) {
         userToken = null;
-        userToken2 = null;
         accountId = null;
         deviceId = "00-11-22-33-44-55";
-        deviceToken = null;
-        actuatorId = null;
-        rulelist = null;
-        componentParamName = "LED";
-
         done();
     });
 
@@ -170,8 +169,7 @@ describe("get user token and activation code ...\n".bold, function() {
             "accountId": accountId,
             "activationCode": activationCode
         }
-        console.log(prepConf);
-        //fs.writeFileSync("oisp-prep-only.conf", JSON.stringify(prepConf))
+        fs.writeFileSync("oisp-prep-only.conf", JSON.stringify(prepConf))
         done();
     })
 })
