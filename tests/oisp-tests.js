@@ -20,8 +20,10 @@ var assert = chai.assert;
 var expect = chai.expect;
 
 var config = require("./test-config.json");
+var mqttConfig = require("./test-config-mqtt.json");
 var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
 var proxyConnector = oispSdk(config).lib.proxies.getControlConnector('ws');
+var mqttConnector = oispSdk(mqttConfig).lib.proxies.getProxyConnector('mqtt');
 var kafka = require('kafka-node');
 var cfenvReader = require('./lib/cfenv/reader');
 var helpers = require("./lib/helpers");
@@ -1232,6 +1234,22 @@ describe("Grafana subtests...".bold, function() {
         test.cleanup(done);
     }).timeout(10000);
 });
+
+   describe("Do MQTT data sending subtests ...".bold,
+     function() {
+       var test;
+       var descriptions = require("./subtests/mqtt-data-sending-tests").descriptions;
+       it(descriptions.setup, function(done) {
+         test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager, mqttConnector);
+         test.setup(done);
+       }).timeout(10000);
+       it(descriptions.sendAggregatedDataPoints, function(done) {
+         test.sendAggregatedDataPoints(done);
+       }).timeout(10000);
+       it(descriptions.cleanup, function(done) {
+         test.cleanup(done);
+       }).timeout(10000);
+    });
 
 describe("Geting and manage alerts ... \n".bold, function(){
 
