@@ -1243,8 +1243,8 @@ describe("Grafana subtests...".bold, function() {
          test = require("./subtests/mqtt-data-sending-tests").test(userToken, accountId, deviceId, deviceToken, cbManager, mqttConnector);
          test.setup(done);
        }).timeout(10000);
-       it(descriptions.sendAggregatedDataPoints, function(done) {
-         test.sendAggregatedDataPoints(done);
+       it(descriptions.sendSingleDataPoint, function(done) {
+         test.sendSingleDataPoint(done);
        }).timeout(10000);
        it(descriptions.cleanup, function(done) {
          test.cleanup(done);
