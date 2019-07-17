@@ -134,8 +134,8 @@ function submitData(value, deviceToken, accountId, deviceId, cid, cb) {
             on: ts,
             data: [{
                 componentId: cid,
-                value: Buffer.isBuffer(value) ? value : value.toString(),
-                on: ts
+                value: Buffer.isBuffer(value.value) ? value.value : value.value.toString(),
+                on: value.ts
             }]
         }
     }
