@@ -171,6 +171,7 @@ function temperatureData(componentName) {
 function temperatureCheckData(sentData, receivedData) {
     if ( sentData.length == receivedData.length) {
         for (var i = 0; i < sentData.length; i++) {
+            console.log("Marcel001 " + JSON.stringify(sentData[i]) + JSON.stringify(receivedData[i]))
             if (sentData[i].ts == receivedData[i].ts && sentData[i].value == receivedData[i].value) {
                 sentData[i].ts = null;
             }
@@ -1081,7 +1082,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
        }).timeout(10000);
 
 });
-
+var ignoreme = function(){
 describe("Do time based rule subtests ...".bold,
 	 function() {
 	     var test;
@@ -1234,7 +1235,7 @@ describe("Grafana subtests...".bold, function() {
         test.cleanup(done);
     }).timeout(10000);
 });
-
+}
    describe("Do MQTT data sending subtests ...".bold,
      function() {
        var test;
@@ -1246,11 +1247,17 @@ describe("Grafana subtests...".bold, function() {
        it(descriptions.sendSingleDataPoint, function(done) {
          test.sendSingleDataPoint(done);
        }).timeout(10000);
-       it(descriptions.cleanup, function(done) {
-         test.cleanup(done);
+       it(descriptions.waitForBackendSynchronization, function(done) {
+         test.waitForBackendSynchronization(done);
        }).timeout(10000);
+       it(descriptions.retrieveSentData, function(done) {
+         test.retrieveSentData(done);
+       }).timeout(10000);
+       /*it(descriptions.cleanup, function(done) {
+         test.cleanup(done);
+       }).timeout(10000);*/
     });
-
+var ignoremetoo = function(){
 describe("Geting and manage alerts ... \n".bold, function(){
 
     it('Shall get list of alerts', function(done) {
@@ -1848,3 +1855,4 @@ describe("change password and delete receiver ... \n".bold, function(){
     })
 
 })
+}

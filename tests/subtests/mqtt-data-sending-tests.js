@@ -472,7 +472,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
 
         "retrieveSentData": function(done) {
             var listOfExpectedResults = flattenArray(dataValues1);
-            promtests.searchData(0, -1, deviceToken, accountId, newDeviceId, componentId, false, {})
+            promtests.searchData(Date.now() - 100000, -1, deviceToken, accountId, newDeviceId, componentId, false, {})
                 .then((result) => {
                     console.log("Marcel002 " + JSON.stringify(result) + result.series.length + deviceToken, accountId, newDeviceId, componentId);
                   
