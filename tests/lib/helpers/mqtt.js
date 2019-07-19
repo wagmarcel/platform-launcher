@@ -19,6 +19,9 @@
 // Helper Functions
 //-------------------------------------------------------------------------------------------------------
 
+var oispSdk = require("@open-iot-service-platform/oisp-sdk-js");
+var config = require("../../test-config-mqtt.json");
+var Metric = oispSdk(config).lib.data.metric.init();
 
 
 function setCredential(connector, deviceToken, deviceId, cb) {
@@ -30,7 +33,6 @@ function setCredential(connector, deviceToken, deviceId, cb) {
         device_id: deviceId,
         device_token: deviceToken
     };
-
     connector.setCredential(deviceId, deviceToken)
     cb(null, "OK");
 }
@@ -40,27 +42,30 @@ function submitData(connector, value, deviceToken, accountId, deviceId, cid, cb)
         throw "Callback required";
     }
     var ts = new Date().getTime();
-
+    console.log("submit data value on helpers.mqtt", value)
+    console.log("value", value[0].value)
     var data = {
+        cid: cid,
         userToken: deviceToken,
         deviceId: deviceId,
         accountId: accountId,
         did: deviceId,
-        body: {
-            accountId: accountId,
-            on: ts,
-            data: [{
-                componentId: cid,
-                value: value.toString(),
-                on: ts
-            }]
-        }
+        on: ts,
+        value: value[0].value,
+        // body: {
+        //     accountId: accountId,
+        //     on: ts,
+        //     value: value[0].value,
+        //     data: [{
+        //         componentId: cid,
+        //         value: value[0].value,
+        //         on: ts
+        //     }]
+        // }
     }
-
-    data.convertToMQTTPayload = function(){
-      return "Hello world";
-    }
-    connector.data(data, function(err, response) {
+    var metric = new Metric();
+    metric.set(data);
+    connector.data(metric, function(err, response) {
         if (err) {
             cb(err)
         } else {
