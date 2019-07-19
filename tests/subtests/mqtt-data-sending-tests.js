@@ -56,79 +56,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
             component: 0,
             value: 10.1,
             ts: 1 + BASE_TIMESTAMP
-        }]/*,
-    [{
-      component: 0,
-      value: 11.2,
-      ts: 2 + BASE_TIMESTAMP
-    }, {
-      component: 0,
-      value: 12.3,
-      ts: 3 + BASE_TIMESTAMP
-    }],
-    [{
-      component: 0,
-      value: 13.4,
-      ts: 4 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 14.5,
-      ts: 5 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 15.6,
-      ts: 6 + BASE_TIMESTAMP
-    }
-    ],
-    [{
-      component: 0,
-      value: 16.7,
-      ts: 7 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 17.8,
-      ts: 8 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 18.9,
-      ts: 9 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 20.0,
-      ts: 10 + BASE_TIMESTAMP
-    }
-    ],
-    [{
-      component: 0,
-      value: 21.1,
-      ts: 11 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 22.2,
-      ts: 12 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 23.3,
-      ts: 13 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 24.4,
-      ts: 14 + BASE_TIMESTAMP
-    },
-    {
-      component: 0,
-      value: 25.5,
-      ts: 15 + BASE_TIMESTAMP
-    }
-  ]*/
+        }]
     ];
 
 
@@ -140,7 +68,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
         }],
         [{
             component: 1,
-            value: 10,
+            value: 100,
             ts: 1020 + BASE_TIMESTAMP
         },
         {
@@ -156,42 +84,10 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
         },
         {
             component: 1,
-            value: 20,
+            value: 200,
             ts: 1050 + BASE_TIMESTAMP
-        },
-        {
-            component: 0,
-            value: 15.6,
-            ts: 1060 + BASE_TIMESTAMP
-        }
-        ],
-        [{
-            component: 1,
-            value: 30,
-            ts: 1070 + BASE_TIMESTAMP
-        },
-        {
-            component: 0,
-            value: 17.8,
-            ts: 1070 + BASE_TIMESTAMP
-        },
-        {
-            component: 0,
-            value: 18.9,
-            ts: 1090 + BASE_TIMESTAMP
-        },
-        {
-            component: 1,
-            value: 40,
-            ts: 1100 + BASE_TIMESTAMP
-        }
-        ],
-        [{
-            component: 1,
-            value: 50,
-            ts: 1170 + BASE_TIMESTAMP
         }]
-    ]
+    ];
 
     var dataValues3 = [
         [{
@@ -464,15 +360,15 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
 
         "sendSingleDataPoint": function(done) {
             promtests.mqttSetCredential(mqttConnector, deviceToken, newDeviceId)
-                .then(() => promtests.mqttSubmitData(mqttConnector, dataValues1[0], deviceToken, accountId,
+                .then(() => promtests.mqttSubmitData(mqttConnector, dataValues1[0][0], deviceToken, accountId,
                     newDeviceId, componentId[0]))
                 .then(() => { done(); })
                 .catch((err) => { done(err); });
         },
-
+	
         "retrieveSentData": function(done) {
             var listOfExpectedResults = flattenArray(dataValues1);
-            promtests.searchData(Date.now() - 100000, -1, deviceToken, accountId, newDeviceId, componentId, false, {})
+            promtests.searchData(BASE_TIMESTAMP, BASE_TIMESTAMP + 1, deviceToken, accountId, newDeviceId, componentId, false, {})
                 .then((result) => {
                     console.log("Marcel002 " + JSON.stringify(result) + result.series.length + deviceToken, accountId, newDeviceId, componentId);
                   
@@ -488,7 +384,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
                     done(err);
                 });
         },
-
 
         "waitForBackendSynchronization": function(done) {
             setTimeout(done, 2000);
