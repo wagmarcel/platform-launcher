@@ -70,10 +70,10 @@ var highTemperatureRule = new Rule("oisp-tests-rule-high-temp",">", 25);
 //-------------------------------------------------------------------------------------------------------
 var components = new Components()
 
-components.add( new Component("temperatures", "Number", "float", "Degress Celsius", "timeSeries", -150, 150,
+/*components.add( new Component("temperatures", "Number", "float", "Degress Celsius", "timeSeries", -150, 150,
                     [lowTemperatureRule, highTemperatureRule],
                     temperatureData, temperatureCheckData)
-                );
+                );*/
 
 components.add( new Component("images", "ByteArray", "image/jpeg", "pixel", "binaryDataRenderer", null, null,
                     [],
@@ -1246,15 +1246,27 @@ describe("Grafana subtests...".bold, function() {
        it(descriptions.sendSingleDataPoint, function(done) {
          test.sendSingleDataPoint(done);
        }).timeout(10000);
+       it(descriptions.sendMultipleDataPoints, function(done) {
+         test.sendMultipleDataPoints(done);
+       }).timeout(10000);
+       it(descriptions.sendDataPointsWithAttributes, function(done) {
+         test.sendDataPointsWithAttributes(done);
+       }).timeout(10000);
        it(descriptions.waitForBackendSynchronization, function(done) {
          test.waitForBackendSynchronization(done);
        }).timeout(10000);
-       it(descriptions.retrieveSentData, function(done) {
-         test.retrieveSentData(done);
+       it(descriptions.receiveSingleDataPoint, function(done) {
+         test.receiveSingleDataPoint(done);
        }).timeout(10000);
-       /*it(descriptions.cleanup, function(done) {
+       it(descriptions.receiveMultipleDataPoints, function(done) {
+         test.receiveMultipleDataPoints(done);
+       }).timeout(10000);
+       it(descriptions.receiveDataPointsWithAttributes, function(done) {
+         test.receiveDataPointsWithAttributes(done);
+       }).timeout(10000);
+       it(descriptions.cleanup, function(done) {
          test.cleanup(done);
-       }).timeout(10000);*/
+       }).timeout(10000);
     });
 var ignoremetoo = function(){
 describe("Geting and manage alerts ... \n".bold, function(){

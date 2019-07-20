@@ -56,11 +56,11 @@ function submitData(connector, value, deviceToken, accountId, deviceId, cid, cb)
         }
     }
 
-    //the next few lines are needed as workaround to work with sdk
+    //the next few lines are needed as workaround to work with current sdk
     //once SDK has been updated this can be removed ...
     data.convertToMQTTPayload = function(){
-	delete this.convertToMQTTPayload
-	return this;
+	     delete this.convertToMQTTPayload
+	      return this;
     }
     data.did = data.deviceId;
     data.accountId = data.body.accountId;
@@ -77,8 +77,59 @@ function submitData(connector, value, deviceToken, accountId, deviceId, cid, cb)
     });
 }
 
+function submitDataList(connector, valueList, deviceToken, accountId, deviceId, cidList, cb) {
+    if (!cb) {
+        throw "Callback required";
+    }
+    var ts = new Date().getTime();
+
+    var data = {
+        userToken: deviceToken,
+        deviceId: deviceId,
+        body: {
+            accountId: accountId,
+            on: valueList[0].ts,
+            data: []
+        }
+    }
+
+    valueList.forEach(function(element){
+      var toPush = {
+        componentId: cidList[element.component],
+        value: (typeof element.value === 'string' || Buffer.isBuffer(element.value)) ? element.value : element.value.toString(),
+        on: element.ts
+      }
+      if (element.loc) {
+        toPush.loc = element.loc;
+      }
+      if (element.attributes !== undefined){
+        toPush.attributes = element.attributes;
+      }
+      data.body.data.push(toPush);
+    });
+    //the next few lines are needed as workaround to work with current sdk
+    //once SDK has been updated this can be removed ...
+    data.convertToMQTTPayload = function(){
+	     delete this.convertToMQTTPayload
+	      return this;
+    }
+    data.did = data.deviceId;
+    data.accountId = data.body.accountId;
+    // ...until here
+    
+    connector.data(data, function(err, response) {
+        if (err) {
+            cb(err)
+        } else {
+            if (response) {
+                cb(null, response)
+            }
+        }
+    });
+}
 
 module.exports={
     setCredential: setCredential,
-    submitData: submitData
+    submitData: submitData,
+    submitDataList: submitDataList
 }

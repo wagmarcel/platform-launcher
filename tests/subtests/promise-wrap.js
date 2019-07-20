@@ -413,6 +413,17 @@ var mqttSubmitData = (connector, value, deviceToken, accountId, deviceId, cid) =
         });
     });
 };
+var mqttSubmitDataList = (connector, valueList, deviceToken, accountId, deviceId, cid) => {
+    return new Promise(function(resolve, reject) {
+        helpers.mqtt.submitDataList(connector, valueList, deviceToken, accountId, deviceId, cid, function(err, response) {
+            if (err && err.status === 0) {
+                resolve("OK");
+            } else {
+                reject("wrong status");
+            }
+        });
+    });
+};
 
 module.exports = {
     getAccountActivationCode: getAccountActivationCode,
@@ -440,5 +451,6 @@ module.exports = {
     activateDevice: activateDevice,
     activateDeviceWithoutToken: activateDeviceWithoutToken,
     mqttSetCredential: mqttSetCredential,
-    mqttSubmitData: mqttSubmitData
+    mqttSubmitData: mqttSubmitData,
+    mqttSubmitDataList: mqttSubmitDataList
 };
