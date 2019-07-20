@@ -171,7 +171,6 @@ function temperatureData(componentName) {
 function temperatureCheckData(sentData, receivedData) {
     if ( sentData.length == receivedData.length) {
         for (var i = 0; i < sentData.length; i++) {
-            console.log("Marcel001 " + JSON.stringify(sentData[i]) + JSON.stringify(receivedData[i]))
             if (sentData[i].ts == receivedData[i].ts && sentData[i].value == receivedData[i].value) {
                 sentData[i].ts = null;
             }

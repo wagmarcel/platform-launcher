@@ -370,8 +370,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager, mqtt
             var listOfExpectedResults = flattenArray(dataValues1);
             promtests.searchData(BASE_TIMESTAMP, BASE_TIMESTAMP + 1, deviceToken, accountId, newDeviceId, componentId, false, {})
                 .then((result) => {
-                    console.log("Marcel002 " + JSON.stringify(result) + result.series.length + deviceToken, accountId, newDeviceId, componentId);
-                  
                     if (result.series.length !== 1) return done("Wrong number of point series!");
                     var comparisonResult = comparePoints(listOfExpectedResults, result.series[0].points);
                     if (comparisonResult === true) {
