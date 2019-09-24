@@ -55,9 +55,9 @@ export TESTING_PLATFORM?=docker
 		touch .firstRun;\
 	fi
 	@$(call msg,"Currently on branch ${BRANCH}");
-	@if [ "${BRANCH}" != master ]; then \
+	@if [ "${BRANCH}" == "develop" ]; then \
 		if [ "${TEST}" != "1" ]; then \
-			echo -e "Non-master branch detected! Submodules will not be updated automatically. \nYou have to run 'make update' for submodules from develop branch and update manually otherwise"; \
+			echo -e "Develop branch detected! Submodules will not be updated automatically. \nYou have to run 'make update' for submodules from develop branch and update manually otherwise"; \
 			read -r -p "Continue? [Y/n]: " response; \
 			case $$response in \
 			   [Nn]* ) echo "Bye!"; exit 1; \
