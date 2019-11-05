@@ -17,8 +17,8 @@ imap:
     password: password
 
 numberReplicas:
-    frontend: 1
-    backend: 1
+    frontend: 3
+    backend: 3
     debugger: 0
 
 minio:
@@ -47,9 +47,9 @@ websocketServer:
 
 # Hosts used for Ingress configuration
 hosts:
-    frontend: latest.streammyiot.com
-    websocketserver: ws.latest.streammyiot.com
-    mqttserver: mqtt.latest.streammyiot.com
+    frontend: staging.streammyiot.com
+    websocketserver: ws.staging.streammyiot.com
+    mqttserver: mqtt.staging.streammyiot.com
 
 systemuser:
   username: gateway@intel.com
@@ -64,7 +64,7 @@ postgres:
   password: supersecret
 
 # Docket image tag
-tag: latest
+tag: nightly-2019-11-05
 
 # Enable jaeger tracing
 jaeger_tracing: false

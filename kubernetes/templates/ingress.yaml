@@ -10,19 +10,18 @@ spec:
       - backend:
           serviceName: dashboard
           servicePort: 4001
-  - host: {{ .Values.hosts.frontend }}
-    http:
-        paths:
-        - path: /ui/grafana
-          backend:
-            serviceName: dashboard
-            servicePort: 4002
+        path: /ui
+      - path: /ui/grafana
+        backend:
+          serviceName: dashboard
+          servicePort: 4002
   - host: {{ .Values.hosts.websocketserver }}
     http:
       paths:
       - backend:
           serviceName: websocket-server
           servicePort: 5000
+        path: /ui
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -34,8 +33,8 @@ spec:
     servicePort: 4001
   tls:
   - hosts:
-    - latest.streammyiot.com
-    - ws.latest.streammyiot.com
+    - staging.streammyiot.com
+    - ws.staging.streammyiot.com
     secretName: dashboard-web-prod-tls
   rules:
   - host: {{ .Values.hosts.frontend }}
