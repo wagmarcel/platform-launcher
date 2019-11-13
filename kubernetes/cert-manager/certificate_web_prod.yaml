@@ -1,15 +1,15 @@
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: dashboard-web-prod-tls
-  namespace: oisp
+  name: frontend-web-prod-tls
+  namespace: oisp-staging
 spec:
-  secretName: dashboard-web-prod-tls
+  secretName: frontend-web-prod-tls
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   dnsNames:
-  - latest.streammyiot.com
-  - ws.latest.streammyiot.com
+  - staging.streammyiot.com
+  - ws.staging.streammyiot.com
   issuerRef:
     name: letsencrypt-prod
     # We can reference ClusterIssuers by changing the kind here.
