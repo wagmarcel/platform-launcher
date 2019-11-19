@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: industryfusion-ingress
+  namespace: industryfusion
+spec:
+  tls:
+  - hosts:
+    - staging.streammyiot.com
+    secretName: frontend-web-prod-tls
+  rules:
+  - host: staging.streammyiot.com
+    http:
+      paths:
+      - path: /industryfusion
+        backend:
+          serviceName: industryfusionapplication
+          servicePort: 8080
