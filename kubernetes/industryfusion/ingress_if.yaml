@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: industryfusion-ingress
   namespace: industryfusion
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   tls:
   - hosts:
@@ -12,7 +14,7 @@ spec:
   - host: staging.streammyiot.com
     http:
       paths:
-      - path: /industryfusion
+      - path: /industryfusion(/|$)(.*)
         backend:
-          serviceName: nginx
-          servicePort: 80
+          serviceName: fusionbackend
+          servicePort: 8080
