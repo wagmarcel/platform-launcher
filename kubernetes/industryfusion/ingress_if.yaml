@@ -21,4 +21,4 @@ spec:
       - path: /fusionfrontend(/|$)(.*)
         backend:
           serviceName: fusionfrontend
-          servicePort: 8080
+          servicePort: 80

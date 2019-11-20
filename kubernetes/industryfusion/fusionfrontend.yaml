@@ -7,7 +7,7 @@ metadata:
   namespace: industryfusion
 spec:
   ports:
-  - port: 8080
+  - port: 80
     name: "fusionfrontend"
   selector:
     app: nginx
@@ -31,4 +31,6 @@ spec:
       - name: fusionfrontend
         image: docker.io/ibn40/fusionfrontend:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 80
+      imagePullSecrets:
+          - name: regcred      
