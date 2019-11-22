@@ -58,10 +58,19 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgresdb
+            - name: config
+              mountPath: /tmp
       volumes:
         - name: postgresdb
           persistentVolumeClaim:
             claimName: postgres-pv-claim
+        - name: config
+          configMap:
+            name: if-config
+            items:
+            - key: sqlinserts.log
+              path: sqlinserts.log
+
 ---
 apiVersion: v1
 kind: Service
