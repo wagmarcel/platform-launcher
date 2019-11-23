@@ -17,9 +17,9 @@
 	"default_connector": "rest+ws",
 	"connector": {
 		"rest": {
-			"host": "service.org",
-			"port": 80,
-			"protocol": "http",
+			"host": "staging.streammyiot.com",
+			"port": 443,
+			"protocol": "https",
 			"strictSSL": false,
 			"timeout": 30000,
 			"proxy": {
@@ -28,14 +28,14 @@
 			}
 		},
 		"ws": {
-			"host": "ws.service.org",
-			"port": 80,
+			"host": "ws.staging.streammyiot.com",
+			"port": 443,
 			"minRetryTime": 2500,
 			"maxRetryTime": 600000,
 			"testTimeout": 40000,
 			"pingPongIntervalMs": 30000,
 			"enablePingPong": true,
-			"secure": false,
+			"secure": true,
 			"proxy": {
 				"host": false,
 				"port": false 
