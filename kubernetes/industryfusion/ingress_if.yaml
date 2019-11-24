@@ -14,7 +14,7 @@ spec:
   - host: staging.streammyiot.com
     http:
       paths:
-      - path: /fusionfrontend/fusionapi(/|$)(.*)
+      - path: /fusionapi(/|$)(.*)
         backend:
           serviceName: fusionbackend
           servicePort: 8080
