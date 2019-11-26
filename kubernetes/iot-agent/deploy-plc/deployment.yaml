@@ -44,6 +44,9 @@ spec:
             mountPath: /app/resources
       - name: fusionplcdataservice
         image: docker.io/ibn40/fusionplcdataservice:latest
+        volumeMounts:
+          - name: dataservice-config
+            mountPath: /app/resources	
       volumes:
         - name: oisp-devices-config-volume
           configMap:
@@ -53,10 +56,16 @@ spec:
               path: config.json
         - name: gateway-config
           configMap:
-            name: <NODENAME><ID>-gateway-config
+            name: <NODENAME><ID>-app-config
             items:
             - key: application.yaml
-              path: application.yaml   
+              path: application.yaml
+        - name: dataservice-config
+          configMap:
+            name: <NODENAME><ID>-app-config
+            items:
+            - key: fusionplcdataservice_application.yaml
+              path: application.yaml	      
         - name: oisp-devices-data-volume
           persistentVolumeClaim:
             claimName: <NODENAME><ID>-pvc-device-data
