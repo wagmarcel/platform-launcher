@@ -41,7 +41,7 @@ spec:
           limits:
         volumeMounts:
           - name: gateway-config
-            mountPath: /app/src/main/resources
+            mountPath: /app/resources
       - name: fusionplcdataservice
         image: docker.io/ibn40/fusionplcdataservice:latest
       volumes:

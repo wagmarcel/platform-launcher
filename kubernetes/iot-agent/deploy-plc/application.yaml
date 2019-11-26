@@ -1,0 +1,34 @@
+server:
+  error:
+    include-stacktrace: never
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 25
+
+fusiongateway:
+  name: My PLC
+  plcServiceBaseUrl: http://localhost:8080/plc/
+  oispPort: 41234
+  oispHost: localhost
+  jobSpecs:
+    betriebsdaten:
+      period: 2000
+      fields:
+      - source: "Temperatur"
+        componentType: "Temperature.v1.0"
+      - source: "Luftverbrauch"
+        componentType: "Luftverbrauch.v1.0"
+      - source: "Differenzdruck"
+        componentType: "Druck2.v1.0"
+      - source: "Unterdruck"
+        componentType: "Druck2.v1.0"
+      - source: "Druckluft"
+        componentType: "Druck.v1.0"
+      - source: "Druckluftfluss"
+        componentType: "Luftverbrauch.v1.0"
+      - source: "Strom"
+        componentType: "Stromverbrauch.v1.0"
+      - source: "Betriebsstunden"
+        componentType: "Zeit.v1.0"
