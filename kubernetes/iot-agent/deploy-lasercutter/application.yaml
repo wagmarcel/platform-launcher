@@ -1,0 +1,33 @@
+server:
+  error:
+    include-stacktrace: never
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 25
+
+fusiongateway:
+  name: My PLC
+  dataServiceBaseUrl: http://localhost:8080/db/
+  oispPort: 41234
+  oispHost: localhost
+  jobSpecs:
+    data:
+      period: 2000
+      fields:
+      - source: "hours_maintenance"
+        componentType: "Zeit.v1.0"
+      - source: "remaining_cutting_time"
+        componentType: "Zeit.v1.0"
+      - source: "plate_thickness"
+        componentType: "Dicke.v1.0"
+      - source: "asset_status"
+        componentType: "Status.v1.0"
+      - source: "material_name"
+        componentType: "MaterialName.v1.0"
+      - source: "cutting_program"
+        componentType: "Program.v1.0"
+      - source: "material_specification"
+        componentType: "MaterialSpecification.v1.0"
+

@@ -1,0 +1,33 @@
+server:
+  error:
+    include-stacktrace: never
+
+fusiondbdataservice:
+  name: MSF Compact 1001.20L
+  jobSpecs:
+    data:
+      - source: "select MachineActualOperationMode from MachinesState where MachineSerialNo = 2551"
+        target: asset_status
+      - source: "select ProgramName from MachinesState where MachineSerialNo = 2551"
+        target: cutting_program
+      - source: "select ProgramEstimatedTotalTime from MachinesState where MachineSerialNo = 2551"
+        target: total_cutting_time
+      - source: "select ProgramTimeToFinish from MachinesState where MachineSerialNo = 2551"
+        target: remaining_cutting_time
+      - source: "select MaterialName from MachinesState where MachineSerialNo = 2551"
+        target: material_name
+      - source: "select MaterialSpecification from MachinesState where MachineSerialNo = 2551"
+        target: material_specification
+      - source: "select PlateThickness from MachinesState where MachineSerialNo = 2551"
+        target: plate_thickness
+      - source: "select top 1 datediff(hour, current_timestamp, EstimatedDate100Perc) from PlannedMaintenance where MachineSerialNo = 2551 and PlannedMaintenance.EstimatedDate100Perc > current_timestamp order by EstimatedDate100Perc;"
+        target: hours_maintenance
+
+spring:
+  datasource:
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+    url: jdbc:sqlserver://192.168.49.161\SQLEXPRESS;database=MPM
+    username: MicroStep
+    password: MicroStep[2551]
