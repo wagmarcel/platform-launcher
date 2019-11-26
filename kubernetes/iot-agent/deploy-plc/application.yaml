@@ -9,7 +9,7 @@ spring:
 
 fusiongateway:
   name: My PLC
-  plcServiceBaseUrl: http://localhost:8080/plc/
+  dataServiceBaseUrl: http://localhost:8080/plc/
   oispPort: 41234
   oispHost: localhost
   jobSpecs:
