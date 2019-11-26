@@ -1,2 +1,7 @@
 locust/
+industryfusion/
+cert-manager/
+iot-agent/
+node-modules/
+util/
 #*

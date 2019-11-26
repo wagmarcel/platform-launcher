@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: createdb
+  namespace: industryfusion
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:10.4
+        env:
+        - name: POSTGRES_DB
+          value: postgresdb
+        - name: POSTGRES_USER
+          value: postgresadmin
+        - name: PGPASSWORD
+          value: postgresadminpw
+        command: ["/usr/bin/psql", "postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb", "-f", "/tmp/sqlinserts.log"]
+        volumeMounts:
+        - name: config
+          mountPath: /tmp
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: dockercred
+      volumes:
+        - name: config
+          configMap:
+            name: if-config
+            items:
+            - key: sqlinserts.log
+              path: sqlinserts.log
+  backoffLimit: 10
