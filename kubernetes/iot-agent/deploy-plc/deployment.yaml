@@ -39,6 +39,9 @@ spec:
             value: "8081"
         resources:
           limits:
+        volumeMounts:
+          - name: gateway-config
+            mountPath: /app/src/main/resources
       - name: fusionplcdataservice
         image: docker.io/ibn40/fusionplcdataservice:latest
       volumes:
@@ -48,6 +51,12 @@ spec:
             items:
             - key: config.json
               path: config.json
+        - name: gateway-config
+          configMap:
+            name: <NODENAME><ID>-gateway-config
+            items:
+            - key: application.yaml
+              path: application.yaml   
         - name: oisp-devices-data-volume
           persistentVolumeClaim:
             claimName: <NODENAME><ID>-pvc-device-data
