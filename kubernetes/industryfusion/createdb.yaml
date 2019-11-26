@@ -16,7 +16,7 @@ spec:
           value: postgresadmin
         - name: PGPASSWORD
           value: postgresadminpw
-        command: ["/usr/bin/psql", "postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb", "-f", "/tmp/sqlinserts.log"]
+        command: ["/usr/bin/psql", "postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb", "-f", "/tmp/demoinserts.sql"]
         volumeMounts:
         - name: config
           mountPath: /tmp
@@ -30,4 +30,6 @@ spec:
             items:
             - key: sqlinserts.log
               path: sqlinserts.log
+            - key: demoinserts.sql
+              path: demoinserts.sql        
   backoffLimit: 10
