@@ -70,7 +70,12 @@ spec:
             items:
             - key: sqlinserts.log
               path: sqlinserts.log
-
+            - key: demoinserts.sql
+              path: demoinserts.sql
+            - key: tables.sql
+              path: tables.sql
+            - key: ddl.sql
+              path: ddl.sql                  
 ---
 apiVersion: v1
 kind: Service
