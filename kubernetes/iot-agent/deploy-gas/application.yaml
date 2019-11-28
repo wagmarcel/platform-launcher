@@ -1,0 +1,31 @@
+server:
+  error:
+    include-stacktrace: never
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 25
+
+fusiongateway:
+  name: My PLC
+  type: PUSH
+  dataserviceBaseUrl: tcp://192.168.49.54:1883
+  dataserviceTopic: Gasentnahmestelle1
+  oispPort: 41234
+  oispHost: localhost
+  jobSpecs:
+    betriebsdaten:
+      fields:
+        - source: "E2MIX-Flaschendruck_Links"
+          target: "pressure_bottle_left"
+          componentType: "Druck.v1.0"
+        - source: "E2MIX-Flaschendruck_Rechts"
+          target: "pressure_bottle_right"
+          componentType: "Druck.v1.0"
+        - source: "E2MIX-Leitungsdruck"
+          target: "pressure_pipe"
+          componentType: "Druck.v1.0"
+        - source: "E2MIX-Entnahmedruck_1"
+          target: "pressure_takeoff_1"
+          componentType: "Druck.v1.0"
