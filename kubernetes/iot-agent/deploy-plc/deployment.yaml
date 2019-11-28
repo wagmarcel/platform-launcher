@@ -17,6 +17,10 @@ spec:
         app: oisp-testsensor-sensor
     spec:
       containers:
+      - name: busybox
+        image: docker.io/busybox:latest
+        command: ["sleep"]
+        args: ["100000000"]
       - name: oisp-iot-agent
         env:
           - name: OISP_DEVICE_ID
