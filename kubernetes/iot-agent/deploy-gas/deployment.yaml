@@ -37,7 +37,7 @@ spec:
             mountPath: /volume/data
         image: docker.io/oisp/oisp-iot-agent:latest
       - name: fusiongatewayapp
-        image: docker.io/ibn40/fusiongatewayapp:mqttv0.1
+        image: docker.io/ibn40/fusiongatewayapp:mqttv0.2
         env:
           - name: server.port
             value: "8081"

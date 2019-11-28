@@ -7,7 +7,7 @@ fusiondbdataservice:
   jobSpecs:
     data:
       - source: "select MachineActualOperationMode from MachinesState where MachineSerialNo = 2551"
-        target: asset_status
+        target: status
       - source: "select ProgramName from MachinesState where MachineSerialNo = 2551"
         target: cutting_program
       - source: "select ProgramEstimatedTotalTime from MachinesState where MachineSerialNo = 2551"

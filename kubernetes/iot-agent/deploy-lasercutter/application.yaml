@@ -22,12 +22,15 @@ fusiongateway:
         componentType: "Zeit.v1.0"
       - source: "plate_thickness"
         componentType: "Dicke.v1.0"
-      - source: "asset_status"
-        componentType: "Status.v1.0"
+      - source: "status"
+        componentType: "NumericalState.v1.0"
       - source: "material_name"
         componentType: "MaterialName.v1.0"
       - source: "cutting_program"
         componentType: "Program.v1.0"
       - source: "material_specification"
         componentType: "MaterialSpecification.v1.0"
+      - source: "total_cutting_time"
+        componentType: "Zeit.v1.0"
+
 
