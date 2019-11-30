@@ -1,15 +1,3 @@
-create table company ( version VARCHAR(255), description VARCHAR(1000), image_key VARCHAR(255), name VARCHAR(255), type VARCHaR(255), id integer)
-create table location ( version integer, city VARCHAR(255) , company_id integer, contry VARCHAR(255), latitude real, VARCHAR(255), line1, VARCHAR(255)  line2, VARCHaR(255) longitude real, name VARCHAR(255),tpye VARCHAR(255), zip VARCHAR(255), id integer)
-create table room (version integer, location_id integer, name VAR(255), id integer)
-create table assert_type_template (version integer, caegory VARCHAR(255), company_id integer, id integer)
-create table asset_series (version integer, model_name VARCHaR(255), company_id integer, id integer, asset_type_template_id integer)
-create table asset (id integer, version integer, name VARCHAR(255), description VARCHAR(255), category VARCHAR(255), guid uuid , ce_certified BOOLEAN, model_name VARCHAR(255), series_name VARCHAR(255), serial_number VARCHAR(255),
-                   construction_date DATE, connection_voltage real, ac_frequency real, max_operating_current real, electrical_rating VARCHAR(255),
-                   protection_class VARCHAR(255), image_keyVARCHAR(255), handbook_key VARCHAR(255), video_key VARCHAR(255), installation_date DATE, company_id integer, room_id integer,
-                   asset_series_id integer, control_system_type VARCHAR(255), has_gateway BOOLEAN, gateway_connectivity VARCHAR(255), external_id VARCHAR(255))
-
-
-
 select nextval('hibernate_sequence');
 insert into company (version, description, image_key, name, type, id)
 values (0, 'IBN 4.0 Smart Factory', 'ibn_logo.png', 'IBN 4.0 Smart Factory', 'MACHINE_CUSTOMER', 1);
@@ -28,22 +16,25 @@ insert into company (version, description, image_key, name, type, id)
 values (0, 'Industry Business Network 4.0 e.V.', 'ibn_logo.png', 'Industry Business Network 4.0', 'ECOSYSTEM_MANAGER',
         5);
 select nextval('hibernate_sequence');
-insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, id)
+insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, image_key,
+                      id)
 values (0, 'Bad Wörishofen', 1, 'Germany', 48.019644, 'Rudolf-Diesel-Straße 16', 'Vordergebäude', 10.603576,
-        'CompetenceCenter Süd', 'FABRICATION', '86825', 6);
+        'CompetenceCenter Süd', 'FABRICATION', '86825', 'ibn_standort_1.jpg', 6);
 select nextval('hibernate_sequence');
-insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, id)
+insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, image_key,
+                      id)
 values (0, 'Bad Wörishofen', 2, 'Germany', 48.021168, 'Messerschmittstraße 10', 'Vordergebäude', 10.604966,
-        'Firmenzentrale', 'HEADQUARTER', '86825', 7);
+        'Firmenzentrale', 'HEADQUARTER', '86825', 'microstep_standort_1.jpg', 7);
 select nextval('hibernate_sequence');
-insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, id)
+insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, image_key,
+                      id)
 values (0, 'Velen', 3, 'Germany', 51.895804, 'Industriestraße 13', 'Vordergebäude', 6.997579, 'Firmenzentrale',
-        'HEADQUARTER', '46342', 8);
+        'HEADQUARTER', '46342', 'teka_standort_1.jpg', 8);
 select nextval('hibernate_sequence');
-insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, id)
+insert into location (version, city, company_id, country, latitude, line1, line2, longitude, name, type, zip, image_key,
+                      id)
 values (0, 'Neustadt (Wied)', 4, 'Germany', 50.625049, 'Bahnhofstraße 27', 'Vordergebäude', 7.433450, 'Firmenzentrale',
-        'HEADQUARTER', '53577',
-        9);
+        'HEADQUARTER', '53577', 'ibeda_standort_1.JPG', 9);
 select nextval('hibernate_sequence');
 insert into room (version, location_id, name, id)
 values (0, 6, 'Showroom', 10);
@@ -89,36 +80,38 @@ select nextval('hibernate_sequence');
 insert into asset (id, version, name, description, category, guid, ce_certified, model_name, series_name, serial_number,
                    construction_date, connection_voltage, ac_frequency, max_operating_current, electrical_rating,
                    protection_class, image_key, handbook_key, video_key, installation_date, company_id, room_id,
-                   asset_series_id, control_system_type, has_gateway, gateway_connectivity)
+                   asset_series_id, control_system_type, has_gateway, gateway_connectivity, external_id)
 values (20, 1, 'Gasversorgung aus 2x2 Sauerstoffflaschen', 'automatische Gasumschaltung', 'automatische Gasumschaltung',
         '68f774e4-bb9e-4cd1-8e77-744d9ad79609', true, 'Gasversorgung aus 2x2 Sauerstoffflaschen',
         'Gasversorgung aus 2x2 Sauerstoffflaschen', '1523', '2019-10-11 00:00:00.000000', 230, 60, 1, 0, 23,
-        'ibeda_asset_umschaltung.jpg', null, null, '2019-10-18 00:00:00.000000', 1, 10, 17, 'direct I/O', true, 'I/O');
+        'ibeda_asset_umschaltung.jpg', null, null, '2019-10-18 00:00:00.000000', 1, 10, 17, 'direct I/O', true, 'I/O',
+        'gasversorgung-gms-1523');
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Maintenance intervall', 18, 0, true, 'Maintenance intervall', true, 'number', 'h', 1500, 21);
+values (0, 0, 'Maintenance interval', 18, 0, true, 'maintenance_interval', true, 'number', 'h', 1500, 21);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Maintenance intervall', 18, 0, true, 'Maintenance intervall', true, 'number', 'h', 1500, 22);
+values (0, 0, 'Maintenance interval', 18, 0, true, 'maintenance_interval', true, 'number', 'h', 1500, 22);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Maintenance intervall', 18, 0, true, 'Maintenance intervall', true, 'number', 'h', 1500, 23);
+values (0, 0, 'Maintenance interval', 18, 0, true, 'maintenance_interval', true, 'number', 'h', 1500, 23);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Asset status', 18, 0, true, 'asset_status', true, 'operatingstatus', null, 0, 24);
+values (0, 0, 'Asset status', '2b42fbe0-9645-4f9f-a214-6d83d86c0157', 1, true, 'asset_status', true, 'operatingmode',
+        null, 0, 24);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Cutting program', '5ce55367-3402-4f4f-b57b-0ee4ed476d2e', 1, true, 'cutting_program', true, 'string',
+values (0, 0, 'Cutting program', '5ce55367-3402-4f4f-b57b-0ee4ed476d2e', 1, true, 'cutting_program', true, 'filename',
         null, 0, 25);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Total cutting time', 18, 0, true, 'total_cutting_time', true, 'number', 's', 0, 26);
+values (0, 0, 'Total cutting time', '8fca309c-bba8-49fa-a1eb-43c1120c2f83', 1, true, 'total_cutting_time', true, 'number', 's', 0, 26);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
@@ -147,7 +140,8 @@ values (0, 0, 'Hours till maintenance', '97dfcfae-a721-4bc4-860d-427e96e5c5be', 
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Asset status', '', 0, true, 'asset_status', true, 'operatingstatus', null, 0, 32);
+values (0, 0, 'Asset status', 'd97a2c05-dd25-4a94-b0fb-91a2354d4003', 1, true, 'asset_status', true, 'operatingstatus',
+        null, 0, 32);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
@@ -162,7 +156,7 @@ select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
 values (0, 2, 'Air consumption', '16184c6a-9511-4478-8ca3-9ceb05e449d8', 1, true, 'air_consumption', true, 'number',
-        'l/min', 0, 35);
+        'l', 0, 35);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
@@ -181,27 +175,28 @@ values (0, 0, 'Hours till maintenance', '75829171-131b-4e50-b9ec-0094bc0386ca', 
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 0, 'Asset status', 20, 0, true, 'asset_status', true, 'operatingstatus', null, 0, 39);
+values (0, 0, 'Asset status', '39', 0, true, 'asset_status', true, 'operatingstatus', null, 0, 39);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 4, 'Pressure bottle left', 20, 0, true, 'pressure_bottle_left', true, 'number', 'bar', 0, 40);
+values (0, 4, 'Pressure bottle left', 'a05efa41-3ec6-442c-a0de-f9511a24cc6d', 1, true, 'pressure_bottle_left', true, 'number', 'bar', 0, 40);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 4, 'Pressure bottle right', 20, 0, true, 'pressure_bottle_right', true, 'number', 'bar', 0, 41);
+values (0, 4, 'Pressure bottle right', 'fd1ebe72-4fec-47a1-934b-2c0de22045e7', 1, true, 'pressure_bottle_right', true, 'number', 'bar', 0, 41);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 4, 'Pressure pipe', 20, 0, true, 'pressure_pipe', true, 'number', 'bar', 0, 42);
+values (0, 4, 'Pressure pipe', 'd12e1820-004c-4bcc-8fd8-83da8d79afac', 1, true, 'pressure_pipe', true, 'number', 'bar', 0, 42);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
-values (0, 4, 'Pressure takeoff 1', 20, 0, true, 'pressure_takeoff_1', true, 'number', 'bar', 0, 43);
+values (0, 4, 'Pressure takeoff 1', '29607b3b-7eb7-46ac-ae4b-6ab82246f6a2', 1, true, 'pressure_takeoff_1', true, 'number', 'bar', 0, 43);
 select nextval('hibernate_sequence');
 insert into field (version, accuracy, description, external_id, field_type, mandatory, name, overrideable, type, unit,
                    value, id)
 values (0, 0, 'Hours till maintenance', 20, 0, true, 'hours_maintenance', true, 'number', 'h', 0, 44);
+-- MSF Compact 1001.20L
 insert into asset_fields (asset_id, fields_id)
 values (18, 21);
 insert into asset_fields (asset_id, fields_id)
@@ -220,6 +215,7 @@ insert into asset_fields (asset_id, fields_id)
 values (18, 30);
 insert into asset_fields (asset_id, fields_id)
 values (18, 31);
+-- ZPF 6H Filteranlage
 insert into asset_fields (asset_id, fields_id)
 values (19, 22);
 insert into asset_fields (asset_id, fields_id)
@@ -236,6 +232,7 @@ insert into asset_fields (asset_id, fields_id)
 values (19, 37);
 insert into asset_fields (asset_id, fields_id)
 values (19, 38);
+-- Gasversorgung
 insert into asset_fields (asset_id, fields_id)
 values (20, 23);
 insert into asset_fields (asset_id, fields_id)

@@ -17,8 +17,7 @@ spec:
         - name: PGPASSWORD
           value: postgresadminpw
         command: ["/bin/sh","-c"]
-        args: ["/usr/bin/psql postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb -f /tmp/demoinserts.sql"]
-        #, " && /usr/bin/psql postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb -f /tmp/demoinserts.sql"]
+        args: ["/usr/bin/psql postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb -f /tmp/ddl.sql && echo Now deploying demoinserts && /usr/bin/psql postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb -f /tmp/demoinserts.sql"]
         volumeMounts:
         - name: config
           mountPath: /tmp
@@ -34,4 +33,6 @@ spec:
               path: sqlinserts.log
             - key: demoinserts.sql
               path: demoinserts.sql
+            - key: ddl.sql
+              path: ddl.sql
   backoffLimit: 10
