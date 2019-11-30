@@ -37,7 +37,7 @@ spec:
             mountPath: /volume/data
         image: docker.io/oisp/oisp-iot-agent:latest
       - name: fusiongatewayapp
-        image: docker.io/ibn40/fusiongatewayapp:latest
+        image: docker.io/ibn40/fusiongatewayapp:mqttv0.1
         env:
           - name: server.port
             value: "8081"
@@ -46,11 +46,6 @@ spec:
         volumeMounts:
           - name: gateway-config
             mountPath: /app/resources
-      - name: fusionplcdataservice
-        image: docker.io/ibn40/fusionplcdataservice:latest
-        volumeMounts:
-          - name: dataservice-config
-            mountPath: /app/resources	
       volumes:
         - name: oisp-devices-config-volume
           configMap:
@@ -64,16 +59,8 @@ spec:
             items:
             - key: application.yaml
               path: application.yaml
-        - name: dataservice-config
-          configMap:
-            name: <NODENAME><ID>-app-config
-            items:
-            - key: fusionplcdataservice_application.yaml
-              path: application.yaml	      
         - name: oisp-devices-data-volume
           persistentVolumeClaim:
             claimName: <NODENAME><ID>-pvc-device-data
       imagePullSecrets:
       - name: regcred
-      nodeSelector:
-         kubernetes.io/hostname: <NODENAME>
