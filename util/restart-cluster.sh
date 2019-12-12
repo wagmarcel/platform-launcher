@@ -27,6 +27,9 @@ printf "\n"
 printf "\033[1mInstalling k8s operators\n"
 printf -- "------------------------\033[0m\n"
 kubectl create -f https://github.com/minio/minio-operator/blob/master/minio-operator.yaml?raw=true --validate=false
+helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com/
+kubectl create ns zookeeper
+helm install zookeeper-operator  banzaicloud-stable/zookeeper-operator --namespace zookeeper
 printf -- "\033[1mOperators installed successfully.\033[0m\n"
 
 printf "\033[1mReady to deploy OISP\033[0m\n"
