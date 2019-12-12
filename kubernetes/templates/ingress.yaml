@@ -19,10 +19,13 @@ spec:
         backend:
           serviceName: frontend
           servicePort: 4001
-      - path: /ui/grafana
-        backend:
-          serviceName: frontend
-          servicePort: 4002
+  - host: {{ .Values.hosts.frontend }}
+    http:
+        paths:
+        - path: /ui/grafana
+          backend:
+            serviceName: frontend
+            servicePort: 4002
   - host: {{ .Values.hosts.websocketserver }}
     http:
       paths:
