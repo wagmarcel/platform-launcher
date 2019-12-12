@@ -49,7 +49,7 @@ spec:
           {{ end }}
         env:
         - name: KAFKA_ZOOKEEPER_CONNECT
-          value: zookeeper:2181
+          value: {{ .Values.zookeeper.clusterUrl }}:{{ .Values.zookeeper.clusterPort }}
         - name: ALLOW_PLAINTEXT_LISTENER
           value: "yes"
         - name: KAFKA_LISTENERS

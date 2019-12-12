@@ -33,6 +33,13 @@ grafana:
   admin: grafana
   password: intel123
 
+zookeeper:
+  replicas: 3
+  name: zookeeper
+  clusterUrl: "zookeeper-client"
+  clusterPort: 2181
+  quorum: "zookeeper-0,zookeeper-1,zookeeper-2"
+
 mqtt:
   broker:
     username: username
