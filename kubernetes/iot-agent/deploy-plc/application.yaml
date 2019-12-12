@@ -32,3 +32,5 @@ fusiongateway:
         componentType: "Stromverbrauch.v1.0"
       - source: "Betriebsstunden"
         componentType: "Zeit.v1.0"
+      - source: "Mld_Betrieb"
+        componentType: "Status.v1.0"

@@ -47,7 +47,7 @@ spec:
           - name: gateway-config
             mountPath: /app/resources
       - name: fusionplcdataservice
-        image: docker.io/ibn40/fusionplcdataservice:latest
+        image: docker.io/ibn40/fusionplcdataservice:v0.1
         volumeMounts:
           - name: dataservice-config
             mountPath: /app/resources	
