@@ -33,8 +33,6 @@ metadata:
   name: frontend
   namespace: ${NAMESPACE}
 spec:
-  selector:
-    app: MyApp
   ports:
   - protocol: TCP
     port: 4001
@@ -71,6 +69,17 @@ subsets:
   - port: 4004
     name: "4004"
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: websocket-server
+  name: websocket-server-0
+spec:
+  ports:
+  - port: 5000
+  selector:
+    app: websocket-server
 EOF
 (cd ${TARGETDIR}; npm install)
 echo all prepared got to ${TARGETDIR} and start application
