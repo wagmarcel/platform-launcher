@@ -24,8 +24,8 @@ export NODE_ENV=locals
 ##########################
 IPADDRESS=$(hostname -I | cut -d " " -f 1)
 echo selected IP address ${IPADDRESS}
+#kubectl -n ${NAMESPACE} delete deployment frontend
 kubectl -n ${NAMESPACE} delete svc frontend
-kubectl -n ${NAMESPACE} delete ep frontend
 cat << EOF | kubectl -n ${NAMESPACE} create -f -
 apiVersion: v1
 kind: Service
