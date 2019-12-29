@@ -159,7 +159,7 @@ upgrade-oisp: check-docker-cred-env
 ##
 undeploy-oisp:
 	@cd kubernetes && \
-	helm uninstall $(NAME) --namespace $(NAMESPACE) && \
+	( helm uninstall $(NAME) --namespace $(NAMESPACE) || echo helm uninstall failed)  && \
 	kubectl delete namespace $(NAMESPACE)
 
 # =====

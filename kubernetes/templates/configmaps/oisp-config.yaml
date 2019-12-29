@@ -59,7 +59,7 @@ data:
     }
   zookeeper: |
     {
-    "zkCluster": "zookeeper:2181"
+    "zkCluster": {{ .Values.zookeeper.servers | quote }}
     }
   kerberos: |
     {
@@ -77,9 +77,9 @@ data:
     "hadoop.security.authentication": "simple",
     "hadoop.security.authorization": "false",
     "hbase.security.authentication": "simple",
-    "ha.zookeeper.quorum": "zookeeper",
+    "ha.zookeeper.quorum": {{ .Values.zookeeper.servers | quote }},
     "hbase.zookeeper.property.clientPort": "2181",
-    "hbase.zookeeper.quorum": "zookeeper",
+    "hbase.zookeeper.quorum": {{ .Values.zookeeper.servers | quote }},
     "hbase.rootdir": "/hbase"
     }
   postgres: |

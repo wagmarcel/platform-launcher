@@ -46,7 +46,18 @@ spec:
           requests:
             cpu: 500m
           {{ end }}
-        args: ["/app/bootstrap.sh"]
+        args:
+            - "./wait-for-it.sh"
+            - "frontend:4001"
+            - "-t"
+            - "300"
+            - "--"
+            - "./wait-for-it.sh"
+            - "keycloak-http:4080"
+            - "-t"
+            - "300"
+            - "--"
+            - "/app/bootstrap.sh"
         env:
         - name: OISP_RULEENGINE_CONFIG
           valueFrom:
