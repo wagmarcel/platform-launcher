@@ -34,6 +34,7 @@ minio:
 kafka:
   maxPayloadSize: "20000000"
   service: kafka-headless:29092
+  namespace: kafka
 
 grafana:
   admin: grafana
