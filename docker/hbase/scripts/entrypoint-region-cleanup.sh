@@ -20,11 +20,12 @@ echo "Stop listener started"
 function clean_up {
     echo "Stop listener called"
     /opt/hbase/bin/hbase-daemon.sh stop regionserver
-    exit 0;
     }
 trap clean_up SIGTERM
 
-while true; do sleep 10; done
-
-
-
+echo terminating supervisord
+while read line; do
+  echo "Processing Event: $line" >&2;
+  kill -3 $(cat "/var/run/supervisord.pid")
+done < /dev/stdin
+#while true; do sleep 10; done

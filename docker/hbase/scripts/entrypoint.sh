@@ -34,6 +34,7 @@ for rs in $REGIONSERVERS; do
     echo $rs >> $RS_CONF
 done
 
-/opt/hbase/bin/start-hbase.sh
-
-exec supervisord -n
+#/opt/hbase/bin/start-hbase.sh
+#rm /etc/supervisor/conf.d/supervisor.region.conf # ignore the region config
+#exec supervisord -n
+/opt/hbase/bin/hbase master start

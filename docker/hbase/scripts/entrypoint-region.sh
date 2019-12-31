@@ -20,4 +20,7 @@
 mkdir -p /data/logs
 
 service ssh start
-while [ 1 ]; do sleep 10; done
+#rm /etc/supervisor/conf.d/supervisor.conf # only use the region config
+#exec supervisord -n
+/opt/hbase/bin/hbase regionserver start
+/opt/hbase/bin/hbase-daemon.sh stop regionserver
