@@ -50,6 +50,11 @@ else
 	@env http_proxy="" https_proxy="" USERNAME=$(USERNAME) PASSWORD=$(PASSWORD) LOG_LEVEL="error" NODE_ENV="local" npm run-script prep-only
 endif
 
+reset-db:
+	@$(call msg,"Resetting database ...");
+	@kubectl -n $(NAMESPACE) exec -i $(FRONTEND_POD) -c frontend --  node /app/admin resetKeycloakUsers
+	@kubectl -n $(NAMESPACE) exec -i $(FRONTEND_POD) -c frontend --  node /app/admin resetDB
+
 clean:
 	@$(call msg,"Cleaning ...");
 

@@ -341,6 +341,14 @@ logs:
 	@cd /tmp && zip -q -r ./$(LOGS_ARCHIVE).zip $(LOGS_ARCHIVE)/*
 	@mv /tmp/$(LOGS_ARCHIVE).zip .
 
+## reset-db:
+##     Reset keycloak and postgres to repeat tests
+##     Precondition to succeed is that a test has been executed earlier
+##
+reset-db:
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger \
+	-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && make reset-db TERM=xterm NAMESPACE=$(NAMESPACE)"
+
 
 ## clean: Remove .init, forcing a clean-up on the next run.
 ##
