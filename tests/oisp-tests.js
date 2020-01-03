@@ -1094,8 +1094,9 @@ describe("Sending observations and checking rules ...\n".bold, function() {
     }).timeout(5000);
 
     it('Wait for backend synchronization', function(done) {
-        setTimeout(done, 2000);
-    }).timeout(5000);
+        console.log("Marcel523");
+        setTimeout(done, 5000);
+    }).timeout(10000);
     it('Shall check observations', function(done) {
         var checkObservations = function(component) {
             if ( component ) {

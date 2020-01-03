@@ -864,7 +864,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         });
     },
     "waitForBackendSynchronization": function(done) {
-      setTimeout(done, 2000);
+      setTimeout(done, 5000);
 
     },
     "sendPartiallyWrongData": function(done) {
