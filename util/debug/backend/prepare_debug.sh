@@ -29,6 +29,7 @@ metadata:
   name: backend
   namespace: ${NAMESPACE}
 spec:
+  clusterIP: None
   ports:
   - protocol: TCP
     port: 8080
