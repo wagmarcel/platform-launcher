@@ -1065,7 +1065,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
         before(function() {
             if (checkTestCondition(["non_essential", "email"])) {
                 this.skip();
-            }n
+            }
         });
         var expectedEmailReasons = [];
         components.list.forEach(function(component) {
