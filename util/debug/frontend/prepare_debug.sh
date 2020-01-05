@@ -1,3 +1,6 @@
+# Should be called from backend directory, e.g. ..../platform-launcher/oisp-frontend
+pushd .
+cd ../../util/debug/frontend
 NAMESPACE=oisp
 TARGETDIR=../../../oisp-frontend/public-interface
 echo Namespace: ${NAMESPACE}
@@ -26,6 +29,7 @@ IPADDRESS=$(hostname -I | cut -d " " -f 1)
 echo selected IP address ${IPADDRESS}
 #kubectl -n ${NAMESPACE} delete deployment frontend
 kubectl -n ${NAMESPACE} delete svc frontend
+kubectl -n ${NAMESPACE} label svc keycloak-http app=keycloak
 cat << EOF | kubectl -n ${NAMESPACE} create -f -
 apiVersion: v1
 kind: Service
@@ -33,6 +37,7 @@ metadata:
   name: frontend
   namespace: ${NAMESPACE}
 spec:
+  clusterIP: None
   ports:
   - protocol: TCP
     port: 4001
@@ -68,18 +73,8 @@ subsets:
     name: "4003"
   - port: 4004
     name: "4004"
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: websocket-server
-  name: websocket-server-0
-spec:
-  ports:
-  - port: 5000
-  selector:
-    app: websocket-server
 EOF
 (cd ${TARGETDIR}; npm install)
 echo all prepared got to ${TARGETDIR} and start application
+echo recommended kubefwd settings: kubefwd svc -n oisp  -n kafka -l "app in (kafka, oisp-stolon-proxy, oisp-stolon-keeper, grafana, redis, keycloak, websocket-server, backend)"
+popd
