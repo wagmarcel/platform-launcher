@@ -133,9 +133,13 @@ deploy-oisp: check-docker-cred-env
 upgrade-oisp: check-docker-cred-env
 	@source util/get_oisp_credentials.sh && \
 	cd kubernetes && \
-	kubectl -n $(NAMESPACE) delete secret oisp-realm-secret && \
-	kubectl -n $(NAMESPACE) create secret generic oisp-realm-secret --from-file=./../keycloak/oisp-realm.json && \
-	helm repo add "${KEYCLOAK_HELM_REPO_NAME}" "${KEYCLOAK_HELM_REPO}" --namespace "${NAMESPACE}" && \
+	(kubectl -n $(NAMESPACE) delete secret oisp-realm-secret || echo no oisp-realm-secret exists;) && \
+	(kubectl -n $(NAMESPACE) create secret generic oisp-realm-secret --from-file=./../keycloak/oisp-realm.json || echo could not create realm-secret) && \
+	(kubectl -n $(NAMESPACE) delete job dbsetup || echo could not delete job dbsetup) && \
+	(kubectl -n $(NAMESPACE) delete job dbupdate || echo could not delete job dbupdate) && \
+	helm repo add "${KEYCLOAK_HELM_REPO_NAME}" "${KEYCLOAK_HELM_REPO}" --namespace $(NAMESPACE) && \
+	if [ -z $${KEYCLOAK_PASSWORD} ]; then echo creating new keycloak PW; KEYCLOAKPW=$(call randomPass); \
+		else echo Using existing keycloak PW; KEYCLOAKPW=$${KEYCLOAK_PASSWORD}; fi && \
 	helm dependency update --namespace $(NAMESPACE) && \
 	helm upgrade $(NAME) . --namespace $(NAMESPACE) \
 		--timeout 600s \
@@ -150,7 +154,7 @@ upgrade-oisp: check-docker-cred-env
 		--set stolon.pgSuperuserPassword="$${POSTGRES_SU_PASSWORD}" \
 		--set keycloak.keycloak.persistence.dbPassword="$${POSTGRES_SU_PASSWORD}" \
 		--set postgres.password="$${POSTGRES_PASSWORD}" \
-		--set keycloak.keycloak.password="$${KEYCLOAK_PASSWORD}" \
+		--set keycloak.keycloak.password="$${KEYCLOAKPW}" \
 		--set tag=$(DOCKER_TAG) \
 		$(HELM_ARGS)
 
