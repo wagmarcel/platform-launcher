@@ -25,8 +25,8 @@ data:
     }
   backend: |
     {
-    "tsdbName": "openTSDB",
-    "objectStoreName": "minio",
+    "tsdbName": {{ .Values.backend.defaultTsdbBackend | quote }},
+    "objectStoreName": {{ .Values.backend.objectStoreName | quote }},
     "kafkaConfig": "@@OISP_KAFKA_CONFIG",
     "tsdbProperties": "%%OISP_TSDB_PROPERTIES",
     "zookeeperConfig": "@@OISP_ZOOKEEPER_CONFIG",
@@ -166,10 +166,10 @@ data:
     {
     "port": 4242
     }
-  opentsdb-properties: |
+  kairosdb-properties: |
     {
-    "uri": "opentsdb",
-    "port": "4242"
+    "uri": {{ .Values.backend.tsdbUri | quote }},
+    "port": {{ .Values.backend.tsdbPort | quote }}
     }
   minio: |
     {

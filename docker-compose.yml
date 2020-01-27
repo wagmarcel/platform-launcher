@@ -43,8 +43,6 @@ services:
       context: ./oisp-beam-rule-engine
       labels:
         - oisp=true
-    depends_on:
-      - hbase
   kairosdb:
     image: oisp/kairosdb:${DOCKER_TAG}
     build:
