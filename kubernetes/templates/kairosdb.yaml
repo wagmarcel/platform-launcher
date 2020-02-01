@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kairosdb
+  name: kairosdb
+spec:
+  ports:
+  - port: 8080
+  selector:
+    app: kairosdb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kairosdb
+  labels:
+    app: kairosdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kairosdb
+  template:
+    metadata:
+      labels:
+        app: kairosdb
+    spec:
+      containers:
+      - name: kairosdb
+        image: oisp/kairosdb:{{ .Values.tag }}
+        ports:
+        - containerPort: 8080
+        args:
+        - /opt/kairosdb/bin/kairosdb.sh run
+        env:
+        - name: OISP_OPENTSDB_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              key: opentsdb-config
+              name: oisp-config
+        - name: OISP_TSDB_PROPERTIES
+          valueFrom:
+            configMapKeyRef:
+              key: kairosdb-properties
+              name: oisp-config
+        workingDir: /app
+        resources:
+          {{ if .Values.less_resources }}
+          requests:
+            cpu: 100m
+          {{ else }}
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 500m
+          {{ end }}
+      imagePullSecrets:
+      - name: dockercred

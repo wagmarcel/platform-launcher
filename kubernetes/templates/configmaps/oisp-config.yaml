@@ -184,8 +184,8 @@ data:
     "port": "3000",
     "adminUser": "{{ .Values.grafana.admin }}",
     "adminPassword": "{{ .Values.grafana.password }}",
-    "dataSourceHost": "opentsdb",
-    "dataSourcePort": "4242"
+    "dataSourceHost": "kairosdb",
+    "dataSourcePort": "8080"
     }
   mqtt-gateway: |
     {
