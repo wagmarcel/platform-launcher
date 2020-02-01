@@ -34,10 +34,10 @@ spec:
         args:
         - /opt/kairosdb/bin/kairosdb.sh run
         env:
-        - name: OISP_OPENTSDB_CONFIG
+        - name: OISP_KAIROSDB_CONFIG
           valueFrom:
             configMapKeyRef:
-              key: opentsdb-config
+              key: kairosdb-properties
               name: oisp-config
         - name: OISP_TSDB_PROPERTIES
           valueFrom:

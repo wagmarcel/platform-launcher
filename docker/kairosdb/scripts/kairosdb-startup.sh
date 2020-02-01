@@ -38,13 +38,13 @@ function disable_config {
 echo "Starting $0"
 CASSANDRAHOST=$(echo ${OISP_KAIROSDB_CONFIG} | jq   '.cassandraHost' | tr -d '"')
 PORT=$(echo ${OISP_KAIROSDB_CONFIG} | jq '.port')
-REPLICATIONFACTOR=$(echo ${OISP_KAIROSDB_CONFIG} | jq '.replicationFactor')
-echo "Found CASSANDRAHOST=${CASSANDRAHOST} PORT=${PORT} REPLICATIONFACTOR=${REPLICATIONFACTOR}"
+REPLICATION=$(echo ${OISP_KAIROSDB_CONFIG} | jq '.replication')
+echo "Found CASSANDRAHOST=${CASSANDRAHOST} PORT=${PORT} REPLICATION=${REPLICATION}"
 
 # update the config file
 replace_config "kairosdb.datastore.cassandra.host_name" ${CASSANDRAHOST} "#"
 replace_config "kairosdb.datastore.cassandra.port" ${PORT} "#"
-replace_config "kairosdb.datastore.cassandra.replication_factor" ${REPLICATIONFACTOR} "#"
+replace_config "kairosdb.datastore.cassandra.replication" ${REPLICATION} "#"
 disable_config "kairosdb.service.datastore=org.kairosdb.datastore.h2.H2Module"
 
 /opt/kairosdb/bin/kairosdb.sh run

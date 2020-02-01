@@ -19,20 +19,18 @@ ENV KAIROSDB_VERSION 1.2.2
 
 ENV JAVA_HOME /usr/local/openjdk-8
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget
-#RUN apk update && apk add wget && rm -rf /var/cache/apk/*
+RUN apt-get update && apt-get install -y --no-install-recommends wget jq
 RUN cd /opt && \
     wget -qO- https://github.com/kairosdb/kairosdb/releases/download/v${KAIROSDB_VERSION}/kairosdb-${KAIROSDB_VERSION}-1.tar.gz | tar xz
 
-#RUN addgroup -g 1000 -S kairosdb && \
-#    adduser -u 1000 -S kairosdb -G kairosdb
 RUN groupadd -r kairosdb && useradd -r -g kairosdb kairosdb
 
 RUN chown -R kairosdb:kairosdb /opt && chown -R kairosdb:kairosdb /var
 
-
+ADD scripts/kairosdb-startup.sh /opt/kairosdb-startup.sh
 USER kairosdb
 
-ENTRYPOINT ["/opt/kairosdb/bin/kairosdb.sh", "run"]
+
+ENTRYPOINT ["/opt/kairosdb-startup.sh"]
 
 EXPOSE 4242

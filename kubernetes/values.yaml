@@ -44,6 +44,11 @@ backend:
   tsdbUri: "kairosdb"
   tsdbPort: 8080
 
+cassandra:
+  host: cassandra-oisp-nodes.cassandra.svc.cluster.local
+  port: 9042
+  replication: "{'class': 'SimpleStrategy','replication_factor' : 2}"
+
 grafana:
   admin: grafana
   password: intel123

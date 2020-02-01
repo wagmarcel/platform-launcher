@@ -71,21 +71,6 @@ spec:
             configMapKeyRef:
               key: zookeeper
               name: oisp-config
-        - name: OISP_KERBEROS_CONFIG
-          valueFrom:
-            configMapKeyRef:
-              key: kerberos
-              name: oisp-config
-        - name: OISP_HBASE_CONFIG
-          valueFrom:
-            configMapKeyRef:
-              key: hbase
-              name: oisp-config
-        - name: OISP_HADOOP_PROPERTIES
-          valueFrom:
-            configMapKeyRef:
-              key: hadoop
-              name: oisp-config
         - name: OISP_TSDB_PROPERTIES
           valueFrom:
             configMapKeyRef:
