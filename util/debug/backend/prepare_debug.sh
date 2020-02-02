@@ -29,12 +29,12 @@ metadata:
   name: backend
   namespace: ${NAMESPACE}
 spec:
-  clusterIP: None
+  #clusterIP: None
   ports:
   - protocol: TCP
     port: 8080
-    targetPort: 8080
-    name: "8080"
+    targetPort: 8081
+    name: "8081"
 ---
 apiVersion: v1
 kind: Endpoints
@@ -45,8 +45,8 @@ subsets:
 - addresses:
   - ip: ${IPADDRESS}
   ports:
-  - port: 8080
-    name: "8080"
+  - port: 8081
+    name: "8081"
 EOF
 echo all prepared
 popd
