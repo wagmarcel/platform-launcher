@@ -169,7 +169,8 @@ data:
     "uri": {{ .Values.backend.tsdbUri | quote }},
     "port": {{ .Values.backend.tsdbPort | quote }},
     "cassandraHost": {{ .Values.cassandra.host | quote}},
-    "cassandraPort": {{ .Values.cassandra.port | quote}}
+    "cassandraPort": {{ .Values.cassandra.port | quote}},
+    "cassandraReplication": {{ .Values.cassandra.replication | quote}}
     }
   minio: |
     {

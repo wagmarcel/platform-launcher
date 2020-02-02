@@ -2,10 +2,23 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cassandra-operator-default-config
+  namespace: cassandra
 data:
-  nodes: "3"
+  {{ if .Values.less_resources }}
+  nodes: "1"
+  {{ else }}
+  nodes: {{ .Values.cassandra.nodes | quote}}
+  {{ end }}
   cassandraImage: gcr.io/cassandra-operator/cassandra-3.11.5:latest
   sidecarImage: gcr.io/cassandra-operator/cassandra-sidecar:latest
-  memory: 1Gi
-  disk: 1Gi
-  diskMedium: Memory
+  {{ if .Values.less_resources }}
+  memory: 0.5Gi
+  {{ else }}
+  memory: {{ .Values.cassandra.memory}}
+  {{ end }}
+  {{ if .Values.less_resources }}
+  disk: 0.5Gi
+  {{ else }}
+  disk: {{ .Values.cassandra.disk }}
+  {{ end }}
+  diskMedium: ""

@@ -28,9 +28,8 @@ RUN groupadd -r kairosdb && useradd -r -g kairosdb kairosdb
 RUN chown -R kairosdb:kairosdb /opt && chown -R kairosdb:kairosdb /var
 
 ADD scripts/kairosdb-startup.sh /opt/kairosdb-startup.sh
+ADD scripts/wait-for-it.sh /opt/wait-for-it.sh
+
 USER kairosdb
 
-
-ENTRYPOINT ["/opt/kairosdb-startup.sh"]
-
-EXPOSE 4242
+EXPOSE 8080

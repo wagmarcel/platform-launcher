@@ -19,8 +19,8 @@ function replace_config {
   config_line=$1
   replacement="${config_line} = ${2//\//\\/}"
   line_start=$3
-  echo sed -i "s/${line_start}.*${config_line} =.*$/${replacement}/" ${CONFIG_FILE}
-  sed -i "s/${line_start}.*${config_line} =.*$/${replacement}/" ${CONFIG_FILE}
+  echo sed -i "s/${line_start}.*${config_line}.*=.*$/${replacement}/" ${CONFIG_FILE}
+  sed -i "s/${line_start}.*${config_line}.*=.*$/${replacement}/" ${CONFIG_FILE}
 }
 
 function add_config {
@@ -35,16 +35,24 @@ function disable_config {
     sed -i "s/${config_line}/\#${config_line}/" ${CONFIG_FILE}
 }
 
+function enable_config {
+    config_line=$1
+    echo sed -i "s/\#${config_line}/${config_line}/" ${CONFIG_FILE}
+    sed -i "s/\#${config_line}/${config_line}/" ${CONFIG_FILE}
+}
+
 echo "Starting $0"
+echo OISP_KAIROSDB_CONFIG=${OISP_KAIROSDB_CONFIG}
 CASSANDRAHOST=$(echo ${OISP_KAIROSDB_CONFIG} | jq   '.cassandraHost' | tr -d '"')
-PORT=$(echo ${OISP_KAIROSDB_CONFIG} | jq '.port')
-REPLICATION=$(echo ${OISP_KAIROSDB_CONFIG} | jq '.replication')
-echo "Found CASSANDRAHOST=${CASSANDRAHOST} PORT=${PORT} REPLICATION=${REPLICATION}"
+CASSANDRAPORT=$(echo ${OISP_KAIROSDB_CONFIG} | jq '.cassandraPort' | tr -d '"')
+REPLICATION=$(echo ${OISP_KAIROSDB_CONFIG} | jq '.cassandraReplication')
+echo "Found CASSANDRAHOST=${CASSANDRAHOST} PORT=${CASSANDRAPORT} REPLICATION=${REPLICATION}"
 
 # update the config file
-replace_config "kairosdb.datastore.cassandra.host_name" ${CASSANDRAHOST} "#"
-replace_config "kairosdb.datastore.cassandra.port" ${PORT} "#"
-replace_config "kairosdb.datastore.cassandra.replication" ${REPLICATION} "#"
+replace_config "kairosdb.datastore.cassandra.cql_host_list" ${CASSANDRAHOST}:${CASSANDRAPORT} ""
+#add_config "kairosdb.datastore.cassandra.port" ${CASSANDRAPORT} "#"
+replace_config "kairosdb.datastore.cassandra.replication" ${REPLICATION} ""
 disable_config "kairosdb.service.datastore=org.kairosdb.datastore.h2.H2Module"
+enable_config "kairosdb.service.datastore=org.kairosdb.datastore.cassandra.CassandraModule"
 
 /opt/kairosdb/bin/kairosdb.sh run

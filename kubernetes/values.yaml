@@ -48,6 +48,9 @@ cassandra:
   host: cassandra-oisp-nodes.cassandra.svc.cluster.local
   port: 9042
   replication: "{'class': 'SimpleStrategy','replication_factor' : 2}"
+  nodes: 3
+  disk: 10Gi
+  memory: 1Gi
 
 grafana:
   admin: grafana

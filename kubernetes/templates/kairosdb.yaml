@@ -32,7 +32,12 @@ spec:
         ports:
         - containerPort: 8080
         args:
-        - /opt/kairosdb/bin/kairosdb.sh run
+        - /opt/wait-for-it.sh
+        - {{ .Values.cassandra.host }}:{{ .Values.cassandra.port}}
+        - -t
+        - "300"
+        - --
+        - /opt/kairosdb-startup.sh
         env:
         - name: OISP_KAIROSDB_CONFIG
           valueFrom:
