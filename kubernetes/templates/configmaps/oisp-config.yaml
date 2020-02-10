@@ -119,6 +119,8 @@ data:
     "auth-server-url": "http://keycloak-http:4080/keycloak",
     "resource": "oisp-frontend",
     "secret": "{{ .Values.keycloak.frontend.secret }}",
+    "mqttBrokerSecret": "{{ .Values.keycloak.mqttBroker.secret }}",
+    "mqttBrokerId": "{{ .Values.keycloak.mqttBroker.id }}",
     "ssl-required": "external"
     }
   keycloak-admin: |
@@ -127,6 +129,7 @@ data:
     "password": "{{ .Values.keycloak.keycloak.password }}"
     }
   keycloak-frontend-secret: {{ .Values.keycloak.frontend.secret }}
+  keycloak-mqtt-broker-secret: {{ .Values.keycloak.mqttBroker.secret }}
   gateway: |
     {
     "username": "{{ .Values.systemuser.username }}",

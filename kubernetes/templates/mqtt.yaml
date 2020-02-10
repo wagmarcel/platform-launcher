@@ -101,6 +101,11 @@ spec:
             configMapKeyRef:
               name: oisp-config
               key: redis
+        - name: OISP_KEYCLOAK_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: oisp-config
+              key: keycloak
         readinessProbe:
           httpGet:
             path: /v1/api/health
