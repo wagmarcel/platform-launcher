@@ -141,7 +141,7 @@ keycloak:
         sed -i "s/{{ INSERT-PUBLIC-CERT }}/${PUBLIC_CERT}/" ${REALM_DIR}
         # OISP_FRONTEND_SECRET is already defined in the environment variables
         sed -i "s/{{ INSERT-OISP-FRONTEND-SECRET }}/${OISP_FRONTEND_SECRET}/" ${REALM_DIR}
-        sed -i "s/{{ INSERT-OISP-MQTT-BROKER-SECRET }}/${OISP_MQTT_BROKER_SECRET}/" ${REALM_DIR}
+        sed -i "s/{{ INSERT-MQTT-BROKER-SECRET }}/${OISP_MQTT_BROKER_SECRET}/" ${REALM_DIR}
     extraVolumes: |
       - name: oisp-realm-secret
         secret:
@@ -165,6 +165,7 @@ keycloak:
     service:
       httpPort: 4080
       httpsPort: 4043
+      host: keycloak-http
     username: keycloak
     password: intel123
     persistence:
@@ -180,6 +181,7 @@ keycloak:
   mqttBroker:
     secret: "supersecret"
     id: "mqtt-broker"
+    waitFoKeycloak: "keycloak-http:"
 
 jwt:
   public: "No key set"

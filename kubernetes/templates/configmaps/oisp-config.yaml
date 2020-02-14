@@ -119,8 +119,8 @@ data:
     "auth-server-url": "http://keycloak-http:4080/keycloak",
     "resource": "oisp-frontend",
     "secret": "{{ .Values.keycloak.frontend.secret }}",
-    "mqttBrokerSecret": "{{ .Values.keycloak.mqttBroker.secret }}",
-    "mqttBrokerId": "{{ .Values.keycloak.mqttBroker.id }}",
+    "mqtt-broker-secret": "{{ .Values.keycloak.mqttBroker.secret }}",
+    "mqtt-broker-id": "{{ .Values.keycloak.mqttBroker.id }}",
     "ssl-required": "external"
     }
   keycloak-admin: |
@@ -202,6 +202,8 @@ data:
     "frontendSystemUser": "{{ .Values.systemuser.username }}",
     "frontendSystemPassword": "{{ .Values.systemuser.password }}",
     "redisConf": "@@OISP_REDIS_CONFIG",
+    "kafkaConfig": "@@OISP_KAFKA_CONFIG",
+    "postgresConfig": "@@OISP_POSTGRES_CONFIG",
     "aesKey": "/app/keys/mqtt/mqtt_gw_secret.key"
     }
   mqtt-broker: |
