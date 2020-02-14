@@ -270,19 +270,17 @@ restart-cluster:
 ##     are prepared is mortal
 ##
 prepare-tests: wait-until-ready
-	#kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- /bin/bash -c "rm -rf *"
-	#kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- /bin/bash -c "rm -rf .* || true"
-	#kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- /bin/bash -c "pkill node || true"
-	#kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- fake-smtp-server -s 2525 > /dev/null 2>&1 &
-	#kubectl -n $(NAMESPACE) cp $(CURRENT_DIR) $(DEBUGGER_POD):/home -c debugger
-	fake-smtp-server -s 2525 > /dev/null 2>&1 &
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- /bin/bash -c "rm -rf *"
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- /bin/bash -c "rm -rf .* || true"
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- /bin/bash -c "pkill node || true"
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger -- fake-smtp-server -s 2525 > /dev/null 2>&1 &
+	kubectl -n $(NAMESPACE) cp $(CURRENT_DIR) $(DEBUGGER_POD):/home -c debugger
 
 ## test: Run tests
 ##
 test: prepare-tests
-	#kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger \
-	#	-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && make test TERM=xterm NAMESPACE=$(NAMESPACE)"
-	cd tests && make test TERM=xterm NAMESPACE=$(NAMESPACE)
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger \
+		-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && make test TERM=xterm NAMESPACE=$(NAMESPACE)"
 
 # ==============
 # BUILD COMMANDS
