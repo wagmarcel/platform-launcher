@@ -191,4 +191,4 @@ jaeger_tracing: false
 
 # Sets resource limits lower to test locally
 # or on smaller cluster when set to true
-less_resources: true
+less_resources: false
