@@ -27,6 +27,7 @@ minio:
   secretkey: minio123
 
 kafka:
+  fullnameOverride: oisp-kafka
   service: oisp-kafka-headless:9092
   fullBrokerList: "oisp-kafka-headless:9092"
   replicas: 3
@@ -38,7 +39,8 @@ kafka:
   zookeeper:
     replicaCount: 3
 
-kafka-single:
+kafka-test:
+  fullnameOverride: oisp-kafka
   service: oisp-kafka-headless:9092
   fullBrokerList: "oisp-kafka-headless:9092"
   replicas: 1
@@ -48,7 +50,7 @@ kafka-single:
     replica.fetch.max.bytes: "20000000"
     message.max.bytes: "20000000"
   zookeeper:
-    replicas: 1
+    replicaCount: 1
 
 zookeeper:
   namespace: zookeeper
@@ -209,4 +211,7 @@ jaeger_tracing: false
 
 # Sets resource limits lower to test locally
 # or on smaller cluster when set to true
+# Note: make sure that less_resources and production always containe inverted Values
+# why: Because selection of subcharts in Helm does not work with "false" values (sad, but true)
 less_resources: false
+production: true
