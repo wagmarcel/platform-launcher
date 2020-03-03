@@ -1,3 +1,5 @@
 locust/
 #*
 iot-agent/
+industryfusion/
+cert-manager/

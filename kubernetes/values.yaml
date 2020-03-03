@@ -109,9 +109,9 @@ websocketServer:
 
 # Hosts used for Ingress configuration
 hosts:
-    frontend: latest.oisp.info
-    websocketserver: ws.latest.oisp.info
-    mqttserver: mqtt.latest.oisp.info
+    frontend: staging.streammyiot.com
+    websocketserver: ws.staging.streammyiot.com
+    mqttserver: mqtt.staging.streammyiot.com
 
 systemuser:
   username: gateway@intel.com
