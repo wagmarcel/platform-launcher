@@ -1,0 +1,356 @@
+ nextval 
+---------
+     177
+(1 row)
+
+psql:/tmp/demoinserts.sql:3: ERROR:  duplicate key value violates unique constraint "company_pkey"
+DETAIL:  Key (id)=(1) already exists.
+ nextval 
+---------
+     178
+(1 row)
+
+psql:/tmp/demoinserts.sql:6: ERROR:  duplicate key value violates unique constraint "company_pkey"
+DETAIL:  Key (id)=(2) already exists.
+ nextval 
+---------
+     179
+(1 row)
+
+psql:/tmp/demoinserts.sql:9: ERROR:  duplicate key value violates unique constraint "company_pkey"
+DETAIL:  Key (id)=(3) already exists.
+ nextval 
+---------
+     180
+(1 row)
+
+psql:/tmp/demoinserts.sql:13: ERROR:  duplicate key value violates unique constraint "company_pkey"
+DETAIL:  Key (id)=(4) already exists.
+ nextval 
+---------
+     181
+(1 row)
+
+psql:/tmp/demoinserts.sql:17: ERROR:  duplicate key value violates unique constraint "company_pkey"
+DETAIL:  Key (id)=(5) already exists.
+ nextval 
+---------
+     182
+(1 row)
+
+psql:/tmp/demoinserts.sql:21: ERROR:  duplicate key value violates unique constraint "location_pkey"
+DETAIL:  Key (id)=(6) already exists.
+ nextval 
+---------
+     183
+(1 row)
+
+psql:/tmp/demoinserts.sql:25: ERROR:  duplicate key value violates unique constraint "location_pkey"
+DETAIL:  Key (id)=(7) already exists.
+ nextval 
+---------
+     184
+(1 row)
+
+psql:/tmp/demoinserts.sql:29: ERROR:  duplicate key value violates unique constraint "location_pkey"
+DETAIL:  Key (id)=(8) already exists.
+ nextval 
+---------
+     185
+(1 row)
+
+psql:/tmp/demoinserts.sql:34: ERROR:  duplicate key value violates unique constraint "location_pkey"
+DETAIL:  Key (id)=(9) already exists.
+ nextval 
+---------
+     186
+(1 row)
+
+psql:/tmp/demoinserts.sql:37: ERROR:  duplicate key value violates unique constraint "room_pkey"
+DETAIL:  Key (id)=(10) already exists.
+ nextval 
+---------
+     187
+(1 row)
+
+psql:/tmp/demoinserts.sql:40: ERROR:  duplicate key value violates unique constraint "room_pkey"
+DETAIL:  Key (id)=(11) already exists.
+ nextval 
+---------
+     188
+(1 row)
+
+psql:/tmp/demoinserts.sql:43: ERROR:  duplicate key value violates unique constraint "asset_type_template_pkey"
+DETAIL:  Key (id)=(12) already exists.
+ nextval 
+---------
+     189
+(1 row)
+
+psql:/tmp/demoinserts.sql:46: ERROR:  duplicate key value violates unique constraint "asset_type_template_pkey"
+DETAIL:  Key (id)=(13) already exists.
+ nextval 
+---------
+     190
+(1 row)
+
+psql:/tmp/demoinserts.sql:49: ERROR:  duplicate key value violates unique constraint "asset_type_template_pkey"
+DETAIL:  Key (id)=(14) already exists.
+ nextval 
+---------
+     191
+(1 row)
+
+psql:/tmp/demoinserts.sql:52: ERROR:  duplicate key value violates unique constraint "asset_series_pkey"
+DETAIL:  Key (id)=(15) already exists.
+ nextval 
+---------
+     192
+(1 row)
+
+psql:/tmp/demoinserts.sql:55: ERROR:  duplicate key value violates unique constraint "asset_series_pkey"
+DETAIL:  Key (id)=(16) already exists.
+ nextval 
+---------
+     193
+(1 row)
+
+psql:/tmp/demoinserts.sql:58: ERROR:  duplicate key value violates unique constraint "asset_series_pkey"
+DETAIL:  Key (id)=(17) already exists.
+ nextval 
+---------
+     194
+(1 row)
+
+psql:/tmp/demoinserts.sql:67: ERROR:  duplicate key value violates unique constraint "asset_pkey"
+DETAIL:  Key (id)=(18) already exists.
+ nextval 
+---------
+     195
+(1 row)
+
+psql:/tmp/demoinserts.sql:75: ERROR:  duplicate key value violates unique constraint "asset_pkey"
+DETAIL:  Key (id)=(19) already exists.
+ nextval 
+---------
+     196
+(1 row)
+
+psql:/tmp/demoinserts.sql:84: ERROR:  duplicate key value violates unique constraint "asset_pkey"
+DETAIL:  Key (id)=(20) already exists.
+ nextval 
+---------
+     197
+(1 row)
+
+psql:/tmp/demoinserts.sql:88: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(21) already exists.
+ nextval 
+---------
+     198
+(1 row)
+
+psql:/tmp/demoinserts.sql:92: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(22) already exists.
+ nextval 
+---------
+     199
+(1 row)
+
+psql:/tmp/demoinserts.sql:96: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(23) already exists.
+ nextval 
+---------
+     200
+(1 row)
+
+psql:/tmp/demoinserts.sql:100: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(24) already exists.
+ nextval 
+---------
+     201
+(1 row)
+
+psql:/tmp/demoinserts.sql:105: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(25) already exists.
+ nextval 
+---------
+     202
+(1 row)
+
+psql:/tmp/demoinserts.sql:109: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(26) already exists.
+ nextval 
+---------
+     203
+(1 row)
+
+psql:/tmp/demoinserts.sql:114: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(27) already exists.
+ nextval 
+---------
+     204
+(1 row)
+
+psql:/tmp/demoinserts.sql:119: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(28) already exists.
+ nextval 
+---------
+     205
+(1 row)
+
+psql:/tmp/demoinserts.sql:124: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(29) already exists.
+ nextval 
+---------
+     206
+(1 row)
+
+psql:/tmp/demoinserts.sql:129: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(30) already exists.
+ nextval 
+---------
+     207
+(1 row)
+
+psql:/tmp/demoinserts.sql:134: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(31) already exists.
+ nextval 
+---------
+     208
+(1 row)
+
+psql:/tmp/demoinserts.sql:138: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(32) already exists.
+ nextval 
+---------
+     209
+(1 row)
+
+psql:/tmp/demoinserts.sql:143: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(33) already exists.
+ nextval 
+---------
+     210
+(1 row)
+
+psql:/tmp/demoinserts.sql:148: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(34) already exists.
+ nextval 
+---------
+     211
+(1 row)
+
+psql:/tmp/demoinserts.sql:153: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(35) already exists.
+ nextval 
+---------
+     212
+(1 row)
+
+psql:/tmp/demoinserts.sql:158: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(36) already exists.
+ nextval 
+---------
+     213
+(1 row)
+
+psql:/tmp/demoinserts.sql:163: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(37) already exists.
+ nextval 
+---------
+     214
+(1 row)
+
+psql:/tmp/demoinserts.sql:168: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(38) already exists.
+ nextval 
+---------
+     215
+(1 row)
+
+psql:/tmp/demoinserts.sql:172: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(39) already exists.
+ nextval 
+---------
+     216
+(1 row)
+
+psql:/tmp/demoinserts.sql:176: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(40) already exists.
+ nextval 
+---------
+     217
+(1 row)
+
+psql:/tmp/demoinserts.sql:180: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(41) already exists.
+ nextval 
+---------
+     218
+(1 row)
+
+psql:/tmp/demoinserts.sql:184: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(42) already exists.
+ nextval 
+---------
+     219
+(1 row)
+
+psql:/tmp/demoinserts.sql:188: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(43) already exists.
+ nextval 
+---------
+     220
+(1 row)
+
+psql:/tmp/demoinserts.sql:192: ERROR:  duplicate key value violates unique constraint "field_pkey"
+DETAIL:  Key (id)=(44) already exists.
+psql:/tmp/demoinserts.sql:194: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 21) already exists.
+psql:/tmp/demoinserts.sql:196: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 24) already exists.
+psql:/tmp/demoinserts.sql:198: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 25) already exists.
+psql:/tmp/demoinserts.sql:200: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 26) already exists.
+psql:/tmp/demoinserts.sql:202: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 27) already exists.
+psql:/tmp/demoinserts.sql:204: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 28) already exists.
+psql:/tmp/demoinserts.sql:206: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 29) already exists.
+psql:/tmp/demoinserts.sql:208: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 30) already exists.
+psql:/tmp/demoinserts.sql:210: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(18, 31) already exists.
+psql:/tmp/demoinserts.sql:212: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 22) already exists.
+psql:/tmp/demoinserts.sql:214: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 32) already exists.
+psql:/tmp/demoinserts.sql:216: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 33) already exists.
+psql:/tmp/demoinserts.sql:218: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 34) already exists.
+psql:/tmp/demoinserts.sql:220: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 35) already exists.
+psql:/tmp/demoinserts.sql:222: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 36) already exists.
+psql:/tmp/demoinserts.sql:224: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 37) already exists.
+psql:/tmp/demoinserts.sql:226: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(19, 38) already exists.
+psql:/tmp/demoinserts.sql:228: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(20, 23) already exists.
+psql:/tmp/demoinserts.sql:230: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(20, 39) already exists.
+psql:/tmp/demoinserts.sql:232: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(20, 40) already exists.
+psql:/tmp/demoinserts.sql:234: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(20, 41) already exists.
+psql:/tmp/demoinserts.sql:236: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(20, 42) already exists.
+psql:/tmp/demoinserts.sql:238: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(20, 43) already exists.
+psql:/tmp/demoinserts.sql:240: ERROR:  duplicate key value violates unique constraint "asset_fields_pkey"
+DETAIL:  Key (asset_id, fields_id)=(20, 44) already exists.

@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: fusionbackend
+  name: fusionbackend
+  namespace: industryfusion
+spec:
+  ports:
+  - port: 8080
+    name: "fusionbackend"
+  selector:
+    app: fusionbackend
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: fusionbackend
+  namespace: industryfusion
+spec:
+  selector:
+    matchLabels:
+      app: fusionbackend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fusionbackend
+    spec:
+      containers:
+      - name: fusionbackend
+        image: docker.io/ibn40/fusionbackend:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config
+          mountPath: /app/resources
+      imagePullSecrets:
+          - name: regcred
+      volumes:
+        - name: config
+          configMap:
+            name: if-config
+            items:
+            - key: application.yaml
+              path: application.yaml
