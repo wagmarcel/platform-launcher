@@ -52,6 +52,6 @@ EOF
 popd
 BROKER_CONF=${OISP_MQTT_BROKER_CONFIG//\/app/$PWD/data}
 BROKER_CONF=${BROKER_CONF//\/ssl\///}
-export OISP_MQTT_BROKER_CONFIG=${BROKER_CONF//cert/crt}
+export OISP_MQTT_BROKER_CONFIG=${BROKER_CONF//\.cert/\.crt}
 
 echo all prepared
