@@ -1,15 +1,33 @@
-create table if not exists machinesstate
+create table asset_type
 (
-	machineserialno integer,
-	machinenameint varchar,
-	machineactualoperationmode integer,
-	programname varchar,
-	materialname varchar
+	id bigint not null
+		constraint asset_type_pkey
+			primary key,
+	version bigint,
+	description varchar(255),
+	label varchar(255),
+	name varchar(255)
 );
 
-alter table machinesstate owner to postgresadmin;
+alter table asset_type owner to postgresadmin;
 
-create table if not exists company
+create table asset_type_template
+(
+	id bigint not null
+		constraint asset_type_template_pkey
+			primary key,
+	version bigint,
+	description varchar(255),
+	image_key varchar(255),
+	name varchar(255),
+	asset_type_id bigint not null
+		constraint fkcuj750rytsh6sv7sh4d5b9t2e
+			references asset_type
+);
+
+alter table asset_type_template owner to postgresadmin;
+
+create table company
 (
 	id bigint not null
 		constraint company_pkey
@@ -23,60 +41,18 @@ create table if not exists company
 
 alter table company owner to postgresadmin;
 
-create table if not exists asset_type_template
-(
-	id bigint not null
-		constraint asset_type_template_pkey
-			primary key,
-	version bigint,
-	ac_frequency real,
-	category varchar(255),
-	ce_certified boolean,
-	connection_voltage real,
-	construction_date timestamp,
-	description varchar(255),
-	electrical_rating real,
-	guid uuid,
-	handbook_key varchar(255),
-	image_key varchar(255),
-	installation_date timestamp,
-	max_operating_current real,
-	model_name varchar(255),
-	name varchar(255),
-	protection_class varchar(255),
-	serial_number varchar(255),
-	series_name varchar(255),
-	video_key varchar(255),
-	company_id bigint not null
-		constraint fk2tp2uh92bso7x8ag7rbprq5hq
-			references company
-);
-
-alter table asset_type_template owner to postgresadmin;
-
-create table if not exists asset_series
+create table asset_series
 (
 	id bigint not null
 		constraint asset_series_pkey
 			primary key,
 	version bigint,
-	ac_frequency real,
-	category varchar(255),
-	ce_certified boolean,
-	connection_voltage real,
-	construction_date timestamp,
 	description varchar(255),
-	electrical_rating real,
-	guid uuid,
-	handbook_key varchar(255),
 	image_key varchar(255),
-	installation_date timestamp,
-	max_operating_current real,
-	model_name varchar(255),
 	name varchar(255),
+	ce_certified boolean,
+	handbook_key varchar(255),
 	protection_class varchar(255),
-	serial_number varchar(255),
-	series_name varchar(255),
 	video_key varchar(255),
 	asset_type_template_id bigint not null
 		constraint fkj0662el86i6rsuj1gyhgsq55r
@@ -88,73 +64,7 @@ create table if not exists asset_series
 
 alter table asset_series owner to postgresadmin;
 
-create table if not exists field
-(
-	id bigint not null
-		constraint field_pkey
-			primary key,
-	version bigint,
-	accuracy double precision,
-	description varchar(255),
-	external_id varchar(255),
-	field_type integer,
-	mandatory boolean,
-	name varchar(255),
-	overrideable boolean,
-	type varchar(255),
-	unit varchar(255),
-	value varchar(255)
-);
-
-alter table field owner to postgresadmin;
-
-create table if not exists asset_series_fields
-(
-	asset_series_id bigint not null
-		constraint fkcx44s5029bgwyn7n2int9cs5t
-			references asset_series,
-	fields_id bigint not null
-		constraint uk_pwo602sitctue1ojv4v2xcs6w
-			unique
-		constraint fk16g9ohvq5bfk27lnjnqpu4dgi
-			references field,
-	constraint asset_series_fields_pkey
-		primary key (asset_series_id, fields_id)
-);
-
-alter table asset_series_fields owner to postgresadmin;
-
-create table if not exists asset_type_template_fields
-(
-	asset_type_template_id bigint not null
-		constraint fkcs221w9uln420fiy8kqvtuaw4
-			references asset_type_template,
-	fields_id bigint not null
-		constraint uk_3j3htiypr1j9aumx7wurkaxyv
-			unique
-		constraint fkt3qr8fhf0tmcs7oihpyt1u7t2
-			references field,
-	constraint asset_type_template_fields_pkey
-		primary key (asset_type_template_id, fields_id)
-);
-
-alter table asset_type_template_fields owner to postgresadmin;
-
-create table if not exists field_value_override
-(
-	id bigint not null
-		constraint field_value_override_pkey
-			primary key,
-	version bigint,
-	value varchar(255),
-	field_id bigint not null
-		constraint fkkjrrory1m1l541qe6k0cdkvkw
-			references field
-);
-
-alter table field_value_override owner to postgresadmin;
-
-create table if not exists location
+create table location
 (
 	id bigint not null
 		constraint location_pkey
@@ -177,12 +87,27 @@ create table if not exists location
 
 alter table location owner to postgresadmin;
 
-create table if not exists room
+create table quantity_type
+(
+	id bigint not null
+		constraint quantity_type_pkey
+			primary key,
+	version bigint,
+	description varchar(255),
+	label varchar(255),
+	name varchar(255),
+	base_unit_id bigint
+);
+
+alter table quantity_type owner to postgresadmin;
+
+create table room
 (
 	id bigint not null
 		constraint room_pkey
 			primary key,
 	version bigint,
+	description varchar(255),
 	image_key varchar(255),
 	name varchar(255),
 	location_id bigint not null
@@ -192,34 +117,27 @@ create table if not exists room
 
 alter table room owner to postgresadmin;
 
-create table if not exists asset
+create table asset
 (
 	id bigint not null
 		constraint asset_pkey
 			primary key,
 	version bigint,
-	ac_frequency real,
-	category varchar(255),
-	ce_certified boolean,
-	connection_voltage real,
-	construction_date timestamp,
 	description varchar(255),
-	electrical_rating real,
-	guid uuid,
-	handbook_key varchar(255),
 	image_key varchar(255),
-	installation_date timestamp,
-	max_operating_current real,
-	model_name varchar(255),
 	name varchar(255),
-	protection_class varchar(255),
-	serial_number varchar(255),
-	series_name varchar(255),
-	video_key varchar(255),
+	ce_certified boolean,
+	construction_date timestamp,
 	control_system_type varchar(255),
 	external_id varchar(255),
 	gateway_connectivity varchar(255),
+	guid uuid,
+	handbook_key varchar(255),
 	has_gateway boolean,
+	installation_date timestamp,
+	protection_class varchar(255),
+	serial_number varchar(255),
+	video_key varchar(255),
 	asset_series_id bigint not null
 		constraint fkkmi7kne0t0s5t27pemap8r0so
 			references asset_series,
@@ -233,19 +151,107 @@ create table if not exists asset
 
 alter table asset owner to postgresadmin;
 
-create table if not exists asset_fields
+create table unit
 (
-	asset_id bigint not null
-		constraint fkfjsbwn70lcoykrkmbxey0pf51
-			references asset,
-	fields_id bigint not null
-		constraint uk_54s7h0xfg7ifw33e9887mnxdu
-			unique
-		constraint fkb2nqxggjxcey5if5sd7269gis
-			references field,
-	constraint asset_fields_pkey
-		primary key (asset_id, fields_id)
+	id bigint not null
+		constraint unit_pkey
+			primary key,
+	version bigint,
+	description varchar(255),
+	label varchar(255),
+	name varchar(255),
+	symbol varchar(255),
+	quantity_type_id bigint not null
+		constraint fko23fbuf0a3mcqkp319x0203g4
+			references quantity_type
 );
 
-alter table asset_fields owner to postgresadmin;
+alter table unit owner to postgresadmin;
+
+create table field
+(
+	id bigint not null
+		constraint field_pkey
+			primary key,
+	version bigint,
+	accuracy double precision,
+	description varchar(255),
+	label varchar(255),
+	name varchar(255),
+	value varchar(255),
+	unit_id bigint not null
+		constraint fksfkfrjdueu5ba66jt8hpfvblw
+			references unit
+);
+
+alter table field owner to postgresadmin;
+
+create table field_target
+(
+	id bigint not null
+		constraint field_target_pkey
+			primary key,
+	version bigint,
+	description varchar(255),
+	field_type integer,
+	label varchar(255),
+	mandatory boolean,
+	name varchar(255),
+	asset_type_template_id bigint not null
+		constraint fkbpshasam5bt5m6h3l08irkcmi
+			references asset_type_template,
+	field_id bigint not null
+		constraint fka1q3val56h7ghoa2i3jxnaqmq
+			references field
+);
+
+alter table field_target owner to postgresadmin;
+
+create table field_source
+(
+	id bigint not null
+		constraint field_source_pkey
+			primary key,
+	version bigint,
+	description varchar(255),
+	name varchar(255),
+	source_sensor_label varchar(255),
+	value varchar(255),
+	asset_series_id bigint not null
+		constraint fk59s4o5b3ffvyly5oh7kpyc8gw
+			references asset_series,
+	field_target_id bigint not null
+		constraint fk12io6hmgtqjus1wjipiewchto
+			references field_target,
+	source_unit_id bigint not null
+		constraint fkr6kqwnn5yptngyekdgxi4ysdx
+			references unit
+);
+
+alter table field_source owner to postgresadmin;
+
+create table field_instance
+(
+	id bigint not null
+		constraint field_instance_pkey
+			primary key,
+	version bigint,
+	description varchar(255),
+	external_id varchar(255),
+	name varchar(255),
+	source_sensor_label varchar(255),
+	value varchar(255),
+	asset_id bigint not null
+		constraint fkfaaqwwm2mki6ost5djf6k4k3b
+			references asset,
+	field_source_id bigint not null
+		constraint fkk8a405xgkkga8y3ioeeiyt7fl
+			references field_source
+);
+
+alter table field_instance owner to postgresadmin;
+
+alter table quantity_type
+	add constraint fksbddu8uv3c5ajhya8k7kws90v
+		foreign key (base_unit_id) references unit;
 
