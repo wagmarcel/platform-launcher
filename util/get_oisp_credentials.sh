@@ -1,3 +1,7 @@
+define randomPass
+$$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c$${1:-64})
+endef
+
 export SYSTEMUSER_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.mqtt-gateway  | jq -r .frontendSystemPassword)
 export GRAFANA_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.grafana | jq -r .adminPassword)
 export MQTT_BROKER_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.mqtt-broker | jq -r .mqttBrokerPassword)
@@ -9,6 +13,9 @@ export POSTGRES_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-c
 export KEYCLOAK_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.keycloak-admin | jq -r .password)
 export KEYCLOAK_FRONTEND_SECRET=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.keycloak | jq -r .secret)
 export KEYCLOAK_MQTT_BROKER_SECRET=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.keycloak | jq -r '.["mqtt-broker-secret"]')
+if [ ${KEYCLOAK_MQTT_BROKER_SECRET} = "null" ]; then
+  KEYCLOAK_MQTT_BROKER_SECRET="$(call randompass)"
+fi
 # tr "." "_" because jq cannot handle keys with "."
 export JWT_PRIVATE=$(kubectl -n ${NAMESPACE} -o json get secret oisp-secrets | tr "." "_" | jq -r .data.jwt_privatekey)
 export JWT_PUBLIC=$(kubectl -n ${NAMESPACE} -o json get secret oisp-secrets | tr "." "_" | jq -r .data.jwt_publickey)
