@@ -90,8 +90,6 @@ spec:
           requests:
             cpu: 50m
           {{ else }}
-          limits:
-            cpu: 500m
           requests:
             cpu: 500m
           {{ end }}
