@@ -1,6 +1,6 @@
-define randomPass
-$$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c$${1:-64})
-endef
+function randomPass {
+  $(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-64})
+}
 
 export SYSTEMUSER_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.mqtt-gateway  | jq -r .frontendSystemPassword)
 export GRAFANA_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.grafana | jq -r .adminPassword)
