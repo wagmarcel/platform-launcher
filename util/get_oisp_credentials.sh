@@ -13,7 +13,7 @@ export POSTGRES_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-c
 export KEYCLOAK_PASSWORD=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.keycloak-admin | jq -r .password)
 export KEYCLOAK_FRONTEND_SECRET=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.keycloak | jq -r .secret)
 export KEYCLOAK_MQTT_BROKER_SECRET=$(kubectl -n ${NAMESPACE} get -o yaml configmaps oisp-config | shyaml get-value data.keycloak | jq -r '.["mqtt-broker-secret"]')
-if [ ${KEYCLOAK_MQTT_BROKER_SECRET} = "null" ]; then
+if [ "${KEYCLOAK_MQTT_BROKER_SECRET}" = "nil" ]; then
   KEYCLOAK_MQTT_BROKER_SECRET="$(call randompass)"
 fi
 # tr "." "_" because jq cannot handle keys with "."
