@@ -19,7 +19,11 @@ metadata:
     app: mqtt-server
 spec:
   serviceName: "mqtt-server"
+  {{ if .Values.less_resources }}
   replicas: 1
+  {{ else }}
+  replicas: {{ Values.numberReplicas.mqtt}}
+  {{ end }}
   selector:
     matchLabels:
       app: mqtt-server

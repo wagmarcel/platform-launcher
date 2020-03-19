@@ -21,6 +21,7 @@ numberReplicas:
     backend: 1
     debugger: 0
     minio: 4
+    mqtt: 2
 
 minio:
   accesskey: minio
@@ -40,6 +41,9 @@ kafka:
     requests:
       cpu: 500m
       memory: 1024Mi
+    limits:
+      cpu: 1
+      memory: 2G
   configurationOverrides:
     auto.create.topics.enable: true
     offsets.topic.replication.factor: 3
