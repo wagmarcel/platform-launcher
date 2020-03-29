@@ -1,10 +1,10 @@
 NODENAME=${1:-NODENAME}
 NAMESPACE=${NAMESPACE:-oisp-devices}
 CONFIG_MAP_NAME=app-config
-GATEWAYAPPCONFIG=~/src/IndustryFusion-machine-configs/MG\ 1501.15/fusiongatewayapp/application.yaml
+GATEWAYAPPCONFIG=~/src/IndustryFusion-machine-configs/Airtracker/fusiongatewayapp/application.yaml
 GATEWAYAPPCONFIGTARGET=application.yaml
-DATASERVICECONFIG=~/src/IndustryFusion-machine-configs/MG\ 1501.15/fusiondbdataservice/application.yaml
-DATASERVICECONFIGTARGET=fusiondbdataservice_application.yaml
+DATASERVICECONFIG=~/src/IndustryFusion-machine-configs/Airtracker/fusionmqttdataservice/application.yaml
+DATASERVICECONFIGTARGET=fusionmqttdataservice_application.yaml
 
 if [ "$#" -gt 2 -o "$#" -lt 1 ]; then
 	echo usage: ${0##*/} \<node-name\> [instance-number]
