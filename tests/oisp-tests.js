@@ -1364,10 +1364,10 @@ describe("Do scale device subtests ...".bold, function() {
     }).timeout(100000);
     it(descriptions.sendDataToAllDevicesAndCount, function(done) {
         test.sendDataToAllDevicesAndCount(done);
-    }).timeout(10000);
-    /*it(descriptions.cleanup, function(done) {
+    }).timeout(100000);
+    it(descriptions.cleanup, function(done) {
         test.cleanup(done);
-    }).timeout(10000);*/
+    }).timeout(100000);
 });
 
 

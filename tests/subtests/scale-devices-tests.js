@@ -133,14 +133,16 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         });
     },
     "cleanup": function(done) {
-      promtests.deleteComponent(userToken, accountId, deviceId, componentId[0])
-        .then(() => promtests.deleteComponent(userToken, accountId, deviceId, componentId[1]))
-        .then(() => promtests.deleteComponent(userToken, accountId, newDeviceId, newComponentId))
-        .then(() => promtests.deleteDevice(userToken, accountId, newDeviceId))
-        .then(() => promtests.deleteAccount(userToken2, accountId2))
-        .then(() => promtests.deleteInvite(userToken, accountId, username2))
-        .then(() => { done() })
-        .catch((err) => {
+      var promises = Array.apply(0, Array(newDeviceNumber)).map((item, index) => {
+        return promtests.deleteDevice(userToken, accountId, newDeviceId + index)
+          .catch((err) => {
+              done(err);
+            })
+      });
+
+      Promise.all(promises)
+      .then(() => done())
+      .catch((err) => {
           done(err);
         });
     }
