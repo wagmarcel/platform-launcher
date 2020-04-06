@@ -1362,12 +1362,19 @@ describe("Do scale device subtests ...".bold, function() {
         test = require("./subtests/scale-devices-tests").test(userToken, accountId, deviceId, deviceToken, cbManager, mqttConnector);
         test.setup(done);
     }).timeout(100000);
-    it(descriptions.sendDataToAllDevicesAndCount, function(done) {
-        test.sendDataToAllDevicesAndCount(done);
+    it(descriptions.sendDataToAllDevices, function(done) {
+        test.sendDataToAllDevices(done);
     }).timeout(100000);
-    it(descriptions.cleanup, function(done) {
+    it(descriptions.waitForBackendSynchronization,function(done) {
+      test.waitForBackendSynchronization(BACKEND_DELAY, done);
+    }).timeout(BACKEND_TIMEOUT);
+    it(descriptions.countAllData, function(done) {
+        test.countAllData(done);
+    }).timeout(100000);
+
+    /*it(descriptions.cleanup, function(done) {
         test.cleanup(done);
-    }).timeout(100000);
+    }).timeout(100000);*/
 });
 
 

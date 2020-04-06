@@ -61,27 +61,27 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
     {
        component: 0,
        value: 10,
-       ts: 1 + BASE_TIMESTAMP
+       ts: BASE_TIMESTAMP
     },
     {
        component: 1,
        value: 12,
-       ts: 1 + BASE_TIMESTAMP
+       ts: BASE_TIMESTAMP
     },
     {
        component: 2,
        value: "Hello World",
-       ts: 1 + BASE_TIMESTAMP
+       ts: BASE_TIMESTAMP
     },
     {
        component: 3,
        value: 1,
-       ts: 1 + BASE_TIMESTAMP
+       ts: BASE_TIMESTAMP
     },
     {
        component: 4,
        value: Buffer.from("Hello World!"),
-       ts: 1 + BASE_TIMESTAMP
+       ts: BASE_TIMESTAMP
     }
   ]
   //********************* Main Object *****************//
@@ -114,14 +114,14 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           done(err);
         });
     },
-    "sendDataToAllDevicesAndCount": function(done) {
+    "sendDataToAllDevices": function(done) {
       var promises = Array.apply(0, Array(newDeviceNumber)).map((item, index) => {
         var valueList = [];
         valueList[0] = dataValues[index % 5];
         valueList[1] = dataValues[componentMapping[newDeviceId + index]];
-        valueList[0].ts += index * 100000;
+        valueList[0].ts = BASE_TIMESTAMP + index;
         valueList[0].component = 0;
-        valueList[1].ts += index * 100000;
+        valueList[1].ts = BASE_TIMESTAMP + index;
         valueList[1].component = 1;
         var cidList = componentIds[index];
         return promtests.submitDataListAsUser(valueList, userToken, accountId, newDeviceId + index, cidList);
@@ -131,6 +131,25 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       .catch((err) => {
           done(err);
         });
+    },
+    "countAllData": function(done) {
+      var deviceIds = Array.apply(0, Array(newDeviceNumber))
+        .map((item, index) => newDeviceId + index);
+      var cids = componentIds.reduce((acc, cur)=> acc.concat(cur));
+      promtests.searchDataAdvanced(BASE_TIMESTAMP-1, BASE_TIMESTAMP + newDeviceNumber, userToken, accountId, deviceIds, cids, false, undefined, undefined, true)
+        .then((result) => {
+          if (result.data.length != newDeviceNumber) {
+            return done("Wrong number of point series!");
+          }
+          assert.equal(result.rowCount, newDeviceNumber * 2);
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "waitForBackendSynchronization": function(delay, done) {
+      setTimeout(done, delay);
     },
     "cleanup": function(done) {
       var promises = Array.apply(0, Array(newDeviceNumber)).map((item, index) => {
@@ -151,7 +170,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
 
 var descriptions = {
   "setup": "Shall setup needed devices and components",
-  "sendDataToAllDevicesAndCount": "Send Data to all devices and count all",
+  "sendDataToAllDevices": "Send Data to all devices",
+  "countAllData": "Count data of all devices and components",
+  "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
