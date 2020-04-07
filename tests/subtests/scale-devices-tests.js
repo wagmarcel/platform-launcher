@@ -119,9 +119,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         var valueList = [];
         valueList[0] = dataValues[index % 5];
         valueList[1] = dataValues[componentMapping[newDeviceId + index]];
-        valueList[0].ts = BASE_TIMESTAMP + index;
+        valueList[0].ts = BASE_TIMESTAMP + index * 100;
         valueList[0].component = 0;
-        valueList[1].ts = BASE_TIMESTAMP + index;
+        valueList[1].ts = BASE_TIMESTAMP + index * 100;
         valueList[1].component = 1;
         var cidList = componentIds[index];
         return promtests.submitDataListAsUser(valueList, userToken, accountId, newDeviceId + index, cidList);
@@ -136,12 +136,29 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
       var deviceIds = Array.apply(0, Array(newDeviceNumber))
         .map((item, index) => newDeviceId + index);
       var cids = componentIds.reduce((acc, cur)=> acc.concat(cur));
-      promtests.searchDataAdvanced(BASE_TIMESTAMP-1, BASE_TIMESTAMP + newDeviceNumber, userToken, accountId, deviceIds, cids, false, undefined, undefined, true)
+      promtests.searchDataAdvanced(BASE_TIMESTAMP, BASE_TIMESTAMP + newDeviceNumber * 100, userToken, accountId, deviceIds, cids, false, undefined, undefined, true)
         .then((result) => {
           if (result.data.length != newDeviceNumber) {
             return done("Wrong number of point series!");
           }
           assert.equal(result.rowCount, newDeviceNumber * 2);
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "countPartialData": function(done) {
+      var deviceIds = Array.apply(0, Array(newDeviceNumber))
+        .map((item, index) => newDeviceId + index);
+      var cids = componentIds.reduce((acc, cur)=> acc.concat(cur));
+      var partialDeviceNumber = newDeviceNumber / 2;
+      promtests.searchDataAdvanced(BASE_TIMESTAMP, BASE_TIMESTAMP + (partialDeviceNumber - 1) * 100, userToken, accountId, deviceIds, cids, false, undefined, undefined, true)
+        .then((result) => {
+          if (result.data.length != newDeviceNumber) {
+            return done("Wrong number of point series! Got " + result.data.length + " expected " + newDeviceNumber);
+          }
+          assert.equal(result.rowCount, newDeviceNumber);
           done();
         })
         .catch((err) => {
@@ -172,6 +189,7 @@ var descriptions = {
   "setup": "Shall setup needed devices and components",
   "sendDataToAllDevices": "Send Data to all devices",
   "countAllData": "Count data of all devices and components",
+  "countPartialData": "Count data of partial devices and components",
   "waitForBackendSynchronization": "Waiting maximal tolerable time backend needs to flush so that points are available",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };

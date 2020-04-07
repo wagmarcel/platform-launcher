@@ -1371,10 +1371,12 @@ describe("Do scale device subtests ...".bold, function() {
     it(descriptions.countAllData, function(done) {
         test.countAllData(done);
     }).timeout(100000);
-
-    /*it(descriptions.cleanup, function(done) {
+    it(descriptions.countPartialData, function(done) {
+        test.countPartialData(done);
+    }).timeout(100000);
+    it(descriptions.cleanup, function(done) {
         test.cleanup(done);
-    }).timeout(100000);*/
+    }).timeout(100000);
 });
 
 
