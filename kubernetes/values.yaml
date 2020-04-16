@@ -17,18 +17,18 @@ imap:
     password: P@ssword123!
 
 numberReplicas:
-    frontend: 1
-    backend: 1
+    frontend: 2
+    backend: 3
     debugger: 0
-    minio: 4
+    minio: 1
 
 minio:
   accesskey: minio
   secretkey: minio123
 
 certmanager:
-  secret: selfsigned-cert-tls
-  issuer: letsencrypt-self
+  secret: frontend-web-prod-tls
+  issuer: letsencrypt-prod
 
 kafka:
   fullnameOverride: oisp-kafka
