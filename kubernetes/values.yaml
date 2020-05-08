@@ -141,9 +141,9 @@ websocketServer:
 
 # Hosts used for Ingress configuration
 hosts:
-    frontend: latest.oisp.info
-    websocketserver: ws.latest.oisp.info
-    mqttserver: mqtt.latest.oisp.info
+    frontend: platform.industry-fusion.com
+    websocketserver: ws.platform.industry-fusion.com
+    mqttserver: mqtt.platform.industry-fusion.com
 
 systemuser:
   username: gateway@intel.com
