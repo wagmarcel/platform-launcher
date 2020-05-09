@@ -4,12 +4,12 @@ metadata:
   name: frontend-web-prod-tls
   namespace: oisp-ci
 spec:
-  secretName: frontend-web-prod-tls
+frontend-web-prod-tls  secretName: frontend-web-prod-tls
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   dnsNames:
-  - latest.oisp.info
-  - ws.latest.oisp.info
+  - platform.industry-fusion.com
+  - ws.platform.industry-fusion.com
   issuerRef:
     name: letsencrypt-prod
     # We can reference ClusterIssuers by changing the kind here.
