@@ -17,7 +17,7 @@ spec:
         - name: PGPASSWORD
           value: postgres
         command: ["/bin/sh","-c"]
-        args: ["/usr/bin/psql postgresql://${POSTGRES_USER}:${PGPASSWORD}@postgres:5432/${POSTGRESDB} -f /tmp/ddl.sql && echo Now deploying demoinserts && /usr/bin/psql postgresql://${POSTGRES_USER}:${PGPASSWORD}@postgres:5432/${POSTGRES_DB} -f /tmp/sampleinserts.sql"]
+        args: ["/usr/bin/psql postgresql://${POSTGRES_USER}:${PGPASSWORD}@postgres:5432/${POSTGRES_DB} -f /tmp/ddl.sql && echo Now deploying demoinserts && /usr/bin/psql postgresql://${POSTGRES_USER}:${PGPASSWORD}@postgres:5432/${POSTGRES_DB} -f /tmp/demoinserts.sql"]
         volumeMounts:
         - name: config
           mountPath: /tmp

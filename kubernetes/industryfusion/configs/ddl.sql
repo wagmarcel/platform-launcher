@@ -22,7 +22,7 @@ create table asset_type
 	name varchar(255)
 );
 
-alter table asset_type owner to postgresadmin;
+alter table asset_type owner to postgres;
 
 create table asset_type_template
 (
@@ -38,7 +38,7 @@ create table asset_type_template
 			references asset_type
 );
 
-alter table asset_type_template owner to postgresadmin;
+alter table asset_type_template owner to postgres;
 
 create table company
 (
@@ -52,7 +52,7 @@ create table company
 	type varchar(255) not null
 );
 
-alter table company owner to postgresadmin;
+alter table company owner to postgres;
 
 create table asset_series
 (
@@ -75,7 +75,7 @@ create table asset_series
 			references company
 );
 
-alter table asset_series owner to postgresadmin;
+alter table asset_series owner to postgres;
 
 create table location
 (
@@ -98,7 +98,7 @@ create table location
 			references company
 );
 
-alter table location owner to postgresadmin;
+alter table location owner to postgres;
 
 create table quantity_type
 (
@@ -106,13 +106,14 @@ create table quantity_type
 		constraint quantity_type_pkey
 			primary key,
 	version bigint,
+	data_type integer,
 	description varchar(255),
 	label varchar(255),
 	name varchar(255),
 	base_unit_id bigint
 );
 
-alter table quantity_type owner to postgresadmin;
+alter table quantity_type owner to postgres;
 
 create table room
 (
@@ -128,7 +129,7 @@ create table room
 			references location
 );
 
-alter table room owner to postgresadmin;
+alter table room owner to postgres;
 
 create table asset
 (
@@ -162,7 +163,7 @@ create table asset
 			references room
 );
 
-alter table asset owner to postgresadmin;
+alter table asset owner to postgres;
 
 create table unit
 (
@@ -179,7 +180,7 @@ create table unit
 			references quantity_type
 );
 
-alter table unit owner to postgresadmin;
+alter table unit owner to postgres;
 
 create table field
 (
@@ -197,7 +198,7 @@ create table field
 			references unit
 );
 
-alter table field owner to postgresadmin;
+alter table field owner to postgres;
 
 create table field_target
 (
@@ -218,7 +219,7 @@ create table field_target
 			references field
 );
 
-alter table field_target owner to postgresadmin;
+alter table field_target owner to postgres;
 
 create table field_source
 (
@@ -241,7 +242,7 @@ create table field_source
 			references unit
 );
 
-alter table field_source owner to postgresadmin;
+alter table field_source owner to postgres;
 
 create table field_instance
 (
@@ -262,7 +263,7 @@ create table field_instance
 			references field_source
 );
 
-alter table field_instance owner to postgresadmin;
+alter table field_instance owner to postgres;
 
 alter table quantity_type
 	add constraint fksbddu8uv3c5ajhya8k7kws90v
