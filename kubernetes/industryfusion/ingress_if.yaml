@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: industryfusion-ingress
+  namespace: industryfusion
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  tls:
+  - hosts:
+    - platform.industry-fusion.com
+    secretName: frontend-web-prod-tls
+  rules:
+  - host: platform.industry-fusion.com
+    http:
+      paths:
+      - path: /fusionapi(/|$)(.*)
+        backend:
+          serviceName: fusionbackend
+          servicePort: 8080
+      - path: /fusionfrontend(/|$)(.*)
+        backend:
+          serviceName: fusionfrontend
+          servicePort: 80

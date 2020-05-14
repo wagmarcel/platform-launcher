@@ -1,4 +1,4 @@
-export KUBECONFIG=$(HOME)/.kube/kubeconfig-ibn4.0.yaml
+export KUBECONFIG=${HOME}/.kube/kubeconfig-ibn4.0.yaml
 NAMESPACE=industryfusion
 CONFIGMAPNAME=if-config
 # DRYRUN=--dry-run

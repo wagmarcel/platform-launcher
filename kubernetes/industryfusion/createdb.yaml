@@ -13,11 +13,11 @@ spec:
         - name: POSTGRES_DB
           value: postgresdb
         - name: POSTGRES_USER
-          value: postgresadmin
+          value: postgres
         - name: PGPASSWORD
-          value: postgresadminpw
+          value: postgres
         command: ["/bin/sh","-c"]
-        args: ["/usr/bin/psql postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb -f /tmp/ddl.sql && echo Now deploying demoinserts && /usr/bin/psql postgresql://postgresadmin:posgresadminpw@postgres:5432/postgresdb -f /tmp/demoinserts.sql"]
+        args: ["/usr/bin/psql postgresql://${POSTGRES_USER}:${PGPASSWORD}@postgres:5432/${POSTGRESDB} -f /tmp/ddl.sql && echo Now deploying demoinserts && /usr/bin/psql postgresql://${POSTGRES_USER}:${PGPASSWORD}@postgres:5432/${POSTGRES_DB} -f /tmp/sampleinserts.sql"]
         volumeMounts:
         - name: config
           mountPath: /tmp
@@ -29,8 +29,8 @@ spec:
           configMap:
             name: if-config
             items:
-            - key: sqlinserts.log
-              path: sqlinserts.log
+            - key: sampleinserts.sql
+              path: sampleinserts.sql
             - key: demoinserts.sql
               path: demoinserts.sql
             - key: ddl.sql

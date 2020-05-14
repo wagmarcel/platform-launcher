@@ -6,8 +6,8 @@ metadata:
     app: postgres
 data:
   POSTGRES_DB: postgresdb
-  POSTGRES_USER: postgresadmin
-  POSTGRES_PASSWORD: posgresadminpw
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -72,8 +72,6 @@ spec:
               path: sqlinserts.log
             - key: demoinserts.sql
               path: demoinserts.sql
-            - key: tables.sql
-              path: tables.sql
             - key: ddl.sql
               path: ddl.sql                  
 ---
