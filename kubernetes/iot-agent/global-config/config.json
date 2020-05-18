@@ -17,7 +17,7 @@
 	"default_connector": "rest+ws",
 	"connector": {
 		"rest": {
-			"host": "staging.streammyiot.com",
+			"host": "platform.industry-fusion.com",
 			"port": 443,
 			"protocol": "https",
 			"strictSSL": false,
@@ -28,7 +28,7 @@
 			}
 		},
 		"ws": {
-			"host": "ws.staging.streammyiot.com",
+			"host": "ws.platform.industry-fusion.com",
 			"port": 443,
 			"minRetryTime": 2500,
 			"maxRetryTime": 600000,
@@ -40,6 +40,15 @@
 				"host": false,
 				"port": false 
 			}
+		},
+		"mqtt": {
+			"host": "platform.industry-fusion.com",
+			"port": 8883,
+			"qos": 1,
+			"retain": false,
+			"secure": true,
+			"strictSSL": true,
+			"retries": 5
 		}
 	}
 }

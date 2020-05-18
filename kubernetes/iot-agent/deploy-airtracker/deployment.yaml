@@ -35,7 +35,7 @@ spec:
             mountPath: /volume/config
           - name: oisp-devices-data-volume
             mountPath: /volume/data
-        image: docker.io/oisp/oisp-iot-agent:latest
+        image: docker.io/oisp/oisp-iot-agent:v2.1.1
       - name: fusiongatewayapp
         image: docker.io/ibn40/fusiongatewayapp:v0.3
         env:
