@@ -1273,6 +1273,9 @@ describe("Do data sending subtests ...".bold, function() {
      it(descriptions.sendDataAsUser,function(done) {
        test.sendDataAsUser(done);
      }).timeout(10000);
+     it(descriptions.send8000SamplesForAutoDownsampleTest,function(done) {
+       test.send8000SamplesForAutoDownsampleTest(done);
+     }).timeout(100000);
      it(descriptions.waitForBackendSynchronization,function(done) {
        // Due to low profile of test environment and the fact that Kafka/Backend is processing all the 1000s of samples
        // separately, we need to give the backend more time to settle
@@ -1289,6 +1292,9 @@ describe("Do data sending subtests ...".bold, function() {
      }).timeout(10000);
      it(descriptions.receiveDataFromAdmin,function(done) {
        test.receiveDataFromAdmin(done);
+     }).timeout(10000);
+     it(descriptions.receiveDownsampledData,function(done) {
+       test.receiveDownsampledData(done);
      }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);

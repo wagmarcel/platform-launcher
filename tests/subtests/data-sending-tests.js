@@ -48,7 +48,9 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   var newComponentId;
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
-  const BASE_TIMESTAMP = 1000000000000
+  const MAX_SAMPLES_RETRIVE = 4000;
+  const BASE_TIMESTAMP = 1000000000000;
+  const DOWNSAMPLE_MULT = 8;
 
   var dataValues1 = [
     [{
@@ -1028,6 +1030,50 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
         done(err);
       })
     },
+    "send8000SamplesForAutoDownsampleTest": function(done) {
+      var dataList = [ [], [], [], [], [], [], [], [] ];
+      for (var j = 0; j < DOWNSAMPLE_MULT; j++) {
+        for (var i = MAX_SAMPLES * j; i < MAX_SAMPLES * (j + 1); i++) {
+          var ts = i * 1000  + BASE_TIMESTAMP + 1000000;
+          var obj = {
+            component: 1,
+            ts: ts,
+            value: i
+          }
+          dataList[j].push(obj);
+        }
+      }
+      promtests.submitDataList(dataList[0], deviceToken, accountId, deviceId, componentId)
+        .then(() => promtests.submitDataList(dataList[1], deviceToken, accountId, deviceId, componentId))
+        .then(() => promtests.submitDataList(dataList[2], deviceToken, accountId, deviceId, componentId))
+        .then(() => promtests.submitDataList(dataList[3], deviceToken, accountId, deviceId, componentId))
+        .then(() => promtests.submitDataList(dataList[4], deviceToken, accountId, deviceId, componentId))
+        .then(() => promtests.submitDataList(dataList[5], deviceToken, accountId, deviceId, componentId))
+        .then(() => promtests.submitDataList(dataList[6], deviceToken, accountId, deviceId, componentId))
+        .then(() => promtests.submitDataList(dataList[7], deviceToken, accountId, deviceId, componentId))
+        .then(() => {
+          done()
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveDownsampledData": function(done) {
+      promtests.searchDataAdvanced(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[1]], false, undefined, undefined, false)
+        .then((result) => {
+          if (result.data[0].components.length != 1) return done("Wrong number of point series!");
+          assert.equal(result.rowCount, MAX_SAMPLES_RETRIVE);
+          var samples = result.data[0].components[0].samples;
+          samples.forEach(function(element, i) {
+            assert.equal(element[1], i * 2 + 0.5);
+            //assert.equal(element[0], (i + 1) * 1000000 + BASE_TIMESTAMP);
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
     "cleanup": function(done) {
       promtests.deleteComponent(userToken, accountId, deviceId, componentId[0])
         .then(() => promtests.deleteComponent(userToken, accountId, deviceId, componentId[1]))
@@ -1066,6 +1112,8 @@ var descriptions = {
   "sendDataAsAdminWithWrongAccount": "Send test data as admin with wrong accountId",
   "receiveDataFromAdmin": "Test whether data sent from admin earlier has been stored",
   "sendDataAsDeviceToWrongDeviceId": "Test whether Device data submission is rejected if it goes to wrong device",
+  "send8000SamplesForAutoDownsampleTest": "Send enough data to check auto downsample",
+  "receiveDownsampledData": "Receive auto downsampled data",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
