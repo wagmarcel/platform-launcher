@@ -40,6 +40,8 @@ kafka:
   requestTimeout: 20000
   maxRetryTime: 2000
   retries: 5
+  persistence:
+    size: 15Gi
   resources:
     requests:
       cpu: 500m
@@ -109,7 +111,7 @@ cassandra:
   port: 9042
   replication: "{'class': 'SimpleStrategy','replication_factor' : 2}"
   nodes: 3
-  disk: 100Gi
+  disk: 200Gi
   memory: 1Gi
 
 grafana:
