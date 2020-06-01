@@ -258,6 +258,18 @@ var searchData = function(from, to, userToken, accountId, deviceId, cid, queryMe
     });
 }
 
+var searchDataMaxItems = function(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, maxItems){
+    return new Promise((resolve, reject) => {
+	helpers.data.searchDataMaxItems(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, maxItems, function(err, response){
+	    if (err) {
+		reject(err);
+	    } else {
+		resolve(response);
+	    }
+	});
+    });
+}
+
 
 var searchDataAdvanced = function(from, to, userToken, accountId, deviceIds, cidList, showMeasureLocation, returnedMeasureAttributes, aggregations, countOnly){
   return new Promise((resolve, reject) => {
@@ -503,6 +515,7 @@ module.exports = {
     submitDataListAsUser: submitDataListAsUser,
     submitData: submitData,
     searchData: searchData,
+    searchDataMaxItems: searchDataMaxItems,
     searchDataAdvanced: searchDataAdvanced,
     authGetToken: authGetToken,
     refreshAuthToken: refreshAuthToken,

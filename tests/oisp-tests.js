@@ -917,7 +917,7 @@ describe("Creating and getting components ... \n".bold, function() {
 
 describe("Creating rules ... \n".bold, function() {
     before(function(){
-        if (checkTestCondition(["non_essential", "rules"])) {
+        if (checkTestCondition(["non_essential"])) {
             this.skip();
         }
     });
@@ -982,7 +982,7 @@ describe("Creating rules ... \n".bold, function() {
 });
 describe("Sending observations and checking rules ...\n".bold, function() {
     before(function(){
-            if (checkTestCondition(["non_essential", "rules", "data_sending"])) {
+            if (checkTestCondition(["non_essential", "data_sending"])) {
                 this.skip();
             }
     });
@@ -1295,6 +1295,9 @@ describe("Do data sending subtests ...".bold, function() {
      }).timeout(10000);
      it(descriptions.receiveDownsampledData,function(done) {
        test.receiveDownsampledData(done);
+     }).timeout(10000);
+     it(descriptions.receiveMaxItems,function(done) {
+       test.receiveMaxItems(done);
      }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);

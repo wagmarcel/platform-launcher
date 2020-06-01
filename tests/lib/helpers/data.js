@@ -72,8 +72,11 @@ function getObservation(ts, userToken, accountId, deviceId, cid, cb) {
     });
 }
 
-
 function searchData(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, cb) {
+  searchDataMaxItems(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, null, cb)
+}
+
+function searchDataMaxItems(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, maxItems, cb) {
     if (!cb) {
         throw "Callback required";
     }
@@ -106,6 +109,9 @@ function searchData(from, to, userToken, accountId, deviceId, cid, queryMeasureL
         }
     };
 
+    if (maxItems != null) {
+      data.body.maxItems = maxItems
+    }
     if (to !== undefined && to > 0) {
       data.body.to = to;
     }
@@ -276,6 +282,7 @@ function searchDataAdvanced(from, to, userToken, accountId, deviceIds, cidList, 
 module.exports={
     getObservation: getObservation,
     searchData: searchData,
+    searchDataMaxItems: searchDataMaxItems,
     submitData: submitData,
     submitDataList: submitDataList,
     submitDataListAsUser: submitDataListAsUser,

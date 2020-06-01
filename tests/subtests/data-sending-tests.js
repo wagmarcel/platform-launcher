@@ -49,6 +49,7 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
   const MIN_NUMBER = 0.0001;
   const MAX_SAMPLES = 1000;
   const MAX_SAMPLES_RETRIVE = 4000;
+  const MAX_ITEMS_TEST_SAMPLES = 1000;
   const BASE_TIMESTAMP = 1000000000000;
   const DOWNSAMPLE_MULT = 8;
 
@@ -1074,6 +1075,21 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           done(err);
         });
     },
+    "receiveMaxItems": function(done) {
+      promtests.searchDataMaxItems(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, componentId[1], false, {}, MAX_ITEMS_TEST_SAMPLES)
+        .then((result) => {
+          if (result.series.length != 1) return done("Wrong number of point series!");
+          assert.equal(result.series[0].points.length, MAX_ITEMS_TEST_SAMPLES);
+          var samples = result.series[0].points;
+          samples.forEach(function(element, i) {
+            assert.equal(element.value, i * 8 + 3.5);
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
     "cleanup": function(done) {
       promtests.deleteComponent(userToken, accountId, deviceId, componentId[0])
         .then(() => promtests.deleteComponent(userToken, accountId, deviceId, componentId[1]))
@@ -1114,6 +1130,7 @@ var descriptions = {
   "sendDataAsDeviceToWrongDeviceId": "Test whether Device data submission is rejected if it goes to wrong device",
   "send8000SamplesForAutoDownsampleTest": "Send enough data to check auto downsample",
   "receiveDownsampledData": "Receive auto downsampled data",
+  "receiveMaxItems": "Receive max requested items",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
