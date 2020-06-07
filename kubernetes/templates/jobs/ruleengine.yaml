@@ -4,7 +4,12 @@ metadata:
   name: rule-engine
   labels:
     app: rule-engine
+  annotations:
+    "helm.sh/hook-weight": "60"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    "helm.sh/hook": post-install
 spec:
+  backoffLimit: 10
   template:
     metadata:
       labels:
@@ -54,5 +59,7 @@ spec:
             configMapKeyRef:
               key: kafka
               name: oisp-config
+        command: [ "/bin/sh", "-c" ]
+        args: [ "sleep 10; python app.py rule-engine-bundled-0.1.jar"]
       imagePullSecrets:
       - name: dockercred
