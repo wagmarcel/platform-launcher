@@ -1221,13 +1221,36 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           var numExptectedSamples = Math.ceil(MAX_SAMPLES_RETRIVE/1.5);
           assert.equal(result.series[0].points.length, numExptectedSamples);
           var samples = result.series[0].points;
-          console.log("Marcel034 " + JSON.stringify(samples));
           samples.forEach(function(element, i) {
             assert.equal(element.ts, Math.round(i * 1.5) * 1000 + 1000000 + BASE_TIMESTAMP);
             if (i < numExptectedSamples - 1) {
               assert.equal(element.value, (i * 1.5) + 0.5);
             } else { // exception for last sample
               assert.equal(element.value, (i * 1.5));
+            }
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveAggregatedAvgDataMinutes": function(done) {
+      var aggregator = {};
+      aggregator[componentId[1]] = {"name": "avg", "sampling": {"unit": "minutes", "value": 1}};
+      promtests.searchDataMaxItems(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[1]], false, {}, null, null, aggregator)
+        .then((result) => {
+          if (result.series.length != 1) return done("Wrong number of point series!");
+          var numExptectedSamples = Math.ceil(MAX_SAMPLES_RETRIVE/60);
+          assert.equal(result.series[0].points.length, numExptectedSamples);
+          var samples = result.series[0].points;
+          console.log("Marcel034 " + JSON.stringify(samples));
+          samples.forEach(function(element, i) {
+            assert.equal(element.ts, Math.round(i * 60) * 1000 + 1000000 + BASE_TIMESTAMP);
+            if (i < numExptectedSamples - 1) {
+              assert.equal(element.value, (i * 60) + 29.5);
+            } else { // exception for last sample
+              assert.equal(element.value, (i * 60) + 19.5);
             }
           })
           done();
@@ -1278,11 +1301,12 @@ var descriptions = {
   "receiveRawData": "Receive auto downsampled data",
   "receiveMaxItems": "Receive max requested items",
   "receiveAutoAggregatedAvgData": "Receive auto downsampled data with Avg aggregator",
-  "receiveAggregatedAvgData": "Receive downsampled data with Avg aggregator and explicit sampling",
+  "receiveAggregatedAvgData": "Receive downsampled data with Avg aggregator and explicit second sampling",
   "receiveAutoAggregatedMaxData": "Receive auto downsampled data with Max aggregator",
   "receiveAutoAggregatedMinData": "Receive auto downsampled data with Min aggregator",
   "receiveAutoAggregatedSumData": "Receive auto downsampled data with Min aggregator",
   "receiveAggregatedAvgDataMS": "Receive downsampled data with milliseconds",
+  "receiveAggregatedAvgDataMinutes": "Receive downsampled data with minutes",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 
