@@ -1059,34 +1059,6 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           done(err);
         });
     },
-    "send8000SamplesForMultiAggregationTest": function(done) {
-      var dataList = [ [], [], [], [], [], [], [], [] ];
-      for (var j = 0; j < DOWNSAMPLE_MULT; j++) {
-        for (var i = MAX_SAMPLES * j; i < MAX_SAMPLES * (j + 1); i++) {
-          var ts = i * 1000  + BASE_TIMESTAMP + 1000000000;
-          var obj = {
-            component: 0,
-            ts: ts,
-            value: i
-          }
-          dataList[j].push(obj);
-        }
-      }
-      promtests.submitDataList(dataList[0], deviceToken, accountId, deviceId, componentId)
-        .then(() => promtests.submitDataList(dataList[1], deviceToken, accountId, deviceId, componentId))
-        .then(() => promtests.submitDataList(dataList[2], deviceToken, accountId, deviceId, componentId))
-        .then(() => promtests.submitDataList(dataList[3], deviceToken, accountId, deviceId, componentId))
-        .then(() => promtests.submitDataList(dataList[4], deviceToken, accountId, deviceId, componentId))
-        .then(() => promtests.submitDataList(dataList[5], deviceToken, accountId, deviceId, componentId))
-        .then(() => promtests.submitDataList(dataList[6], deviceToken, accountId, deviceId, componentId))
-        .then(() => promtests.submitDataList(dataList[7], deviceToken, accountId, deviceId, componentId))
-        .then(() => {
-          done()
-        })
-        .catch((err) => {
-          done(err);
-        });
-    },
     "receiveRawData": function(done) {
       promtests.searchData(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, componentId[1], false, {})
         .then((result) => {
@@ -1392,7 +1364,6 @@ var descriptions = {
   "sendDataAsAdminWithWrongAccount": "Send test data as admin with wrong accountId",
   "receiveDataFromAdmin": "Test whether data sent from admin earlier has been stored",
   "send8000SamplesForAutoDownsampleTest": "Send enough data to check auto downsample",
-  "send8000SamplesForMultiAggregationTest": "Send enough data to check multi aggregation test",
   "sendDataAsDeviceToWrongDeviceId": "Test whether Device data submission is rejected if it goes to wrong device",
   "receiveRawData": "Receive auto downsampled data",
   "receiveMaxItems": "Receive max requested items",
