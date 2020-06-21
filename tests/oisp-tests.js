@@ -1276,6 +1276,9 @@ describe("Do data sending subtests ...".bold, function() {
      it(descriptions.send8000SamplesForAutoDownsampleTest,function(done) {
        test.send8000SamplesForAutoDownsampleTest(done);
      }).timeout(100000);
+     /*it(descriptions.send8000SamplesForMultiAggregationTest,function(done) {
+       test.send8000SamplesForMultiAggregationTest(done);
+     }).timeout(100000);*/
      it(descriptions.waitForBackendSynchronization,function(done) {
        // Due to low profile of test environment and the fact that Kafka/Backend is processing all the 1000s of samples
        // separately, we need to give the backend more time to settle
@@ -1316,6 +1319,18 @@ describe("Do data sending subtests ...".bold, function() {
      }).timeout(10000);
      it(descriptions.receiveAggregatedAvgDataMS,function(done) {
        test.receiveAggregatedAvgDataMS(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedAvgDataMinutes,function(done) {
+       test.receiveAggregatedAvgDataMinutes(done);
+     }).timeout(10000);
+     it(descriptions.receiveRawDataDesc,function(done) {
+       test.receiveRawDataDesc(done);
+     }).timeout(10000);
+     it(descriptions.receiveRawDataLatest,function(done) {
+       test.receiveRawDataLatest(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedDataFromMultipleComponents,function(done) {
+       test.receiveAggregatedDataFromMultipleComponents(done);
      }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);
