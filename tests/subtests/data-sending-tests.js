@@ -1108,6 +1108,64 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           done(err);
         });
     },
+    "receiveAutoAggregatedMaxData": function(done) {
+      var aggregator = {};
+      aggregator[componentId[1]] = {"name": "max"};
+      promtests.searchDataMaxItems(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[1]], false, {}, null, null, aggregator)
+        .then((result) => {
+          if (result.series.length != 1) return done("Wrong number of point series!");
+          assert.equal(result.series[0].points.length, MAX_SAMPLES_RETRIVE);
+          var samples = result.series[0].points;
+          samples.forEach(function(element, i) {
+            assert.equal(element.value, (i * 2) + 1);
+            assert.equal(element.ts, (i * 2) * 1000 + 1000000 + BASE_TIMESTAMP);
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveAutoAggregatedMinData": function(done) {
+      var aggregator = {};
+      aggregator[componentId[1]] = {"name": "min"};
+      promtests.searchDataMaxItems(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[1]], false, {}, null, null, aggregator)
+        .then((result) => {
+          if (result.series.length != 1) return done("Wrong number of point series!");
+          assert.equal(result.series[0].points.length, MAX_SAMPLES_RETRIVE);
+          var samples = result.series[0].points;
+          samples.forEach(function(element, i) {
+            assert.equal(element.value, (i * 2));
+            assert.equal(element.ts, (i * 2) * 1000 + 1000000 + BASE_TIMESTAMP);
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveAutoAggregatedSumData": function(done) {
+      var aggregator = {};
+      aggregator[componentId[1]] = {"name": "sum"};
+      promtests.searchDataMaxItems(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[1]], false, {}, MAX_ITEMS_TEST_SAMPLES, null, aggregator)
+        .then((result) => {
+          if (result.series.length != 1) return done("Wrong number of point series!");
+          assert.equal(result.series[0].points.length, MAX_ITEMS_TEST_SAMPLES);
+          var samples = result.series[0].points;
+          samples.forEach(function(element, i) {
+            var n = i * 8 + 8;
+            var sum = (n * (n - 1)) / 2; // sum of all numbers up to n
+            var old_sum = (n - 8) * (n - 9) / 2; // sum of previous n-8 round
+            assert.equal(element.value, (sum - old_sum));
+            old_sum = n;
+            assert.equal(element.ts, (i * 8) * 1000 + 1000000 + BASE_TIMESTAMP);
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
     "receiveAggregatedAvgData": function(done) {
       var aggregator = {};
       aggregator[componentId[1]] = {"name": "avg", "sampling": {"unit": "seconds", "value": 3}};
@@ -1117,13 +1175,59 @@ var test = function(userToken, accountId, deviceId, deviceToken, cbManager) {
           var numExptectedSamples = Math.ceil(MAX_SAMPLES_RETRIVE/3.0);
           assert.equal(result.series[0].points.length, numExptectedSamples);
           var samples = result.series[0].points;
-          console.log("Marcel034 " + JSON.stringify(samples));
           samples.forEach(function(element, i) {
             assert.equal(element.ts, (i * 3) * 1000 + 1000000 + BASE_TIMESTAMP);
             if (i < numExptectedSamples - 1) {
               assert.equal(element.value, (i * 3) + 1);
             } else { // exception for last sample
               assert.equal(element.value, (i * 3));
+            }
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveAggregatedAvgData": function(done) {
+      var aggregator = {};
+      aggregator[componentId[1]] = {"name": "avg", "sampling": {"unit": "seconds", "value": 3}};
+      promtests.searchDataMaxItems(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[1]], false, {}, null, null, aggregator)
+        .then((result) => {
+          if (result.series.length != 1) return done("Wrong number of point series!");
+          var numExptectedSamples = Math.ceil(MAX_SAMPLES_RETRIVE/3.0);
+          assert.equal(result.series[0].points.length, numExptectedSamples);
+          var samples = result.series[0].points;
+          samples.forEach(function(element, i) {
+            assert.equal(element.ts, (i * 3) * 1000 + 1000000 + BASE_TIMESTAMP);
+            if (i < numExptectedSamples - 1) {
+              assert.equal(element.value, (i * 3) + 1);
+            } else { // exception for last sample
+              assert.equal(element.value, (i * 3));
+            }
+          })
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
+    },
+    "receiveAggregatedAvgDataMS": function(done) {
+      var aggregator = {};
+      aggregator[componentId[1]] = {"name": "avg", "sampling": {"unit": "milliseconds", "value": 1500}};
+      promtests.searchDataMaxItems(BASE_TIMESTAMP + 1000000, MAX_SAMPLES * DOWNSAMPLE_MULT * 1000 + 1000000 + BASE_TIMESTAMP, deviceToken, accountId, deviceId, [componentId[1]], false, {}, null, null, aggregator)
+        .then((result) => {
+          if (result.series.length != 1) return done("Wrong number of point series!");
+          var numExptectedSamples = Math.ceil(MAX_SAMPLES_RETRIVE/1.5);
+          assert.equal(result.series[0].points.length, numExptectedSamples);
+          var samples = result.series[0].points;
+          console.log("Marcel034 " + JSON.stringify(samples));
+          samples.forEach(function(element, i) {
+            assert.equal(element.ts, Math.round(i * 1.5) * 1000 + 1000000 + BASE_TIMESTAMP);
+            if (i < numExptectedSamples - 1) {
+              assert.equal(element.value, (i * 1.5) + 0.5);
+            } else { // exception for last sample
+              assert.equal(element.value, (i * 1.5));
             }
           })
           done();
@@ -1175,6 +1279,10 @@ var descriptions = {
   "receiveMaxItems": "Receive max requested items",
   "receiveAutoAggregatedAvgData": "Receive auto downsampled data with Avg aggregator",
   "receiveAggregatedAvgData": "Receive downsampled data with Avg aggregator and explicit sampling",
+  "receiveAutoAggregatedMaxData": "Receive auto downsampled data with Max aggregator",
+  "receiveAutoAggregatedMinData": "Receive auto downsampled data with Min aggregator",
+  "receiveAutoAggregatedSumData": "Receive auto downsampled data with Min aggregator",
+  "receiveAggregatedAvgDataMS": "Receive downsampled data with milliseconds",
   "cleanup": "Cleanup components, commands, rules created for subtest"
 };
 

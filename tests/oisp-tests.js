@@ -1302,8 +1302,20 @@ describe("Do data sending subtests ...".bold, function() {
      it(descriptions.receiveAutoAggregatedAvgData,function(done) {
        test.receiveAutoAggregatedAvgData(done);
      }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedMaxData,function(done) {
+       test.receiveAutoAggregatedMaxData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedMinData,function(done) {
+       test.receiveAutoAggregatedMinData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedSumData,function(done) {
+       test.receiveAutoAggregatedSumData(done);
+     }).timeout(10000);
      it(descriptions.receiveAggregatedAvgData,function(done) {
        test.receiveAggregatedAvgData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedAvgDataMS,function(done) {
+       test.receiveAggregatedAvgDataMS(done);
      }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);
