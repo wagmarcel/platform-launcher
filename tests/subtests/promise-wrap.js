@@ -248,7 +248,7 @@ var submitData = function(value, deviceToken, accountId, deviceId, cid){
 
 var searchData = function(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter){
     return new Promise((resolve, reject) => {
-	helpers.data.searchData(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, function(err, response){
+	    helpers.data.searchData(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, function(err, response){
 	    if (err) {
 		reject(err);
 	    } else {
@@ -258,9 +258,9 @@ var searchData = function(from, to, userToken, accountId, deviceId, cid, queryMe
     });
 }
 
-var searchDataMaxItems = function(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, maxItems){
+var searchDataMaxItems = function(from, to, userToken, accountId, deviceId, cids, queryMeasureLocation, targetFilter, maxItems, order, aggregators){
     return new Promise((resolve, reject) => {
-	helpers.data.searchDataMaxItems(from, to, userToken, accountId, deviceId, cid, queryMeasureLocation, targetFilter, maxItems, function(err, response){
+	helpers.data.searchDataMaxItems(from, to, userToken, accountId, deviceId, cids, queryMeasureLocation, targetFilter, maxItems, order, aggregators, function(err, response){
 	    if (err) {
 		reject(err);
 	    } else {

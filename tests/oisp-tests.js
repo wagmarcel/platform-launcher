@@ -96,10 +96,10 @@ var highTemperatureRule = new Rule("oisp-tests-rule-high-temp",">", 25);
 //-------------------------------------------------------------------------------------------------------
 var components = new Components()
 
-components.add( new Component("temperatures", "Number", "float", "Degress Celsius", "timeSeries", -150, 150,
+/*components.add( new Component("temperatures", "Number", "float", "Degress Celsius", "timeSeries", -150, 150,
                     [lowTemperatureRule, highTemperatureRule],
                     temperatureData, temperatureCheckData)
-                );
+                );*/
 
 components.add( new Component("images", "ByteArray", "image/jpeg", "pixel", "binaryDataRenderer", null, null,
                     [],
@@ -1293,11 +1293,17 @@ describe("Do data sending subtests ...".bold, function() {
      it(descriptions.receiveDataFromAdmin,function(done) {
        test.receiveDataFromAdmin(done);
      }).timeout(10000);
-     it(descriptions.receiveDownsampledData,function(done) {
-       test.receiveDownsampledData(done);
+     it(descriptions.receiveRawData,function(done) {
+       test.receiveRawData(done);
      }).timeout(10000);
      it(descriptions.receiveMaxItems,function(done) {
        test.receiveMaxItems(done);
+     }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedAvgData,function(done) {
+       test.receiveAutoAggregatedAvgData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedAvgData,function(done) {
+       test.receiveAggregatedAvgData(done);
      }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);
