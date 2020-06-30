@@ -39,7 +39,7 @@ spec:
         - /opt/wait-for-it.sh
         - "cassandra-{{ .Values.cassandra.cluster}}-{{ .Release.Namespace }}-nodes.cassandra.svc.cluster.local:{{ .Values.cassandra.port}}"
         - -t
-        - "300"
+        - "300000"
         - --
         - /opt/kairosdb-startup.sh
         livenessProbe:
@@ -48,6 +48,12 @@ spec:
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 3
+        startupProbe:
+          httpGet:
+            path: /api/v1/health/check
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
         env:
         - name: OISP_KAIROSDB_CONFIG
           valueFrom:

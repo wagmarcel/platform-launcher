@@ -390,7 +390,7 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
             }
         });
 
-    }).timeout(2*60*1000);
+    }).timeout(1000*60*1000);
 })
 
 describe("get authorization and manage user ...\n".bold, function() {
@@ -917,7 +917,7 @@ describe("Creating and getting components ... \n".bold, function() {
 
 describe("Creating rules ... \n".bold, function() {
     before(function(){
-        if (checkTestCondition(["non_essential", "rules"])) {
+        if (checkTestCondition(["non_essential"])) {
             this.skip();
         }
     });
@@ -980,9 +980,10 @@ describe("Creating rules ... \n".bold, function() {
 
     }).timeout(20000);
 });
+
 describe("Sending observations and checking rules ...\n".bold, function() {
     before(function(){
-            if (checkTestCondition(["non_essential", "rules", "data_sending"])) {
+            if (checkTestCondition(["non_essential", "data_sending"])) {
                 this.skip();
             }
     });
@@ -1273,6 +1274,12 @@ describe("Do data sending subtests ...".bold, function() {
      it(descriptions.sendDataAsUser,function(done) {
        test.sendDataAsUser(done);
      }).timeout(10000);
+     it(descriptions.send8000SamplesForAutoDownsampleTest,function(done) {
+       test.send8000SamplesForAutoDownsampleTest(done);
+     }).timeout(100000);
+     /*it(descriptions.send8000SamplesForMultiAggregationTest,function(done) {
+       test.send8000SamplesForMultiAggregationTest(done);
+     }).timeout(100000);*/
      it(descriptions.waitForBackendSynchronization,function(done) {
        // Due to low profile of test environment and the fact that Kafka/Backend is processing all the 1000s of samples
        // separately, we need to give the backend more time to settle
@@ -1289,6 +1296,42 @@ describe("Do data sending subtests ...".bold, function() {
      }).timeout(10000);
      it(descriptions.receiveDataFromAdmin,function(done) {
        test.receiveDataFromAdmin(done);
+     }).timeout(10000);
+     it(descriptions.receiveRawData,function(done) {
+       test.receiveRawData(done);
+     }).timeout(10000);
+     it(descriptions.receiveMaxItems,function(done) {
+       test.receiveMaxItems(done);
+     }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedAvgData,function(done) {
+       test.receiveAutoAggregatedAvgData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedMaxData,function(done) {
+       test.receiveAutoAggregatedMaxData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedMinData,function(done) {
+       test.receiveAutoAggregatedMinData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAutoAggregatedSumData,function(done) {
+       test.receiveAutoAggregatedSumData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedAvgData,function(done) {
+       test.receiveAggregatedAvgData(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedAvgDataMS,function(done) {
+       test.receiveAggregatedAvgDataMS(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedAvgDataMinutes,function(done) {
+       test.receiveAggregatedAvgDataMinutes(done);
+     }).timeout(10000);
+     it(descriptions.receiveRawDataDesc,function(done) {
+       test.receiveRawDataDesc(done);
+     }).timeout(10000);
+     it(descriptions.receiveRawDataLatest,function(done) {
+       test.receiveRawDataLatest(done);
+     }).timeout(10000);
+     it(descriptions.receiveAggregatedDataFromMultipleComponents,function(done) {
+       test.receiveAggregatedDataFromMultipleComponents(done);
      }).timeout(10000);
      it(descriptions.cleanup,function(done) {
        test.cleanup(done);
@@ -1334,6 +1377,28 @@ describe("Grafana subtests...".bold, function() {
     }).timeout(10000);
 });
 
+describe("TSDB Proxy subtests...".bold, function() {
+    before(function(){
+        if (checkTestCondition(["non_essential", "tsdbproxy"])) {
+            this.skip();
+        }
+    });
+    var test;
+    var descriptions = require("./subtests/tsdb-proxy-tests").descriptions;
+    it(descriptions.prepareTestSetup, function(done) {
+        test = require("./subtests/tsdb-proxy-tests").test(userToken);
+        test.prepareTestSetup(done);
+    }).timeout(10000);
+    it(descriptions.testSuggestion, function(done) {
+        test.testSuggestion(done);
+    }).timeout(10000);
+    it(descriptions.testQuery, function(done) {
+        test.testQuery(done);
+    }).timeout(10000);
+    it(descriptions.cleanup, function(done) {
+        test.cleanup(done);
+    }).timeout(10000);
+});
 
 describe("Do MQTT data sending subtests ...".bold, function() {
     before(function(){

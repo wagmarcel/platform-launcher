@@ -21,6 +21,7 @@ export TEST = 0
 
 COMPOSE_PROJECT_NAME?="oisp"
 CONTAINERS?=$(shell docker-compose --log-level ERROR config --services)
+EXT_CONTAINERS=cassandra;gcr.io/cassandra-operator/cassandra-3.11.5:latest sidecar;gcr.io/cassandra-operator/cassandra-sidecar:latest kafka;confluentinc/cp-kafka:5.0.1
 CONTAINERS_AGENT=oisp-testsensor oisp-iot-agent
 DOCKER_COMPOSE_ARGS?=
 K3S_NODE=$(shell docker ps --format '{{.Names}}' | grep k3s_node)
@@ -201,32 +202,21 @@ add-test-user:
 ## wait-until-ready: Wait until the platform is up and running
 ##     As of now, this is assumed if all frontend and backend containers
 ##     are ready.
-##
+##     In case of timeout, the application will be redeployed ONLY if TEST is set
 wait-until-ready:
-	@printf "\nWaiting for pending ";
-	@while kubectl -n $(NAMESPACE) get pods | grep Pending >> /dev/null; \
-		do printf "."; sleep 5; done;
-	@printf "\nWaiting for backend ";
-	@while kubectl -n $(NAMESPACE) get pods -l=app=backend -o \
-        jsonpath="{.items[*].status.containerStatuses[*].ready}" | grep false >> /dev/null; \
-		do printf "."; sleep 5; done;
-	@printf "\nWaiting for frontend ";
-	@while kubectl -n $(NAMESPACE) get pods -l=app=frontend -o \
-        jsonpath="{.items[*].status.containerStatuses[*].ready}" | grep false >> /dev/null; \
-		do printf "."; sleep 5; done;
-	@printf "\nWaiting for mqtt server";
-	@while kubectl -n $(NAMESPACE) get pods -l=app=mqtt-server -o \
-        jsonpath="{.items[*].status.containerStatuses[*].ready}" | grep false >> /dev/null; \
-		do printf "."; sleep 5; done;
-	@printf "\nWaiting for dbsetup job";
-	@while ! kubectl -n $(NAMESPACE) get job dbsetup -o \
-		jsonpath="{.status.succeeded}" | grep 1 >> /dev/null; \
-		do printf "."; sleep 5; done;
-	@printf "\nWaiting for keycloak";
-	@while kubectl -n $(NAMESPACE) get pod keycloak-0 -o \
-        jsonpath="{.items[*].status.containerStatuses[*].ready}" | grep false >> /dev/null; \
-		do printf "."; sleep 5; done;
-	@echo
+	@{ printf "\nWaiting for readiness of platform"; \
+	DOCKER_TAG=$(DOCKER_TAG); \
+	if [ "$${DOCKER_TAG}" = "latest" ]; then \
+	  export DOCKER_TAG=test; \
+	fi; \
+	while ! $(SHELL) ./wait-until-ready.sh $(NAMESPACE); \
+		do \
+			if [ ! -z "${TEST}" ]; then \
+				printf "\nTimeout! Redeploying with docker tag $${DOCKER_TAG}\n"; \
+				make undeploy-oisp; \
+				make DOCKER_TAG=$${DOCKER_TAG} deploy-oisp-test; \
+			fi \
+		done }
 
 ## import-images: Import images listed in CONTAINERS into local cluster
 ##
@@ -236,6 +226,14 @@ import-images:
 		docker save oisp/$(image):$(DOCKER_TAG) -o /tmp/$(image) && printf " is saved" && \
 		docker cp /tmp/$(image) $(K3S_NODE):/tmp/$(image) && printf ", copied" && \
 		docker exec -it $(K3S_NODE) ctr image import /tmp/$(image) >> /dev/null && printf ", imported\n"; \
+	)
+	@$(foreach image,$(EXT_CONTAINERS), \
+		arr=( $(subst ;, ,$(image)) ); \
+		printf $${arr[1]};  \
+		docker pull $${arr[1]} > /dev/null && printf ", pulled" && \
+		docker save $${arr[1]} -o /tmp/$${arr[0]} > /dev/null && printf ", saved" && \
+		docker cp /tmp/$${arr[0]} $(K3S_NODE):/tmp/$${arr[0]} && printf ", copied" && \
+		docker exec -it $(K3S_NODE) ctr image import /tmp/$${arr[0]} > /dev/null && printf ", imported\n"; \
 	)
 
 ## import-images-agent: Import images to deploy OISP-Agent

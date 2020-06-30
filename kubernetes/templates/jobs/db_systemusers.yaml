@@ -1,16 +1,16 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: dbsetup
+  name: dbsystemusers
   annotations:
-    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-weight": "40"
     "helm.sh/hook-delete-policy": "before-hook-creation"
     "helm.sh/hook": post-install
 spec:
   template:
     spec:
       containers:
-      - name: dbsetup
+      - name: dbsystemusers
         {{ if .Values.use_local_registry }}
         image: registry.local:5000/oisp/frontend:{{ .Values.tag }}
         {{ else }}
@@ -79,7 +79,7 @@ spec:
             configMapKeyRef:
               name: oisp-config
               key: keycloak
-        command: ["./wait-for-it.sh", "postgres:5432", "-t", "300", "--", "node", "admin", "createDB"]
+        command: ["./wait-for-it.sh", "postgres:5432", "-t", "300", "--", "./wait-for-it.sh", "keycloak-http:4080", "-t", "300", "--", "node", "admin", "addSystemUsers"]
       restartPolicy: Never
       imagePullSecrets:
         - name: dockercred
