@@ -15,19 +15,9 @@ spec:
       memory: 100Mi
     {{ else }}
     limits:
-      cpu: 1
+      cpu: 1000m
       memory: 1Gi
     requests:
       cpu: 500m
       memory: 1Gi
     {{ end }}
-  dataVolumeClaimSpec:
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-            {{ if .Values.less_resources }}
-            storage: 0.5Gi
-            {{ else }}
-            storage: {{ .Values.cassandra.disk }}
-            {{ end }}
