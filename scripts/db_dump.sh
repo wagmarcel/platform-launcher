@@ -2,6 +2,9 @@
 # dumps database to tmp directory
 cmdname=$(basename $0)
 DEBUG=true # uncomment to switch on debug
+DUMPFILE=database.sql
+CONTAINER=oisp-stolon-keeper-0
+
 usage()
 {
     cat << USAGE >&2
@@ -10,23 +13,21 @@ Dumps postgres database to temp directory
 
 Usage:
 
-    $cmdname  <tmpdir> <dbname> <username> <password> <hostname>
+    $cmdname  <tmpdir> <namespace>
 
     tmpdir: directory where the database is dumped to. File will be tmpdir/database.sql
-    dbname: name of the dbase
-    username: DB username
-    password: password for username
-    hostname: DB host, e.g. postgres
+    namespace: K8s namespace where db is located
 USAGE
     exit 1
 }
 
-if [ "$#" -ne 1 ] || [ "$1" = "-h" ] ;
+if [ "$#" -ne 2 ] || [ "$1" = "-h" ] ;
 then
     usage
 fi
 
 TMPDIR=$1
+NAMESPACE=$2
 DBNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".dbname")
 USERNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".su_username")
 PASSWORD=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".su_password")
@@ -51,3 +52,9 @@ if [ -d "${TMPDIR}" ]; then
   echo tmpdir alredy exists - Bye
   exit 1
 fi
+
+echo Creating TMPDIR
+mkdir ${TMPDIR} || {echo Could not create tmpdir; }#exit 1;}
+
+echo Dump database
+kubectl -n ${NAMESPACE} exec ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; pg_dump -U ${USERNAME} ${DBNAME} -h ${HOSTNAME}" > ${TMPDIR}/${DUMPFILE}
