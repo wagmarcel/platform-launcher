@@ -1,8 +1,8 @@
 #! /bin/bash
 # dumps configmaps and secrets of a namespace into folder
 cmdname=$(basename $0)
-DEBUG=true # uncomment to switch on debug
-
+#DEBUG=true # uncomment to switch on debug
+REMOVEFIELDS=(creationTimestamp resourceVersion uid selfLink)
 
 # filter out the EXCLUDED and remove '""'
 # Parameters: <ARRAY> <EXCLUDED>
@@ -10,7 +10,7 @@ filter()
 {
   local -n ARRAY=$1
   local -n EXCL=$2
-  if [ ${DEBUG} = "true" ]; then
+  if [ "${DEBUG}" = "true" ]; then
     echo parameters of filter:
     echo ARRAY = ${ARRAY[@]}
     echo EXCLUDED = ${EXCL[@]}
@@ -28,6 +28,27 @@ filter()
       fi
     done
   done
+}
+
+
+# remote not needed fields from K8s objects
+# such as creationTimestamp, resourceVersion, uid, selfLink
+# parameters: <filename>
+remove_fields()
+{
+  local FILENAME=$1
+  local -n RMFLDS=$2
+
+  if [ "${DEBUG}" = "true" ]; then
+    echo parameters of remove_fields:
+    echo FILENAME = ${FILENAME}
+    echo RMFLDS = ${RMFLDS[@]}
+  fi
+
+  for field in ${RMFLDS[@]}; do
+    sed -i "/$field/d" ${FILENAME}
+  done
+
 }
 
 
@@ -66,7 +87,7 @@ filter CMARRAY EXCLUDED
 filter SECRETARRAY EXCLUDED
 
 # debug output
-if [ ${DEBUG} = "true" ]; then
+if [ "${DEBUG}" = "true" ]; then
   echo main parameters:
   echo TMPDIR = ${TMPDIR}
   echo NAMESPACE = ${NAMESPACE}
@@ -100,7 +121,8 @@ done
 echo Dump configmaps of ${NAMESPACE}
 for element in "${CMARRAY[@]}"
 do
-  kubectl -n ${NAMESPACE} get cm/${element} -o yaml > ${TMPDIR}/${element}
+  kubectl -n ${NAMESPACE} get cm/${element} -o yaml > ${TMPDIR}/${element}.yaml
+  remove_fields ${TMPDIR}/${element}.yaml REMOVEFIELDS
 done
 
 
@@ -108,5 +130,6 @@ done
 echo Dump secrets of ${NAMESPACE}
 for element in "${SECRETARRAY[@]}"
 do
-  kubectl -n ${NAMESPACE} get secret/${element} -o yaml > ${TMPDIR}/${element}
+  kubectl -n ${NAMESPACE} get secret/${element} -o yaml > ${TMPDIR}/${element}.yaml
+  remove_fields ${TMPDIR}/${element}.yaml REMOVEFIELDS
 done

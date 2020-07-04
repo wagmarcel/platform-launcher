@@ -1,7 +1,7 @@
 #! /bin/bash
-# dumps database to tmp directory
+# restore database
 cmdname=$(basename $0)
-#DEBUG=true # uncomment to switch on debug
+DEBUG=true # uncomment to switch on debug
 DUMPFILE=database.sql
 CONTAINER=oisp-stolon-keeper-0
 
@@ -15,7 +15,7 @@ Usage:
 
     $cmdname  <tmpdir> <namespace>
 
-    tmpdir: directory where the database is dumped to. File will be tmpdir/database.sql
+    tmpdir: directory where the database.sql can be found
     namespace: K8s namespace where db is located
 USAGE
     exit 1
@@ -33,7 +33,7 @@ USERNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".s
 PASSWORD=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".su_password")
 HOSTNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".hostname")
 
-if [ "${DEBUG}" = "true" ]; then
+if [ ${DEBUG} = "true" ]; then
   echo parameters:
   echo TMPDIR = ${TMPDIR}
   echo NAMESPACE = ${NAMESPACE}
@@ -45,16 +45,15 @@ fi
 
 # sanity check: If one of paramters is empty - stop
 if [ -z "${USERNAME}" ] || [ -z "${DBNAME}" ] || [ -z "${PASSWORD}" ] || [ -z "${HOSTNAME}" ]; then
-  echo paramters not healthy. Some are empty - Bye
-  exit 1
-fi
-# create dir
-mkdir -p ${TMPDIR}
-# if file exists, exit
-if [ -f "${TMPDIR}/${DUMPFILE}" ]; then
-  echo file alredy exists - will not overwriet - Bye
+  echo USERNAME is empty - Bye
   exit 1
 fi
 
-echo Dump database
-kubectl -n ${NAMESPACE} exec ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; pg_dump -U ${USERNAME} ${DBNAME} -h ${HOSTNAME}" > ${TMPDIR}/${DUMPFILE}
+# if file does not exists, exit
+if [ ! -f "${TMPDIR}/${DUMPFILE}" ]; then
+  echo ${DUMPFILE} does not exists - Bye
+  exit 1
+fi
+
+echo restore database
+kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}" < ${TMPDIR}/${DUMPFILE}

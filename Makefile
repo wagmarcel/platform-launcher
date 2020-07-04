@@ -400,7 +400,7 @@ backup:
 	@mkdir -p /tmp/$(TMPDIR)
 	@scripts/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE)
 	@scripts/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)"
-	@tar cvzf backups/$(TMPDIR).tgz /tmp/$(TMPDIR)
+	@tar cvzf backups/$(TMPDIR).tgz -C /tmp $(TMPDIR)
 	@rm -rf /tmp/$(TMPDIR)
 
 ## help: Show this help message
