@@ -404,10 +404,10 @@ backup:
 	@rm -rf /tmp/$(TMPDIR)
 
 
-	## restore: restore database, configmaps and secrets.
-	##     This requires either default K8s config or KUBECONFIG set
-	##     Parameters: BACKUPFILE var must be set or the most recent timestamp is selected
-	##
+## restore: restore database, configmaps and secrets.
+##     This requires either default K8s config or KUBECONFIG set
+##     Parameters: BACKUPFILE var must be set or the most recent timestamp is selected
+##
 restore:
 ifndef BACKUPFILE
 		@echo Look for most recent backup file

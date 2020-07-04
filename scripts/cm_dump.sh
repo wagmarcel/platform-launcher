@@ -1,7 +1,7 @@
 #! /bin/bash
 # dumps configmaps and secrets of a namespace into folder
 cmdname=$(basename $0)
-#DEBUG=true # uncomment to switch on debug
+DEBUG=true # uncomment to switch on debug
 REMOVEFIELDS=(creationTimestamp resourceVersion uid selfLink)
 
 # filter out the EXCLUDED and remove '""'
@@ -117,7 +117,7 @@ do
     fi
 done
 
-#write cm into folder
+# write cm into folder
 echo Dump configmaps of ${NAMESPACE}
 for element in "${CMARRAY[@]}"
 do
@@ -126,10 +126,51 @@ do
 done
 
 
-#write secret into folder
+# write secret into folder
 echo Dump secrets of ${NAMESPACE}
 for element in "${SECRETARRAY[@]}"
 do
   kubectl -n ${NAMESPACE} get secret/${element} -o yaml > ${TMPDIR}/${element}.yaml
   remove_fields ${TMPDIR}/${element}.yaml REMOVEFIELDS
 done
+
+# dump deployment and StatefulSet
+DEPLOYMENT_NAMES=($(kubectl -n oisp get deployments -o jsonpath={...spec.template.spec.containers[*].name}))
+DEPLOYMENT_IMAGES=($(kubectl -n oisp get deployments -o jsonpath={...spec.template.spec.containers[*].image}))
+
+if [ "${DEBUG}" = "true" ]; then
+  echo DEPLOYMENTS
+  echo DEPLOYMENT_NAMES = ${DEPLOYMENT_NAMES[@]}
+  echo DEPLOYMENT_IMAGES = ${DEPLOYMENT_IMAGES[@]}
+fi
+
+DEPLOYMENTS=()
+for index in "${!DEPLOYMENT_NAMES[@]}";
+do
+  DEPLOYMENTS+=("${DEPLOYMENT_NAMES[$index]},${DEPLOYMENT_IMAGES[$index]}")
+done
+
+# dump statefulsets and StatefulSet
+SFS_NAMES=($(kubectl -n oisp get statefulsets -o jsonpath={...spec.template.spec.containers[*].name}))
+SFS_IMAGES=($(kubectl -n oisp get statefulsets -o jsonpath={...spec.template.spec.containers[*].image}))
+
+if [ "${DEBUG}" = "true" ]; then
+  echo SFS
+  echo SFS_NAMES = ${SFS_NAMES[@]}
+  echo SFS_IMAGES = ${SFS_IMAGES[@]}
+fi
+
+SFS=()
+for index in "${!SFS_NAMES[@]}";
+do
+  SFS+=("${SFS_NAMES[$index]},${SFS_IMAGES[$index]}")
+done
+
+if [ "${DEBUG}" = "true" ]; then
+  echo DEPLOYMENTS = ${DEPLOYMENTS[@]}
+  echo SFS = ${SFS[@]}
+fi
+
+echo ${DEPLOYMENTS[@]} | tr " " "\n"| sort | uniq > ${TMPDIR}/deployments
+echo ${SFS[@]} | tr " " "\n"| sort |   uniq > ${TMPDIR}/statefulsets
+cat ${TMPDIR}/statefulsets
