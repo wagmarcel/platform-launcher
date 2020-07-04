@@ -1,7 +1,7 @@
 #! /bin/bash
 # dumps configmaps and secrets of a namespace into folder
 cmdname=$(basename $0)
-DEBUG=true # uncomment to switch on debug
+#DEBUG=true # uncomment to switch on debug
 REMOVEFIELDS=(creationTimestamp resourceVersion uid selfLink)
 
 # filter out the EXCLUDED and remove '""'
@@ -31,7 +31,7 @@ filter()
 }
 
 
-# remote not needed fields from K8s objects
+# remove not needed fields from K8s objects
 # such as creationTimestamp, resourceVersion, uid, selfLink
 # parameters: <filename>
 remove_fields()
@@ -49,6 +49,27 @@ remove_fields()
     sed -i "/$field/d" ${FILENAME}
   done
 
+}
+
+
+# list deployments and sfs with their image tags
+# parameters: <type>
+# type: "deployment" or "statefulsets"
+# return pairs of name,image_name
+list_images()
+{
+  local TYPE=$1
+  # dump deployment and StatefulSet
+  local NAMES=($(kubectl -n oisp get ${TYPE} -o jsonpath={...spec.template.spec.containers[*].name}))
+  local IMAGES=($(kubectl -n oisp get ${TYPE} -o jsonpath={...spec.template.spec.containers[*].image}))
+
+  RETURNVAL=()
+  for index in "${!NAMES[@]}";
+  do
+    RETURNVAL+=("${NAMES[$index]},${IMAGES[$index]}")
+  done
+
+  echo ${RETURNVAL[@]}
 }
 
 
@@ -134,43 +155,15 @@ do
   remove_fields ${TMPDIR}/${element}.yaml REMOVEFIELDS
 done
 
-# dump deployment and StatefulSet
-DEPLOYMENT_NAMES=($(kubectl -n oisp get deployments -o jsonpath={...spec.template.spec.containers[*].name}))
-DEPLOYMENT_IMAGES=($(kubectl -n oisp get deployments -o jsonpath={...spec.template.spec.containers[*].image}))
-
-if [ "${DEBUG}" = "true" ]; then
-  echo DEPLOYMENTS
-  echo DEPLOYMENT_NAMES = ${DEPLOYMENT_NAMES[@]}
-  echo DEPLOYMENT_IMAGES = ${DEPLOYMENT_IMAGES[@]}
-fi
-
-DEPLOYMENTS=()
-for index in "${!DEPLOYMENT_NAMES[@]}";
-do
-  DEPLOYMENTS+=("${DEPLOYMENT_NAMES[$index]},${DEPLOYMENT_IMAGES[$index]}")
-done
-
-# dump statefulsets and StatefulSet
-SFS_NAMES=($(kubectl -n oisp get statefulsets -o jsonpath={...spec.template.spec.containers[*].name}))
-SFS_IMAGES=($(kubectl -n oisp get statefulsets -o jsonpath={...spec.template.spec.containers[*].image}))
-
-if [ "${DEBUG}" = "true" ]; then
-  echo SFS
-  echo SFS_NAMES = ${SFS_NAMES[@]}
-  echo SFS_IMAGES = ${SFS_IMAGES[@]}
-fi
-
-SFS=()
-for index in "${!SFS_NAMES[@]}";
-do
-  SFS+=("${SFS_NAMES[$index]},${SFS_IMAGES[$index]}")
-done
+# create name,image list for  DEPLOYMENTS and STATEFULSETS
+DEPLOYMENTS=($(list_images deployments))
+SFS=($(list_images statefulsets))
 
 if [ "${DEBUG}" = "true" ]; then
   echo DEPLOYMENTS = ${DEPLOYMENTS[@]}
   echo SFS = ${SFS[@]}
 fi
 
+# write name,image lists to folder
 echo ${DEPLOYMENTS[@]} | tr " " "\n"| sort | uniq > ${TMPDIR}/deployments
 echo ${SFS[@]} | tr " " "\n"| sort |   uniq > ${TMPDIR}/statefulsets
-cat ${TMPDIR}/statefulsets
