@@ -403,6 +403,21 @@ backup:
 	@tar cvzf backups/$(TMPDIR).tgz -C /tmp $(TMPDIR)
 	@rm -rf /tmp/$(TMPDIR)
 
+
+	## restore: restore database, configmaps and secrets.
+	##     This requires either default K8s config or KUBECONFIG set
+	##     Parameters: BACKUPFILE var must be set or the most recent timestamp is selected
+	##
+restore:
+ifndef BACKUPFILE
+		@echo Look for most recent backup file
+		@$(eval BACKUPFILE := $(shell ls backups/backup_*|sort -V| tail -n 1))
+endif
+	@echo using backup file $(BACKUPFILE)
+	$(eval BASEDIR := $(shell basedir=$(BACKUPFILE); basedir="$${basedir##*/}"; basedir="$${basedir%.*}"; echo $${basedir} ))
+	tar xvzf $(BACKUPFILE) -C /tmp
+	@scripts/db_restore.sh /tmp/$(BASEDIR) $(NAMESPACE)
+	@scripts/cm_restore.sh /tmp/$(BASEDIR)
 ## help: Show this help message
 ##
 help:
