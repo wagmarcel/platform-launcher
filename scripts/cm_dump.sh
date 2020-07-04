@@ -23,7 +23,6 @@ filter()
   # remove excluded
   for del in ${EXCL[@]}; do
     for index in ${!ARRAY[*]}; do
-      echo comparing ${ARRAY[$index]} with $del
       if [[ "${ARRAY[$index]}" =  $del* ]]; then
         unset ARRAY[$index]
       fi

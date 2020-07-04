@@ -48,6 +48,8 @@ DEBUGGER_POD:=$(shell kubectl -n $(NAMESPACE) get pods -o custom-columns=:metada
 SELECTED_POD:=$(shell kubectl -n $(NAMESPACE) get pods -o custom-columns=:metadata.name | grep $(DEPLOYMENT) | head -n 1)
 FRONTEND_POD:=$(shell kubectl -n $(NAMESPACE) get pods -o custom-columns=:metadata.name | grep frontend | head -n 1)
 
+BACKUP_EXCLUDE:=sh.helm stolon default-token oisp-stolon-token
+
 .init:
 	@$(call msg,"Initializing ...");
 	@$(call msg,"Currently on branch ${BRANCH}");
@@ -386,10 +388,27 @@ push-images:
 	@$(call msg,"Pushing docker images to registry");
 	@docker-compose -f docker-compose.yml -f docker/debugger/docker-compose-debugger.yml push $(CONTAINERS)
 
+## backup: backup database, configmaps and secrets.
+##     This requires either default K8s config or KUBECONFIG set
+##     A tar file is created containing the files
+##
+backup:
+	@mkdir -p backups
+	@$(call msg,"Creating backup");
+	@$(eval TMPDIR := backup_$(NAMESPACE)_$(shell date +'%Y-%m-%d_%H-%M-%S'))
+	@if [ -d "/tmp/$(TMPDIR)" ]; then echo "Backup file already exists. Not overwriting. Bye"; exit 1; fi
+	@mkdir -p /tmp/$(TMPDIR)
+	@scripts/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE)
+	@scripts/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)"
+	@tar cvzf backups/$(TMPDIR).tgz /tmp/$(TMPDIR)
+	@rm -rf /tmp/$(TMPDIR)
+
 ## help: Show this help message
 ##
 help:
 	@grep "^##" Makefile | cut -c4-
+
+
 
 #-----------------
 # helper functions
