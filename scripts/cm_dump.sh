@@ -3,6 +3,35 @@
 cmdname=$(basename $0)
 DEBUG=true # uncomment to switch on debug
 
+
+# filter out the EXCLUDED and remove '""'
+# Parameters: <ARRAY> <EXCLUDED>
+filter()
+{
+  local -n ARRAY=$1
+  local -n EXCL=$2
+  if [ ${DEBUG} = "true" ]; then
+    echo parameters of filter:
+    echo ARRAY = ${ARRAY[@]}
+    echo EXCLUDED = ${EXCL[@]}
+  fi
+  #remove '""'
+  for index in ${!ARRAY[*]}; do
+    ARRAY[$index]=$(sed -e 's/^"//' -e 's/"$//' <<<${ARRAY[$index]})
+  done
+
+  # remove excluded
+  for del in ${EXCL[@]}; do
+    for index in ${!ARRAY[*]}; do
+      echo comparing ${ARRAY[$index]} with $del
+      if [[ "${ARRAY[$index]}" =  $del* ]]; then
+        unset ARRAY[$index]
+      fi
+    done
+  done
+}
+
+
 usage()
 {
     cat << USAGE >&2
@@ -11,31 +40,38 @@ Dumps configmaps and secrets of a namespace into folder
 
 Usage:
 
-    $cmdname  <tmpdir> <namespace>
+    $cmdname  <tmpdir> <namespace> <exclude>
 
     tmpdir: directory where the configmaps and secrets are dumped to. File will be tmpdir/cmname or tmpdir/secretname
     namespace: K8s namespace where db is located
+    exclude: List of prefixes which should be excluded from backup, list is in quotes and seperated by space e.g "sh.helm dummy"
 USAGE
     exit 1
 }
 
-if [ "$#" -ne 2 ] || [ "$1" = "-h" ] ;
+if [ "$#" -ne 3 ] || [ "$1" = "-h" ] ;
 then
     usage
 fi
 
 TMPDIR=$1
 NAMESPACE=$2
+EXCLUDED=($3)
 
 RAWCMLIST=$(kubectl -n ${NAMESPACE} get cm -o json| jq '.items[].metadata.name'| tr '\n' ' ')
 IFS=' ' read -r -a CMARRAY <<< "$RAWCMLIST"
 RAWSECRETLIST=$(kubectl -n ${NAMESPACE} get secret -o json| jq '.items[].metadata.name'| tr '\n' ' ')
 IFS=' ' read -r -a SECRETARRAY <<< "$RAWSECRETLIST"
 
+filter CMARRAY EXCLUDED
+filter SECRETARRAY EXCLUDED
+
+# debug output
 if [ ${DEBUG} = "true" ]; then
-  echo parameters:
+  echo main parameters:
   echo TMPDIR = ${TMPDIR}
   echo NAMESPACE = ${NAMESPACE}
+  echo EXLUDED = ${EXCLUDED[@]}
   echo CMARRAY = ${CMARRAY[@]}
   echo SECRETARRAY = ${SECRETARRAY[@]}
 fi
@@ -46,7 +82,6 @@ mkdir -p ${TMPDIR}
 # check if one of the cm already exists
 for element in "${CMARRAY[@]}"
 do
-    element=$(sed -e 's/^"//' -e 's/"$//' <<<${element})
     if [ -f ${TMPDIR}/${element} ]; then
       echo Configmap ${element} already in ${TMPDIR} - not overwriting - Bye
       exit 1
@@ -56,7 +91,6 @@ done
 # check if one of the secrets already exists
 for element in "${SECRETARRAY[@]}"
 do
-    element=$(sed -e 's/^"//' -e 's/"$//' <<<${element})
     if [ -f ${TMPDIR}/${element} ]; then
       echo Secret ${element} already in ${TMPDIR} - not overwriting - Bye
       exit 1
@@ -67,7 +101,6 @@ done
 echo Dump configmaps of ${NAMESPACE}
 for element in "${CMARRAY[@]}"
 do
-  element=$(sed -e 's/^"//' -e 's/"$//' <<<${element})
   kubectl -n ${NAMESPACE} get cm/${element} -o yaml > ${TMPDIR}/${element}
 done
 
@@ -76,6 +109,5 @@ done
 echo Dump secrets of ${NAMESPACE}
 for element in "${SECRETARRAY[@]}"
 do
-  element=$(sed -e 's/^"//' -e 's/"$//' <<<${element})
   kubectl -n ${NAMESPACE} get secret/${element} -o yaml > ${TMPDIR}/${element}
 done

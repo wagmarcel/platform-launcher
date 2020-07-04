@@ -36,25 +36,25 @@ HOSTNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".h
 if [ ${DEBUG} = "true" ]; then
   echo parameters:
   echo TMPDIR = ${TMPDIR}
+  echo NAMESPACE = ${NAMESPACE}
   echo DBNAME = ${DBNAME}
   echo USERNAME = ${USERNAME}
   echo PASSWORD = ${PASSWORD}
   echo HOSTNAME = ${HOSTNAME}
 fi
 
-# sanity check: If username is empty stop
-if [ -z "${USERNAME}" ]; then
+# sanity check: If one of paramters is empty - stop
+if [ -z "${USERNAME}" ] || [ -z "${DBNAME}" ] || [ -z "${PASSWORD}" ] || [ -z "${HOSTNAME}" ]; then
   echo USERNAME is empty - Bye
   exit 1
 fi
-# if directory exists, exit
-if [ -d "${TMPDIR}" ]; then
-  echo tmpdir alredy exists - Bye
+# create dir
+mkdir -p ${TMPDIR}
+# if file exists, exit
+if [ -f "${TMPDIR}/${DUMPFILE}" ]; then
+  echo file alredy exists - will not overwriet - Bye
   exit 1
 fi
-
-echo Creating TMPDIR
-mkdir ${TMPDIR} || {echo Could not create tmpdir; }#exit 1;}
 
 echo Dump database
 kubectl -n ${NAMESPACE} exec ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; pg_dump -U ${USERNAME} ${DBNAME} -h ${HOSTNAME}" > ${TMPDIR}/${DUMPFILE}
