@@ -1,7 +1,7 @@
 #! /bin/bash
 # dumps configmaps and secrets of a namespace into folder
 cmdname=$(basename $0)
-#DEBUG=true # uncomment to switch on debug
+DEBUG=true # uncomment to switch on debug
 REMOVEFIELDS=(creationTimestamp resourceVersion uid selfLink)
 
 # filter out the EXCLUDED and remove '""'
