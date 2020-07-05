@@ -5,6 +5,23 @@ DEBUG=true # uncomment to switch on debug
 DUMPFILE=database.sql
 CONTAINER=oisp-stolon-keeper-0
 
+
+# read fields from oisp-config (what is the problem? the 3rd level objects are saved as string and, thus, tough to parse as JSON)
+# parameters: <filename> <field>
+read_postgres_oisp_config(){
+  local FILENAME=$1
+  local FIELD=$2
+
+  # hmmm
+  # get the json string,
+  # remove outer quotes,
+  # let echo interprete the \n,
+  # replace \"
+  # then parse with jq, replace outer quotes
+  echo -e $(jq ".data.postgres" ${FILENAME} | sed 's/^"\(.*\)"$/\1/g') | sed 's/\\"/"/g' | jq ".${FIELD}" | sed 's/^"\(.*\)"$/\1/g'
+}
+
+
 usage()
 {
     cat << USAGE >&2
@@ -15,7 +32,7 @@ Usage:
 
     $cmdname  <tmpdir> <namespace>
 
-    tmpdir: directory where the database.sql can be found
+    tmpdir: directory where the database.sql and oisp-config can be found
     namespace: K8s namespace where db is located
 USAGE
     exit 1
@@ -55,5 +72,28 @@ if [ ! -f "${TMPDIR}/${DUMPFILE}" ]; then
   exit 1
 fi
 
+# retrieve new passwords
+echo set new passwords
+OISPCONFIG=($(ls ${TMPDIR}/oisp-config.json))
+# sanity test. This file musst exist in a sane backup
+if [ ! -f "${OISPCONFIG}" ]; then
+  echo oisp-config.json not found in db backup. Bye!
+  exit 1;
+fi
+NEW_USERPASSWORD=$(read_postgres_oisp_config ${OISPCONFIG} password)
+NEW_SUPERPASSWORD=$(read_postgres_oisp_config ${OISPCONFIG} su_password)
+# sanity check: If one of paramters is empty - stop
+if [ -z "${NEW_USERPASSWORD}" ] || [ -z "$[NEW_SUPERPASSWORD]" ]; then
+  echo NEW_PASSWORDS are empty - Bye
+  exit 1
+fi
+
+echo "ALTER USER superuser WITH PASSWORD '${NEW_SUPERPASSWORD}';"
+echo "ALTER USER oisp_user WITH PASSWORD '${NEW_USERPASSWORD}';" | kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}"
+echo "ALTER USER superuser WITH PASSWORD '${NEW_SUPERPASSWORD}';" | kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}"
+
 echo restore database
-kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}" < ${TMPDIR}/${DUMPFILE}
+kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${NEW_SUPERPASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}" < ${TMPDIR}/${DUMPFILE}
+
+echo set user rights
+# retrieve new passwords and users

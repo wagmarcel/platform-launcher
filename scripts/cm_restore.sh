@@ -4,46 +4,6 @@ cmdname=$(basename $0)
 #DEBUG=true # uncomment to switch on debug
 
 
-# list deployments and sfs with their image tags
-# parameters: <type>
-# type: "deployment" or "statefulsets"
-# return pairs of name,image_name
-list_images()
-{
-  local TYPE=$1
-  # dump deployment and StatefulSet
-  local NAMES=($(kubectl -n oisp get ${TYPE} -o jsonpath={...spec.template.spec.containers[*].name}))
-  local IMAGES=($(kubectl -n oisp get ${TYPE} -o jsonpath={...spec.template.spec.containers[*].image}))
-
-  RETURNVAL=()
-  for index in "${!NAMES[@]}";
-  do
-    RETURNVAL+=("${NAMES[$index]},${IMAGES[$index]}")
-  done
-  echo ${RETURNVAL[@]}
-}
-
-
-# check whether array and file are identical
-# parameters: <array> <filename>
-# array: array name of array which is compared
-# filename: filename of file to be compared with array
-# return "true" or "false"
-check_equal()
-{
-  local -n ARRAY=$1
-  local FILENAME=$2
-  RET="true"
-  index=0
-  while read -r line; do
-    if [ ! "$line" = "${ARRAY[$index]}" ]; then
-      RET="false"
-    fi
-    (( index++ ))
-  done < ${FILENAME}
-
-  echo $RET
-}
 
 usage()
 {
@@ -53,37 +13,37 @@ Dumps configmaps and secrets of a namespace into folder
 
 Usage:
 
-    $cmdname  <tmpdir>
+    $cmdname  <tmpdir> <namespace>
 
     tmpdir: directory where the configmaps and secrets are dumped to. File will be tmpdir/cmname or tmpdir/secretname
+    namespace: k8s namespace
 USAGE
     exit 1
 }
 
-if [ "$#" -ne 1 ] || [ "$1" = "-h" ] ;
+if [ "$#" -ne 2 ] || [ "$1" = "-h" ] ;
 then
     usage
 fi
 
 TMPDIR=$1
-K8SOBJECTS=($(ls ${TMPDIR}/*.yaml))
+NAMESPACE=$2
+# we need again DB access. Because we need to change the db user passwords accourding to the new config
+BNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".dbname")
+SUPERUSERNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".su_username")
+SUPERPASSWORD=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".su_password")
+HOSTNAME=$(kubectl -n oisp get cm/oisp-config -o jsonpath='{..postgres}'| jq ".hostname")
 
-# first check whether the name,image pairs match
-DEPLOYMENTS_COMP=($(list_images deployments | tr " " "\n" | sort | uniq))
-SFS_COMP=($(list_images statefulsets | tr " " "\n" | sort | uniq))
-RESULT1=$(check_equal DEPLOYMENTS_COMP ${TMPDIR}/deployments)
-RESULT2=$(check_equal SFS_COMP ${TMPDIR}/statefulsets)
+OISPCONFIG=($(ls ${TMPDIR}/oisp-config.json))
 
-if [ "$RESULT1" = "false" ] || [ "$RESULT2" = "false" ]; then
-  while true; do
-      read -p "Mismatch detected between deployments and statefulsets. Be aware that this could affect the compatibility. Continue?" yn
-      case $yn in
-          [Yy]* ) break;;
-          [Nn]* ) exit 1;;
-          * ) echo "Please answer yes or no.";;
-      esac
-  done
+# sanity test. This file musst exist in a sane backup
+if [ ! -f "${OISPCONFIG}" ]; then
+  echo oisp-config.json not found in db backup. Bye!
+  exit 1;
 fi
+
+
+K8SOBJECTS=($(ls ${TMPDIR}/*.json))
 
 # debug output
 if [ "${DEBUG}" = "true" ]; then
@@ -101,5 +61,5 @@ fi
 # check if one of the cm already exists
 for element in "${K8SOBJECTS[@]}"
 do
-    kubectl apply -f $element
+    kubectl replace -f $element
 done

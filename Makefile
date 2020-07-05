@@ -115,6 +115,7 @@ generate_keys:
 ##
 deploy-oisp: check-docker-cred-env generate_keys
 	# First generate ssh keys
+	@$(call msg,"Starting first deploy");
 	$(eval PUBLICKEY:=$(shell cat public.pem | base64 | tr -d "\n"))
 	$(eval PRIVATEKEY:=$(shell cat private.pem | base64 | tr -d "\n"))
 	$(eval X509CERT:=$(shell cat x509.pem | base64 | tr -d "\n"))
@@ -148,7 +149,8 @@ deploy-oisp: check-docker-cred-env generate_keys
 
 ## upgrade-oisp: Upgrade already deployed HELM chart
 ##
-upgrade-oisp: check-docker-cred-env
+upgrade-oisp: check-docker-cred-env backup
+	@$(call msg,"Starting upgrade");
 	@source util/get_oisp_credentials.sh && \
 	cd kubernetes && \
 	helm repo add "${KEYCLOAK_HELM_REPO_NAME}" "${KEYCLOAK_HELM_REPO}" --namespace "${NAMESPACE}" && \
@@ -393,13 +395,17 @@ push-images:
 ##     A tar file is created containing the files
 ##
 backup:
-	@mkdir -p backups
 	@$(call msg,"Creating backup");
+	@mkdir -p backups
+	@echo hello
 	@$(eval TMPDIR := backup_$(NAMESPACE)_$(shell date +'%Y-%m-%d_%H-%M-%S'))
 	@if [ -d "/tmp/$(TMPDIR)" ]; then echo "Backup file already exists. Not overwriting. Bye"; exit 1; fi
 	@mkdir -p /tmp/$(TMPDIR)
-	@scripts/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE)
-	@scripts/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)"
+	echo hello2
+	@scripts/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) #>/dev/null 2>&1
+	echo hello3
+	@scripts/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)" >/dev/null 2>&1
+	echo hello4
 	@tar cvzf backups/$(TMPDIR).tgz -C /tmp $(TMPDIR)
 	@rm -rf /tmp/$(TMPDIR)
 
@@ -416,8 +422,10 @@ endif
 	@echo using backup file $(BACKUPFILE)
 	$(eval BASEDIR := $(shell basedir=$(BACKUPFILE); basedir="$${basedir##*/}"; basedir="$${basedir%.*}"; echo $${basedir} ))
 	tar xvzf $(BACKUPFILE) -C /tmp
+	@scripts/cm_check.sh /tmp/$(BASEDIR) $(NAMESPACE)
 	@scripts/db_restore.sh /tmp/$(BASEDIR) $(NAMESPACE)
-	@scripts/cm_restore.sh /tmp/$(BASEDIR)
+	@scripts/cm_restore.sh /tmp/$(BASEDIR) $(NAMESPACE)
+	@rm -rf /tmp/$(BASEDIR)
 ## help: Show this help message
 ##
 help:

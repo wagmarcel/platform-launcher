@@ -33,7 +33,7 @@ filter()
 
 # remove not needed fields from K8s objects
 # such as creationTimestamp, resourceVersion, uid, selfLink
-# parameters: <filename>
+# parameters: <filename> <array>
 remove_fields()
 {
   local FILENAME=$1
@@ -46,7 +46,8 @@ remove_fields()
   fi
 
   for field in ${RMFLDS[@]}; do
-    sed -i "/$field/d" ${FILENAME}
+    jq "del (.metadata.$field)" ${FILENAME} > ${FILENAME}2
+    mv ${FILENAME}2 ${FILENAME}
   done
 
 }
@@ -142,8 +143,8 @@ done
 echo Dump configmaps of ${NAMESPACE}
 for element in "${CMARRAY[@]}"
 do
-  kubectl -n ${NAMESPACE} get cm/${element} -o yaml > ${TMPDIR}/${element}.yaml
-  remove_fields ${TMPDIR}/${element}.yaml REMOVEFIELDS
+  kubectl -n ${NAMESPACE} get cm/${element} -o json > ${TMPDIR}/${element}.json
+  remove_fields ${TMPDIR}/${element}.json REMOVEFIELDS
 done
 
 
@@ -151,8 +152,8 @@ done
 echo Dump secrets of ${NAMESPACE}
 for element in "${SECRETARRAY[@]}"
 do
-  kubectl -n ${NAMESPACE} get secret/${element} -o yaml > ${TMPDIR}/${element}.yaml
-  remove_fields ${TMPDIR}/${element}.yaml REMOVEFIELDS
+  kubectl -n ${NAMESPACE} get secret/${element} -o json > ${TMPDIR}/${element}.json
+  remove_fields ${TMPDIR}/${element}.json REMOVEFIELDS
 done
 
 # create name,image list for  DEPLOYMENTS and STATEFULSETS
