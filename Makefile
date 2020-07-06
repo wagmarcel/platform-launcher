@@ -397,7 +397,6 @@ push-images:
 backup:
 	@$(call msg,"Creating backup");
 	@mkdir -p backups
-	@echo hello
 	@$(eval TMPDIR := backup_$(NAMESPACE)_$(shell date +'%Y-%m-%d_%H-%M-%S'))
 	@if [ -d "/tmp/$(TMPDIR)" ]; then echo "Backup file already exists. Not overwriting. Bye"; exit 1; fi
 	@mkdir -p /tmp/$(TMPDIR)
