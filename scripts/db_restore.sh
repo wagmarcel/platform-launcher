@@ -88,12 +88,11 @@ if [ -z "${NEW_USERPASSWORD}" ] || [ -z "$[NEW_SUPERPASSWORD]" ]; then
   exit 1
 fi
 
-echo "ALTER USER superuser WITH PASSWORD '${NEW_SUPERPASSWORD}';"
 echo "ALTER USER oisp_user WITH PASSWORD '${NEW_USERPASSWORD}';" | kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}"
 echo "ALTER USER superuser WITH PASSWORD '${NEW_SUPERPASSWORD}';" | kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${PASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}"
 
 echo restore database
-kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${NEW_SUPERPASSWORD}; psql -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}" < ${TMPDIR}/${DUMPFILE}
+kubectl -n ${NAMESPACE} exec -i ${CONTAINER} -- /bin/bash -c "export PGPASSWORD=${NEW_SUPERPASSWORD}; pg_restore -c -U ${USERNAME}  -d ${DBNAME} -h ${HOSTNAME}" < ${TMPDIR}/${DUMPFILE}
 
 echo set user rights
 # retrieve new passwords and users

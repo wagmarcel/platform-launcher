@@ -401,11 +401,8 @@ backup:
 	@$(eval TMPDIR := backup_$(NAMESPACE)_$(shell date +'%Y-%m-%d_%H-%M-%S'))
 	@if [ -d "/tmp/$(TMPDIR)" ]; then echo "Backup file already exists. Not overwriting. Bye"; exit 1; fi
 	@mkdir -p /tmp/$(TMPDIR)
-	echo hello2
-	@scripts/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) #>/dev/null 2>&1
-	echo hello3
+	@scripts/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) >/dev/null 2>&1
 	@scripts/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)" >/dev/null 2>&1
-	echo hello4
 	@tar cvzf backups/$(TMPDIR).tgz -C /tmp $(TMPDIR)
 	@rm -rf /tmp/$(TMPDIR)
 
