@@ -83,7 +83,7 @@ fi
 NEW_USERPASSWORD=$(read_postgres_oisp_config ${OISPCONFIG} password)
 NEW_SUPERPASSWORD=$(read_postgres_oisp_config ${OISPCONFIG} su_password)
 # sanity check: If one of paramters is empty - stop
-if [ -z "${NEW_USERPASSWORD}" ] || [ -z "$[NEW_SUPERPASSWORD]" ]; then
+if [ -z "${NEW_USERPASSWORD}" ] || [ -z "${NEW_SUPERPASSWORD}" ]; then
   echo NEW_PASSWORDS are empty - Bye
   exit 1
 fi

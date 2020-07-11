@@ -361,6 +361,23 @@ else
 	)
 endif
 
+
+## test-backup: Test backup
+##     Assumes test-prep-only executed before
+##     then make backup, redeploying OISP and restore backup. Check the users, devices, etc.
+##     NOTE: NAMESPACE and DOCKERTAG need to be set
+##
+test-backup: prepare-tests
+	make backup
+	make undeploy-oisp
+	make NAMESPACE=$(NAMESPACE) DEBUG=$(DEBUG) DOCKER_TAG=$(DOCKER_TAG) deploy-oisp-test
+	make restore
+	kubectl -n $(NAMESPACE) get pods
+	FRONTEND=$$(kubectl -n $(NAMESPACE) get pods | grep frontend| cut -d " " -f 1) && \
+	kubectl -n $(NAMESPACE) delete pod keycloak-0 $${FRONTEND}
+
+
+
 ## logs:
 ##     Create a .zip archive containing logs from all containers.
 ##     The result will be saved in platform-lancuher-logs_{data}.zip
