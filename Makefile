@@ -373,11 +373,11 @@ test-backup: prepare-tests
 	$(eval ACTIVATIONCODE := $(shell jq ".activationCode" tests/oisp-prep-only.conf))
 	$(eval USERNAME := $(shell jq ".username" tests/oisp-prep-only.conf))
 	$(eval PASSWORD := $(shell jq ".password" tests/oisp-prep-only.conf))
-	$(MAKE) backup
 	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger \
 		-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && \
 		make test-backup-before TERM=xterm NAMESPACE=$(NAMESPACE) \
 		ACCOUNTID=$(ACCOUNTID) ACTIVATIONCODE=$(ACTIVATIONCODE) USERNAME=$(USERNAME) PASSWORD=$(PASSWORD)"
+	$(MAKE) backup
 	$(MAKE) undeploy-oisp
 	$(MAKE) NAMESPACE=$(NAMESPACE) DEBUG=$(DEBUG) DOCKER_TAG=$(DOCKER_TAG) deploy-oisp-test
 	$(MAKE) restore
