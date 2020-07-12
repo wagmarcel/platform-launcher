@@ -368,13 +368,28 @@ endif
 ##     NOTE: NAMESPACE and DOCKERTAG need to be set
 ##
 test-backup: prepare-tests
-	make backup
-	make undeploy-oisp
-	make NAMESPACE=$(NAMESPACE) DEBUG=$(DEBUG) DOCKER_TAG=$(DOCKER_TAG) deploy-oisp-test
-	make restore
-	kubectl -n $(NAMESPACE) get pods
+	@$(call msg,"Testing backup and restore ...");
+	$(eval ACCOUNTID := $(shell jq ".accountId" tests/oisp-prep-only.conf))
+	$(eval ACTIVATIONCODE := $(shell jq ".activationCode" tests/oisp-prep-only.conf))
+	$(eval USERNAME := $(shell jq ".username" tests/oisp-prep-only.conf))
+	$(eval PASSWORD := $(shell jq ".password" tests/oisp-prep-only.conf))
+	$(MAKE) backup
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger \
+		-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && \
+		make test-backup-before TERM=xterm NAMESPACE=$(NAMESPACE) \
+		ACCOUNTID=$(ACCOUNTID) ACTIVATIONCODE=$(ACTIVATIONCODE) USERNAME=$(USERNAME) PASSWORD=$(PASSWORD)"
+	$(MAKE) undeploy-oisp
+	$(MAKE) NAMESPACE=$(NAMESPACE) DEBUG=$(DEBUG) DOCKER_TAG=$(DOCKER_TAG) deploy-oisp-test
+	$(MAKE) restore
 	FRONTEND=$$(kubectl -n $(NAMESPACE) get pods | grep frontend| cut -d " " -f 1) && \
 	kubectl -n $(NAMESPACE) delete pod keycloak-0 $${FRONTEND}
+	DEBUGGER_POD=$$(kubectl -n $(NAMESPACE) get pods -o custom-columns=:metadata.name | grep debugger | head -n 1) && \
+	$(MAKE) NAMESPACE=$(NAMESPACE) DEBUGGER_POD=$${DEBUGGER_POD} prepare-tests && \
+ 	kubectl -n $(NAMESPACE) exec $${DEBUGGER_POD} -c debugger \
+		-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && \
+		make test-backup-after TERM=xterm NAMESPACE=$(NAMESPACE) \
+		ACCOUNTID=$(ACCOUNTID) ACTIVATIONCODE=$(ACTIVATIONCODE) USERNAME=$(USERNAME) PASSWORD=$(PASSWORD)"
+
 
 
 
