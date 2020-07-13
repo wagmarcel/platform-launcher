@@ -161,7 +161,6 @@ describe("get authorization and manage user ...\n".bold, function() {
             if (err) {
                 done(new Error("Cannot get user information : " + err));
             } else {
-                console.log("response" + response);
                 assert.isString(response.id)
                 done();
             }
@@ -170,7 +169,7 @@ describe("get authorization and manage user ...\n".bold, function() {
 
 })
 
-/*describe("Get account and create device ...\n".bold, function() {
+describe("Check account and device ...\n".bold, function() {
 
     var accountInfo;
 
@@ -179,41 +178,25 @@ describe("get authorization and manage user ...\n".bold, function() {
             if (err) {
                 done(new Error("Cannot get user info: " + err));
             } else {
-                accountInfo = response;
+                assert.equal(accountId, response.id);
                 done();
             }
         })
     }).timeout(10000);
 
 
-    it('Shall update an account', function (done) {
+    it('Shall get devices', function(done) {
 
-        accountInfo.attributes = {
-            "phone":"987654321",
-            "another_attribute":"this_value",
-            "new":"cur_string_value"
-        }
-
-        helpers.accounts.updateAccount(accountId, userToken, accountInfo, function (err, response) {
-            if (err) {
-                done(new Error("Cannot update account: " + err));
-            } else {
-                assert.deepEqual(response.attributes, accountInfo.attributes, 'new attributes not being updated');
-                done();
-            }
-        })
-    })
-
-
-    it('Shall create device', function(done) {
-        assert.notEqual(accountId, null, "Invalid account id")
-
-        helpers.devices.createDevice(deviceName, deviceId, userToken, accountId, function(err, response) {
+        helpers.devices.getDevices(userToken, accountId, function(err, response) {
             if (err) {
                 done(new Error("Cannot create device: " + err));
             } else {
-                assert.equal(response.deviceId, deviceId, 'incorrect device id')
-                assert.equal(response.name, deviceName, 'incorrect device name')
+                assert.equal(response.length, 1);
+                assert.equal(response[0].deviceId, deviceId, 'incorrect device id');
+                assert.equal(response[0].name, deviceName, 'incorrect device name');
+                assert.equal(response[0].components[0].name, componentName);
+                assert.equal(response[0].components[0].type, componentType);
+                componentId = response[0].components[0].cid;
                 done();
             }
         })
@@ -232,28 +215,9 @@ describe("get authorization and manage user ...\n".bold, function() {
         });
     }).timeout(5000);
 
-    it('Shall add device a component', function(done) {
-
-        helpers.devices.addDeviceComponent(componentName, componentType, userToken, accountId, deviceId, function(err, id) {
-            if (err) {
-                done(new Error("Cannot create component  " +  componentName + " : " +err));
-            } else {
-                if ( id ) {
-                    componentId = id;
-                    done()
-                }
-                else {
-                    done(new Error("Wrong id for component  " +  componentName ));
-                }
-            }
-        })
-
-
-    }).timeout(10000);
-
     it('Shall send data point', function(done) {
 
-        helpers.devices.submitData("22", deviceToken, accountId, deviceId, componentId, function(err, response) {
+        helpers.devices.submitData("23", deviceToken, accountId, deviceId, componentId, function(err, response) {
             if (err) {
                 done(new Error("Cannot create device: " + err));
             } else {
@@ -261,4 +225,4 @@ describe("get authorization and manage user ...\n".bold, function() {
             }
         })
     }).timeout(10000);
-})*/
+})

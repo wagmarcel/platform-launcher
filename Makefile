@@ -367,7 +367,7 @@ endif
 ##     then make backup, redeploying OISP and restore backup. Check the users, devices, etc.
 ##     NOTE: NAMESPACE and DOCKERTAG need to be set
 ##
-test-backup: prepare-tests
+test-backup: prepare-tests test-prep-only
 	@$(call msg,"Testing backup and restore ...");
 	$(eval ACCOUNTID := $(shell jq ".accountId" tests/oisp-prep-only.conf))
 	$(eval ACTIVATIONCODE := $(shell jq ".activationCode" tests/oisp-prep-only.conf))
