@@ -76,3 +76,15 @@ services:
       labels:
         - oisp=true
         - oisp.git_commit=${GIT_COMMIT_PLATFORM_LAUNCHER}
+  services-operator:
+    image: oisp/services-operator:${DOCKER_TAG}
+    build:
+      context: oisp-services/services-operator
+      labels:
+        - oisp=true
+  services-server:
+    image: oisp/services-server:${DOCKER_TAG}
+    build:
+      context: ./oisp-services
+      labels:
+        - oisp=true

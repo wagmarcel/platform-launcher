@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 Intel Corporation
+ * Copyright (c) 2020 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 var chai = require('chai');
 var assert = chai.assert;
 var fs = require('fs');
+var { Data, Rule, Component, Components } = require('./lib/common');
 
 var config = require("./test-config.json");
 var kafka = require('kafka-node');
@@ -29,12 +30,18 @@ var promtests = require('./subtests/promise-wrap');
 var accountName = "oisp-tests";
 
 var userToken;
-var accountId;
+var deviceToken;
+var accountId = process.env.ACCOUNTID;
 var deviceId;
-var activationCode;
+var deviceName = "backup-tests-device";
+var activationCode = process.env.ACTIVATIONCODE;
 var userId;
 var username = process.env.USERNAME;
 var password = process.env.PASSWORD;
+
+var componentId;
+var componentType = "temperature.v1.0";
+var componentName = "temp;"
 
 var getNewUserTokens = function(done) {
 
@@ -50,7 +57,7 @@ var getNewUserTokens = function(done) {
 //-------------------------------------------------------------------------------------------------------
 process.stdout.write("_____________________________________________________________________\n".bold);
 process.stdout.write("                                                                     \n");
-process.stdout.write("                           OISP TEST PREP                            \n".green.bold);
+process.stdout.write("                           OISP Backup Test before                   \n".green.bold);
 process.stdout.write("_____________________________________________________________________\n".bold);
 
 
@@ -59,8 +66,7 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
 
     before(function(done) {
         userToken = null;
-        accountId = null;
-        deviceId = "00-11-22-33-44-55";
+        deviceId = "00-12-23-34-45-56";
         done();
     });
 
@@ -129,17 +135,6 @@ describe("Waiting for OISP services to be ready ...\n".bold, function() {
 describe("get authorization and manage user ...\n".bold, function() {
 
     it('Shall authenticate', function(done) {
-        var username = process.env.USERNAME;
-        var password = process.env.PASSWORD;
-
-        var username2 = process.env.USERNAME2;
-        var password2 = process.env.PASSWORD2;
-
-        assert.isNotEmpty(username, "no username provided");
-        assert.isNotEmpty(password, "no password provided");
-        assert.isNotEmpty(username, "no username2 provided");
-        assert.isNotEmpty(password, "no password2 provided");
-
         getNewUserTokens(done);
     }).timeout(10000);
 
@@ -175,9 +170,9 @@ describe("get authorization and manage user ...\n".bold, function() {
     it('Shall update user information', function(done) {
         var newuserInfo = {
             attributes:{
-                "phone":"12366666666",
-                "another_attribute":"another_value",
-                "new":"next_string_value"
+                "phone":"123321",
+                "another_attribute":"another_attribute",
+                "new":"value"
             }
         }
 
@@ -192,40 +187,28 @@ describe("get authorization and manage user ...\n".bold, function() {
     })
 })
 
-describe("Creating account and device ...\n".bold, function() {
+describe("Get account and create device ...\n".bold, function() {
 
     var accountInfo;
 
-    it('Shall create account', function(done) {
-        assert.notEqual(userToken, null, "Invalid user token")
-        helpers.accounts.createAccount(accountName, userToken, function(err, response) {
+    it('Shall retrieve account info', function(done) {
+        helpers.accounts.getAccountInfo(accountId, userToken, function(err, response) {
             if (err) {
-                done(new Error("Cannot create account: " + err));
-            } else {
-                assert.equal(response.name, accountName, "accounts name is wrong");
-                accountId = response.id;
-                getNewUserTokens(done);
-            }
-        })
-    }).timeout(10000);
-
-    it('Shall get account info', function (done) {
-        helpers.accounts.getAccountInfo(accountId, userToken, function (err, response) {
-            if (err) {
-                done(new Error("Cannot get account info: " + err));
+                done(new Error("Cannot get user info: " + err));
             } else {
                 accountInfo = response;
                 done();
             }
         })
-    })
+    }).timeout(10000);
+
 
     it('Shall update an account', function (done) {
 
         accountInfo.attributes = {
-            "phone":"123456789",
-            "another_attribute":"another_value",
-            "new":"next_string_value"
+            "phone":"987654321",
+            "another_attribute":"this_value",
+            "new":"cur_string_value"
         }
 
         helpers.accounts.updateAccount(accountId, userToken, accountInfo, function (err, response) {
@@ -238,28 +221,61 @@ describe("Creating account and device ...\n".bold, function() {
         })
     })
 
-    it('Shall get account activation code', function (done) {
 
-        helpers.accounts.getAccountActivationCode(accountId, userToken, function (err, response) {
+    it('Shall create device', function(done) {
+        assert.notEqual(accountId, null, "Invalid account id")
+
+        helpers.devices.createDevice(deviceName, deviceId, userToken, accountId, function(err, response) {
             if (err) {
-                done(new Error("Cannot get account activation code: " + err));
+                done(new Error("Cannot create device: " + err));
             } else {
-                activationCode = response.activationCode;
+                assert.equal(response.deviceId, deviceId, 'incorrect device id')
+                assert.equal(response.name, deviceName, 'incorrect device name')
                 done();
             }
         })
     })
 
-    it('Shall create prep config', function(done) {
+    it('Shall activate device without token', function(done) {
+        assert.notEqual(deviceId, null, "Invalid device id")
 
-        var prepConf = {
-            "username": username,
-            "password": password,
-            "userToken": userToken,
-            "accountId": accountId,
-            "activationCode": activationCode
-        }
-        fs.writeFileSync("oisp-prep-only.conf", JSON.stringify(prepConf))
-        done();
-    })
+        helpers.devices.activateDeviceWithoutToken(activationCode, deviceId, function(err, response) {
+            if (err) {
+                done(new Error("Cannot activate device: " + err));
+            } else {
+                deviceToken = response.deviceToken;
+                done();
+            }
+        });
+    }).timeout(5000);
+
+    it('Shall add device a component', function(done) {
+
+        helpers.devices.addDeviceComponent(componentName, componentType, userToken, accountId, deviceId, function(err, id) {
+            if (err) {
+                done(new Error("Cannot create component  " +  componentName + " : " +err));
+            } else {
+                if ( id ) {
+                    componentId = id;
+                    done()
+                }
+                else {
+                    done(new Error("Wrong id for component  " +  componentName ));
+                }
+            }
+        })
+
+
+    }).timeout(10000);
+
+    it('Shall send data point', function(done) {
+
+        helpers.devices.submitData("22", deviceToken, accountId, deviceId, componentId, function(err, response) {
+            if (err) {
+                done(new Error("Cannot create device: " + err));
+            } else {
+                done();
+            }
+        })
+    }).timeout(10000);
 })

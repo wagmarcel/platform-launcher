@@ -11,6 +11,8 @@ Welcome to Open IoT Service Platform's documentation!
    :caption: Contents:
 
    usage/quickstart
+   usage/services
+   usage/backup
    development/developers_guide
 
 Indices and tables
