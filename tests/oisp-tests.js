@@ -302,17 +302,19 @@ process.stdout.write("__________________________________________________________
 process.stdout.write("                                                                     \n");
 process.stdout.write("                           OISP E2E TESTING                          \n".green.bold);
 process.stdout.write("_____________________________________________________________________\n".bold);
-//Callback for WSS
-var cbManager = function(){
 
+var CbManager = function() {
     var wssCB = null;
     return {
-	"cb": function(message){
-	    wssCB(message)
-	},
-	"set": function(newCB){wssCB = newCB}
-    }
-}();
+    	cb: function(message){
+    	    wssCB(message)
+        },
+    	set: function(newCB){wssCB = newCB}
+    };
+};
+
+//Callback for WSS
+var cbManager = new CbManager();
 
 
 describe("Waiting for OISP services to be ready ...\n".bold, function() {
@@ -982,11 +984,12 @@ describe("Creating rules ... \n".bold, function() {
 });
 
 describe("Sending observations and checking rules ...\n".bold, function() {
-    before(function(){
-            if (checkTestCondition(["non_essential", "data_sending"])) {
-                this.skip();
-            }
+    before(function() {
+        if (checkTestCondition(["non_essential", "data_sending"])) {
+            this.skip();
+        }
     });
+
     it('Shall send observation and check rules', function(done) {
         assert.notEqual(proxyConnector, null, "Invalid websocket proxy connector")
 
@@ -1003,6 +1006,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
             sendObservationAndCheckRules(component);
         };
 
+        var actuationCounter = 0;
         cbManager.set(function(message) {
             var expectedActuationValue = curComponent.data[curComponent.dataIndex].expectedActuation.toString();
             var componentParam = message.content.params.filter(function(param){
@@ -1014,15 +1018,12 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                 var paramValue = param.value.toString();
 
                 if(paramValue == expectedActuationValue) {
-                  step(curComponent);
-                }
-                else
-                {
+                    actuationCounter++;
+                    step(curComponent);
+                } else {
                     done(new Error("Param value wrong. Expected: " + expectedActuationValue + " Received: " + paramValue));
                 }
-            }
-            else
-            {
+            } else {
                 done(new Error("Did not find component param: " + componentParamName))
             }
         });
@@ -1039,28 +1040,37 @@ describe("Sending observations and checking rules ...\n".bold, function() {
                     process.stdout.write("\t");
                 }
                 process.stdout.write(".".green);
-
+                var currentActuationCounter = actuationCounter;
+                var currentDataIndex = component.dataIndex;
                 helpers.devices.submitData(component.data[component.dataIndex].value, deviceToken,
                                            accountId, deviceId, component.id, function(err, ts) {
                     component.data[component.dataIndex].ts = ts;
 
                     if (err) {
-                        done( "Cannot send observation: "+err)
+                        done("Cannot send observation: " + err);
                     }
 
                     if (component.data[component.dataIndex].expectedActuation == null) {
                         step(component);
+                    } else {
+                        var checkActuation = function(currentCounter) {
+                            if (currentCounter >= actuationCounter) {
+                                done(new Error("Actuation timeout by component: " + component.name +
+                                    ", data index: " + currentDataIndex + ", expected actuation value: " +
+                                    component.data[currentDataIndex].expectedActuation.toString()));
+                            }
+                        };
+                        setTimeout(checkActuation, 60 * 1000, currentActuationCounter);
                     }
                 });
-            }
-            else {
+            } else {
                 done();
             }
         }
 
         sendObservationAndCheckRules(components.first);
 
-    }).timeout(60*1000)
+    }).timeout(60*1000);
 
     //---------------------------------------------------------------
 
@@ -1079,19 +1089,19 @@ describe("Sending observations and checking rules ...\n".bold, function() {
             })
         })
 
-        if ( expectedEmailReasons.length == 0 ) {
+        if (expectedEmailReasons.length == 0) {
             done()
         }
 
-        helpers.mail.waitForNewEmail(nr_mails + expectedEmailReasons.length);
+        helpers.mail.waitForNewEmail(nr_mails + expectedEmailReasons.length, null, done);
         var messages = helpers.mail.getAllEmailMessages(emailRecipient);
-        messages.forEach( (message) => {
-	    var reason = message.split("Reason: ")[1].split("\n")[0];
-	    var index = expectedEmailReasons.indexOf(reason);
-	    if (index > -1) {
-		expectedEmailReasons.splice(index, 1);
-	    }
-        })
+        messages.forEach((message) => {
+            var reason = message.split("Reason: ")[1].split("\n")[0];
+            var index = expectedEmailReasons.indexOf(reason);
+            if (index > -1) {
+                expectedEmailReasons.splice(index, 1);
+            }
+        });
         assert.equal(expectedEmailReasons.length, 0, "Received emails do not match expected emails sent from rule-engine");
         done();
     }).timeout(5000);
@@ -1099,6 +1109,7 @@ describe("Sending observations and checking rules ...\n".bold, function() {
     it('Wait for backend synchronization', function(done) {
         setTimeout(done, BACKEND_DELAY);
     }).timeout(BACKEND_TIMEOUT);
+
     it('Shall check observations', function(done) {
         var checkObservations = function(component) {
             if ( component ) {
@@ -1133,34 +1144,45 @@ describe("Sending observations and checking rules ...\n".bold, function() {
             }
         }
         checkObservations(components.first)
-       }).timeout(BACKEND_TIMEOUT);
-
+    }).timeout(BACKEND_TIMEOUT);
 });
+
 describe("Do basic rule and alerts subtests ...".bold, function() {
-  before(function(){
-          if (checkTestCondition(["non_essential", "rules"])) {
-              this.skip();
-          }
-  });
+    before(function(){
+        if (checkTestCondition(["non_essential", "rules"])) {
+            this.skip();
+        }
+    });
     var test;
     var descriptions = require("./subtests/rules-and-alerts-tests").descriptions;
     it(descriptions.createBasicRules,function(done) {
-        test = require("./subtests/rules-and-alerts-tests").test(userToken, accountId, deviceId, deviceToken, cbManager);
+        test = require("./subtests/rules-and-alerts-tests").test(userToken, userToken2, accountId,
+            deviceId, deviceToken, cbManager, new CbManager(), new CbManager(), new CbManager(), new CbManager());
         test.createBasicRules(done);
     }).timeout(10000);
-    it(descriptions.sendObservations,function(done) {
+    it(descriptions.sendObservations, function(done) {
         test.sendObservations(done);
     }).timeout(120000);
-    it(descriptions.deleteRuleAndSendDataAgain,function(done) {
+    it(descriptions.deleteRuleAndSendDataAgain, function(done) {
         test.deleteRuleAndSendDataAgain(done);
     }).timeout(120000);
-    it(descriptions.createRulesAndCheckAlarmReset,function(done) {
+    it(descriptions.createRulesAndCheckAlarmReset, function(done) {
         test.createRulesAndCheckAlarmReset(done);
     }).timeout(120000);
-     it(descriptions.cleanup,function(done) {
-     test.cleanup(done);
- }).timeout(10000);
+    it(descriptions.createMultipleDevicesAndComponents, function(done) {
+        test.createMultipleDevicesAndComponents(done);
+    }).timeout(10000);
+    it('Wait for backend synchronization', function(done) {
+        setTimeout(done, BACKEND_DELAY);
+    }).timeout(BACKEND_TIMEOUT);
+    it(descriptions.sendObservationsWithMultipleDevices, function(done) {
+        test.sendObservationsWithMultipleDevices(done);
+    }).timeout(120000);
+    it(descriptions.cleanup,function(done) {
+        test.cleanup(done);
+    }).timeout(10000);
 });
+
 describe("Do time based rule subtests ...".bold, function() {
     before(function(){
             if (checkTestCondition(["non_essential", "rules"])) {
@@ -1746,7 +1768,7 @@ describe("Adding user and posting email ...\n".bold, function() {
     });
 
     it("Shall activate user with token", function(done) {
-        helpers.mail.waitForNewEmail(nr_mails+1);
+        helpers.mail.waitForNewEmail(nr_mails+1, null, done, 60 * 1000);
         var message = helpers.mail.getAllEmailMessages(imap_username)[0];
         var regexp = /token=\w*/;
         var activationToken = message.match(regexp).toString().split("=")[1];
@@ -1765,7 +1787,7 @@ describe("Adding user and posting email ...\n".bold, function() {
                 });
             }
         });
-    }).timeout( 60 * 1000);
+    }).timeout(60 * 1000);
 
     it('Shall create receiver account', function(done) {
         assert.notEqual(receiverToken, null, "Invalid user token")
@@ -1834,7 +1856,7 @@ describe("Invite receiver ...\n".bold, function() {
                         done(new Error("Cannot create invitation: " + err));
                     } else {
                         assert.equal(response.email, imap_username, 'send invite to wrong name');
-			helpers.mail.waitForNewEmail(nr_mails + 1);
+			helpers.mail.waitForNewEmail(nr_mails + 1, null, done, 30 * 1000);
 			done();
                     }
                 })
@@ -1897,16 +1919,16 @@ describe("Invite receiver ...\n".bold, function() {
 
     it('Shall request activation', function(done) {
         var username = process.env.USERNAME;
-	nr_mails = helpers.mail.getAllEmailMessages().length;
+        nr_mails = helpers.mail.getAllEmailMessages().length;
         helpers.users.requestUserActivation(username, function(err, response) {
             if (err) {
                 done(new Error('cannot request activation:' + err));
             } else {
-                assert.equal(response.status, 'OK')
-		helpers.mail.waitForNewEmail(nr_mails +1);
-		done();
+                assert.equal(response.status, 'OK');
+                helpers.mail.waitForNewEmail(nr_mails +1, null, done, 30 * 1000);
+                done();
             }
-        })
+        });
     }).timeout( 30 * 1000);
 
     it('Shall get id of receiver and change privilege', function (done) {
@@ -1962,7 +1984,7 @@ describe("change password and delete receiver ... \n".bold, function(){
 
     it('Shall update receiver password', function(done) {
 	var username = process.env.USERNAME;
-	helpers.mail.waitForNewEmail(nr_mails+1);
+	helpers.mail.waitForNewEmail(nr_mails+1, null, done, 2 * 60 * 1000);
 	var message = helpers.mail.getAllEmailMessages(username)[0];
 	var regexp = /token=\w*/;
 	var activationToken = message.match(regexp).toString().split("=")[1];

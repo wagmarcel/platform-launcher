@@ -142,6 +142,7 @@ ruleEngine:
   ftpPassword: password
 
 metricsAggregator:
+  metricsTopic: "metrics"
   url: "http://services-server/metrics-aggregator-bundled-0.1.jar"
 
 websocketServer:
@@ -281,7 +282,7 @@ flink:
         memory: 128Mi
 
     taskmanager:
-      replicas: 2
+      replicas: 3
       limits:
         cpu: 100m
         memory: 128Mi
