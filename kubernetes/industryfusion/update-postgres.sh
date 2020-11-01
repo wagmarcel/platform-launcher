@@ -12,7 +12,7 @@ CONFIGMAPNAME=if-config
 
 # create/update configmap
 echo create or update configmap
-kubectl -n ${NAMESPACE} create configmap ${CONFIGMAPNAME} --from-file configs -o yaml --dry-run | kubectl apply ${DRYRUN} -f -
+kubectl -n ${NAMESPACE} create configmap ${CONFIGMAPNAME} --from-file configs -o yaml --dry-run | kubectl replace ${DRYRUN} -f -
 
 # deploy all yamls
 for yaml in createdb.yaml; do
