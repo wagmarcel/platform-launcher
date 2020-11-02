@@ -231,6 +231,36 @@
         "containerId" : "f9d5c9f3-f1ca-408b-80d7-f76e416611fc",
         "attributes" : { }
       } ],
+      "fusion-frontend" : [ ],
+      "fusion-backend" : [ {
+        "id" : "4294f9fb-010a-4e15-bad5-acbf9d928692",
+        "name" : "FLEET_MANAGER",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "e306ad59-af6f-4047-a62b-6f014129eb02",
+        "attributes" : { }
+      }, {
+        "id" : "09d46ef8-df01-459e-ab10-76979376154e",
+        "name" : "ECOSYSTEM_MANAGER",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "e306ad59-af6f-4047-a62b-6f014129eb02",
+        "attributes" : { }
+      }, {
+        "id" : "794fbb83-b749-4827-a4e6-b989f057b71d",
+        "name" : "FACTORY_MANAGER",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "e306ad59-af6f-4047-a62b-6f014129eb02",
+        "attributes" : { }
+      }, {
+        "id" : "617d3f63-7067-4da6-b8aa-8cfe8a9a926f",
+        "name" : "uma_protection",
+        "composite" : false,
+        "clientRole" : true,
+        "containerId" : "e306ad59-af6f-4047-a62b-6f014129eb02",
+        "attributes" : { }
+      } ],
       "oisp-frontend" : [ {
         "id" : "069018ee-a092-41d0-a736-ac92b0ac6cd2",
         "name" : "sysadmin",
@@ -558,7 +588,7 @@
         "jsonType.label" : "String"
       }
     } ],
-    "defaultClientScopes" : [ "web-origins", "roles", "accounts", "type", "email", "mqtt-broker" ],
+    "defaultClientScopes" : [ "web-origins", "roles", "accounts", "type", "email", "mqtt-broker", "websocket-server" ],
     "optionalClientScopes" : [ "offline_access", "microprofile-jwt" ],
     "authorizationSettings" : {
       "allowRemoteResourceManagement" : true,
@@ -1215,6 +1245,181 @@
     }
   },
   {
+    "id" : "e306ad59-af6f-4047-a62b-6f014129eb02",
+    "clientId" : "fusion-backend",
+    "surrogateAuthRequired" : false,
+    "enabled" : true,
+    "clientAuthenticatorType" : "client-secret",
+    "secret" : "{{ INSERT-FUSION-BACKEND-SECRET }}",
+    "redirectUris" : [ ],
+    "webOrigins" : [ ],
+    "notBefore" : 0,
+    "bearerOnly" : false,
+    "consentRequired" : false,
+    "standardFlowEnabled" : false,
+    "implicitFlowEnabled" : false,
+    "directAccessGrantsEnabled" : false,
+    "serviceAccountsEnabled" : true,
+    "authorizationServicesEnabled" : true,
+    "publicClient" : false,
+    "frontchannelLogout" : false,
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "saml.assertion.signature" : "false",
+      "saml.multivalued.roles" : "false",
+      "saml.force.post.binding" : "false",
+      "saml.encrypt" : "false",
+      "saml.server.signature" : "false",
+      "saml.server.signature.keyinfo.ext" : "false",
+      "exclude.session.state.from.auth.response" : "false",
+      "saml_force_name_id_format" : "false",
+      "saml.client.signature" : "false",
+      "tls.client.certificate.bound.access.tokens" : "false",
+      "saml.authnstatement" : "false",
+      "display.on.consent.screen" : "false",
+      "saml.onetimeuse.condition" : "false"
+    },
+    "authenticationFlowBindingOverrides" : { },
+    "fullScopeAllowed" : true,
+    "nodeReRegistrationTimeout" : -1,
+    "protocolMappers" : [ {
+      "id" : "05dd41e7-4654-4b05-b95a-11ccb4afb445",
+      "name" : "Client IP Address",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientAddress",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientAddress",
+        "jsonType.label" : "String"
+      }
+    }, {
+      "id" : "747e73d8-568c-4af4-aa43-2de3e1039e6e",
+      "name" : "Client ID",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientId",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientId",
+        "jsonType.label" : "String"
+      }
+    }, {
+      "id" : "e604ecb7-dce1-4c6f-b889-4c52948a2cbb",
+      "name" : "Client Host",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usersessionmodel-note-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "user.session.note" : "clientHost",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "clientHost",
+        "jsonType.label" : "String"
+      }
+    } ],
+    "defaultClientScopes" : [ "web-origins", "role_list", "profile", "roles", "accounts", "type", "email" ],
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ],
+    "authorizationSettings" : {
+      "allowRemoteResourceManagement" : true,
+      "policyEnforcementMode" : "ENFORCING",
+      "resources" : [ {
+        "name" : "Default Resource",
+        "type" : "urn:fusion-backend:resources:default",
+        "ownerManagedAccess" : false,
+        "attributes" : { },
+        "_id" : "e484baf3-f3d9-4c84-ba4c-96a6f8dbb803",
+        "uris" : [ "/*" ]
+      } ],
+      "policies" : [ {
+        "id" : "172c7bb9-4031-4261-9cd0-654cc57d86d9",
+        "name" : "Default Policy",
+        "description" : "A policy that grants access only for users within this realm",
+        "type" : "js",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "AFFIRMATIVE",
+        "config" : {
+          "code" : "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
+        }
+      }, {
+        "id" : "328d0fbc-c0dd-476b-990e-aeadc61f6eff",
+        "name" : "Default Permission",
+        "description" : "A permission that applies to the default resource type",
+        "type" : "resource",
+        "logic" : "POSITIVE",
+        "decisionStrategy" : "UNANIMOUS",
+        "config" : {
+          "defaultResourceType" : "urn:fusion-backend:resources:default",
+          "applyPolicies" : "[\"Default Policy\"]"
+        }
+      } ],
+      "scopes" : [ ],
+      "decisionStrategy" : "UNANIMOUS"
+    }
+  },
+  {
+    "id" : "9bc22f4d-c6d6-4dec-9620-a02a33dc19af",
+    "clientId" : "fusion-frontend",
+    "rootUrl" : "https://platform.industry-fusion.com/fusionfrontend",
+    "baseUrl" : "/",
+    "surrogateAuthRequired" : false,
+    "enabled" : true,
+    "clientAuthenticatorType" : "client-secret",
+    "secret" : "aff3623d-7c8a-4c96-82e0-96a07e783863",
+    "redirectUris" : [ "/*" ],
+    "webOrigins" : [ "https://platform.industry-fusion.com/fusionfrontend" ],
+    "notBefore" : 0,
+    "bearerOnly" : false,
+    "consentRequired" : false,
+    "standardFlowEnabled" : true,
+    "implicitFlowEnabled" : false,
+    "directAccessGrantsEnabled" : false,
+    "serviceAccountsEnabled" : false,
+    "publicClient" : true,
+    "frontchannelLogout" : false,
+    "protocol" : "openid-connect",
+    "attributes" : {
+      "saml.assertion.signature" : "false",
+      "saml.multivalued.roles" : "false",
+      "saml.force.post.binding" : "false",
+      "saml.encrypt" : "false",
+      "login_theme": "fusion",
+      "saml.server.signature" : "false",
+      "saml.server.signature.keyinfo.ext" : "false",
+      "exclude.session.state.from.auth.response" : "false",
+      "saml_force_name_id_format" : "false",
+      "saml.client.signature" : "false",
+      "tls.client.certificate.bound.access.tokens" : "false",
+      "saml.authnstatement" : "false",
+      "display.on.consent.screen" : "false",
+      "saml.onetimeuse.condition" : "false"
+    },
+    "authenticationFlowBindingOverrides" : { },
+    "fullScopeAllowed" : true,
+    "nodeReRegistrationTimeout" : -1,
+    "protocolMappers" : [ {
+      "id" : "7bc91536-6249-429a-81f9-7e84e4c0c58c",
+      "name" : "IF_COMPANY",
+      "protocol" : "openid-connect",
+      "protocolMapper" : "oidc-usermodel-attribute-mapper",
+      "consentRequired" : false,
+      "config" : {
+        "userinfo.token.claim" : "true",
+        "user.attribute" : "IF_COMPANY",
+        "id.token.claim" : "true",
+        "access.token.claim" : "true",
+        "claim.name" : "IF_COMPANY",
+        "jsonType.label" : "long"
+      }
+    } ],
+    "defaultClientScopes" : [ "web-origins", "role_list", "profile", "roles", "accounts", "type", "email" ],
+    "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
+  },
+  {
     "id": "56707dab-c91b-4c6e-99b8-718b29d7506d",
     "clientId": "mqtt-broker",
     "name": "mqtt-broker",
@@ -1267,7 +1472,61 @@
       "offline_access",
       "microprofile-jwt"
     ]
-  }, {
+  },
+  {
+    "id": "6bd6e77d-2229-4445-8db2-a76b3f720a91",
+    "clientId": "websocket-server",
+    "surrogateAuthRequired": false,
+    "enabled": true,
+    "clientAuthenticatorType": "client-secret",
+    "secret": "{{ INSERT-WEBSOCKET-SERVER-SECRET }}",
+    "redirectUris": [],
+    "webOrigins": [],
+    "notBefore": 0,
+    "bearerOnly": true,
+    "consentRequired": false,
+    "standardFlowEnabled": true,
+    "implicitFlowEnabled": false,
+    "directAccessGrantsEnabled": true,
+    "serviceAccountsEnabled": false,
+    "publicClient": false,
+    "frontchannelLogout": false,
+    "protocol": "openid-connect",
+    "attributes": {
+      "saml.assertion.signature": "false",
+      "saml.multivalued.roles": "false",
+      "saml.force.post.binding": "false",
+      "saml.encrypt": "false",
+      "saml.server.signature": "false",
+      "saml.server.signature.keyinfo.ext": "false",
+      "exclude.session.state.from.auth.response": "false",
+      "saml_force_name_id_format": "false",
+      "saml.client.signature": "false",
+      "tls.client.certificate.bound.access.tokens": "false",
+      "saml.authnstatement": "false",
+      "display.on.consent.screen": "false",
+      "saml.onetimeuse.condition": "false"
+    },
+    "authenticationFlowBindingOverrides": {},
+    "fullScopeAllowed": true,
+    "nodeReRegistrationTimeout": -1,
+    "defaultClientScopes": [
+      "web-origins",
+      "role_list",
+      "profile",
+      "roles",
+      "accounts",
+      "type",
+      "email"
+    ],
+    "optionalClientScopes": [
+      "address",
+      "phone",
+      "offline_access",
+      "microprofile-jwt"
+    ]
+  },
+  {
     "id" : "2c0c5093-9b2a-4a67-83dc-98daf6cd3a62",
     "clientId" : "security-admin-console",
     "name" : "${client_security-admin-console}",
@@ -1326,6 +1585,50 @@
   } ],
   "clientScopes" : [
     {
+      "id": "aff3473b-2ffd-4e3c-8696-4e3f5aa9cdde",
+      "name": "oisp-frontend",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "id": "7b66be24-fe26-4be9-9116-0eccc31c4f34",
+          "name": "oisp-frontend",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "oisp-frontend",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }, {
+      "id": "17dfd606-56df-45d5-97a5-25609328d56a",
+      "name": "websocket-server",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "id": "0b19081c-6d9c-4340-a840-395ea6d54d59",
+          "name": "websocket-server",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "websocket-server",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }, {
       "id": "5ed16465-f532-4fd1-a697-b9f66d6160ac",
       "name": "mqtt-broker",
       "protocol": "openid-connect",

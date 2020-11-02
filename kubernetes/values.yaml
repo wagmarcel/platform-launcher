@@ -36,6 +36,7 @@ kafka:
   fullBrokerList: "oisp-kafka-headless:9092"
   replicas: 3
   metricsPartitions: 2
+  metricsTopic: "metrics"
   replicationFactor: 2
   requestTimeout: 20000
   maxRetryTime: 2000
@@ -68,6 +69,7 @@ kafkatest:
   fullBrokerList: "oisp-kafka-headless:9092"
   replicas: 1
   metricsPartitions: 1
+  metricsTopic: "metrics"
   replicationFactor: 1
   requestTimeout: 20000
   maxRetryTime: 5000
@@ -136,6 +138,14 @@ ruleEngine:
   gearpump:
     username: admin
     password: password
+#  url: "ftp://82.165.114.145/files/rule-engine-bundled-0.1.jar"
+  url: "http://services-server/rule-engine-bundled-0.1.jar"
+  ftpUsername: "ftp"
+  ftpPassword: password
+
+metricsAggregator:
+  metricsTopic: "metrics"
+  url: "http://services-server/metrics-aggregator-bundled-0.1.jar"
 
 websocketServer:
   username: api_actuator
@@ -146,6 +156,7 @@ hosts:
     frontend: staging.streammyiot.com
     websocketserver: ws.staging.streammyiot.com
     mqttserver: mqtt.staging.streammyiot.com
+    streamer: streamer.staging.streammyiot.com
 
 systemuser:
   username: gateway@intel.com
@@ -190,6 +201,16 @@ keycloak:
           configMapKeyRef:
             name: oisp-config
             key: keycloak-mqtt-broker-secret
+      - name: OISP_WEBSOCKET_SERVER_SECRET
+        valueFrom:
+          configMapKeyRef:
+            name: oisp-config
+            key: keycloak-websocket-server-secret
+      - name: FUSION_BACKEND_SECRET
+        valueFrom:
+          configMapKeyRef:
+            name: fusion-config
+            key: keycloak-fusion-backend-secret
     resources:
       requests:
         cpu: "50m"
@@ -227,10 +248,20 @@ keycloak:
       dbPassword: supersecret
   frontend:
     secret: "supersecret"
+  websocketServer:
+    secret: "supersecret"
+    id: "websocket-server"
   mqttBroker:
     secret: "supersecret"
     id: "mqtt-broker"
-    waitFoKeycloak: "keycloak-http:"
+    waitForKeycloak: "keycloak-http:4080"
+  # Change root address of authServerUrl to the URL of oisp-frontend
+  # if industry fusion application is deployed to another namespace
+  # Example: URL of Frontend - https://latest.oisp.info:443
+  #          Auth Server URL for Fusion Backend: https://latest.oisp.info:443/keycloak
+  fusionBackend:
+    authServerUrl: "http://keycloak-http:4080/keycloak"
+    secret: "supersecret"
 
 jwt:
   public: "No key set"
@@ -266,6 +297,7 @@ flink:
         memory: 128Mi
 
     taskmanager:
+      replicas: 3
       limits:
         cpu: 100m
         memory: 128Mi

@@ -1,5 +1,4 @@
 # Javascript Node CircleCI 2.0 configuration file
-#
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2.1
@@ -72,7 +71,7 @@ commands:
             touch .can_delete_if_success &&
             ssh arkocal@82.165.71.183
             "cd /tmp/${TEST_ID}/${CIRCLE_PROJECT_REPONAME} &&
-            (export NAMESPACE=${TEST_ID} &&
+            (export NAMESPACE=${TEST_ID} && echo Namespace is: \${NAMESPACE} &&
             export NODOCKERLOGIN=true &&
             export KUBECONFIG=\$(k3d get-kubeconfig) &&
             sh util/deploy_operators.sh &&
@@ -81,13 +80,13 @@ commands:
             make deploy-oisp-test DOCKER_TAG=test_${TEST_ID} HELM_ARGS=\"--set use_local_registry=true
             --set keycloak.keycloak.image.repository=registry.local:5000/oisp/keycloak
             --set keycloak.keycloak.image.tag=test_${TEST_ID}\" &&
-            make DOCKER_TAG=test_${TEST_ID} test) || rm .can_delete_if_success" &&
+            make DOCKER_TAG=test_${TEST_ID} test) || rm .can_delete_if_success"         &&
             ssh arkocal@82.165.71.183
-            "(rm /tmp/ci_test.lock || true) &&
-            cd /tmp/${TEST_ID}/${CIRCLE_PROJECT_REPONAME} &&
+            "cd /tmp/${TEST_ID}/${CIRCLE_PROJECT_REPONAME} &&
             export KUBECONFIG=\$(k3d get-kubeconfig) &&
             export NAMESPACE=${TEST_ID} &&
-            make undeploy-oisp" &&
+            make undeploy-oisp &&
+            (rm /tmp/ci_test.lock || true)" &&
             rm .can_delete_if_success
 
 ################################################################################
@@ -126,9 +125,9 @@ commands:
             fi
             git submodule init
             git submodule update
-            if [ "$CIRCLE_BRANCH" = "develop" ] || [ "${BASE_BRANCH}" = "develop" ]; then
+            if [ "$CIRCLE_BRANCH" = "develop" ] || [ "${BASE_BRANCH}" = "develop" ] || [ ! -z "${CIRCLE_TAG}" ]; then
               #If on develop or a PR towards develop assume that all submodules are updated
-              echo Detected that PR is related to develop. Will update all subrepos.
+              echo Detected that PR is related to develop or a TAG. Will update all subrepos.
               make update
             fi
   build-branch:
@@ -149,11 +148,36 @@ commands:
           command: |
             export PATH=$PATH:/snap/bin
             make import-images DOCKER_TAG=test DEBUG=true
+            docker create -it --name re-tmp oisp/rule-engine:test /bin/sh
+            docker cp re-tmp:/rule-engine-bundled-0.1.jar .
             npm install nodemailer
             export NODOCKERLOGIN=true
-            make deploy-oisp-test DOCKER_TAG=test
-            make test
+            retval=2;
+            until [ ${retval} -eq 0 ]; do
+              make undeploy-oisp
+              make deploy-oisp-test DOCKER_TAG=test
+              make test
+              retval=$?
+            done
           no_output_timeout: 20m
+  push-jar-over-ftp:
+    description: "Push rule engine to FTP server"
+    steps:
+      - run:
+          shell: /bin/bash
+          name: Push jar to ftp server
+          command: |
+            HOST='82.165.114.145'
+            USER='ftp'
+            PASSWD=${FTPPASS}
+            ftp -n -v $HOST \<< EOT
+            user $USER $PASSWD
+            prompt
+            pass
+            cd files
+            put rule-engine-bundled-0.1.jar
+            bye
+            EOT
   push-images:
     description: "Push images"
     parameters:
@@ -239,7 +263,13 @@ commands:
           name: Run deploy script
           shell: /bin/bash
           command: |
-            export HELM_ARGS="--set stolon.persistence.storageClassName=\"oneandone\" --set less_resources=\"false\" "
+            export HELM_ARGS="--force \
+              --atomic \
+              --set less_resources=\"false\" --set production=\"true\" \
+              --set certmanager.secret=\"frontend-web-prod-tls\" \
+              --set certmanager.issuer=\"letsencrypt-prod\" \
+              --set numberReplicas.frontend=2 \
+              --set numberReplicas.backend=3"
             cd ~ && sh deploy.sh
 
 jobs:
@@ -256,11 +286,10 @@ jobs:
       - setup-branch
       - build-branch
       - e2e-test
-  build-master:
+  build-tagged:
     executor: my-executor
     steps:
       - checkout
-      - check-tagged
       - setup-build-environment
       - setup-branch
       - build-branch
@@ -277,6 +306,7 @@ jobs:
       - e2e-test
       - push-images:
           tag: "date"
+      - push-jar-over-ftp
   deploy-production:
     executor: deployer
     steps:
@@ -300,11 +330,13 @@ workflows:
               only:
                 - develop
                 - ci-feature
-      - build-master:
+      - build-tagged:
           filters:
             branches:
               only:
-                - master
+                - develop
+            tags:
+              only: /^v.*/
   nightly:
     triggers:
       - schedule:

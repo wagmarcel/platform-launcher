@@ -5,7 +5,9 @@
   "main": "test.js",
   "scripts": {
     "test": "mocha oisp-tests.js --exit",
-    "prep-only": "mocha oisp-prep-only.js --exit"
+    "prep-only": "mocha oisp-prep-only.js --exit",
+    "test-backup-before": "mocha test-backup-before.js --exit",
+    "test-backup-after": "mocha test-backup-after.js --exit"
   },
   "author": "Intel SSG-DRD",
   "license": "ISC",
@@ -23,8 +25,10 @@
     "mocha": "^4.0.1",
     "nodemailer": "^4.6.6",
     "request-promise": "^4.2.4",
+    "sleep": "^6.3.0",
     "sync-request": "^6.1.0",
     "tough-cookie": "^3.0.1",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "ws": "^7.3.1"
   }
 }

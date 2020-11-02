@@ -37,10 +37,10 @@ services:
       labels:
         - oisp=true
         - oisp.git_commit=${GIT_COMMIT_BACKEND}
-  rule-engine:
-    image: oisp/rule-engine:${DOCKER_TAG}
+  streamer:
+    image: oisp/streamer:${DOCKER_TAG}
     build:
-      context: ./oisp-beam-rule-engine
+      context: ./oisp-services/frontends/oisp-streamer
       labels:
         - oisp=true
   kairosdb:
@@ -76,3 +76,15 @@ services:
       labels:
         - oisp=true
         - oisp.git_commit=${GIT_COMMIT_PLATFORM_LAUNCHER}
+  services-operator:
+    image: oisp/services-operator:${DOCKER_TAG}
+    build:
+      context: oisp-services/services-operator
+      labels:
+        - oisp=true
+  services-server:
+    image: oisp/services-server:${DOCKER_TAG}
+    build:
+      context: ./oisp-services
+      labels:
+        - oisp=true

@@ -53,6 +53,10 @@
 		"datasourceSuggest": "/api/v1/metricnames",
 		"datasourceQuery": "/api/v1/datapoints/query"
 	},
+	"streamer": {
+		"host": "streamer",
+		"port": 9000
+	},
 	"tsdbproxy": {
 		"host": "frontend",
 		"port": 4003,
@@ -72,6 +76,7 @@
 		"tsdbproxy": "${OISP_TESTS_SKIP_TSDBPROXY}",
 		"mqtt": "${OISP_TESTS_SKIP_MQTT}",
 		"alerts": "${OISP_TESTS_SKIP_ALERTS}",
-		"scale": "${OISP_TESTS_SKIP_SCALE}"
+		"scale": "${OISP_TESTS_SKIP_SCALE}",
+		"streamer": "${OISP_TESTS_SKIP_STREAMER}"
 	}
 }

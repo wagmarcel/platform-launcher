@@ -2,3 +2,4 @@ locust/
 #*
 iot-agent/
 industryfusion/
+crds/.gitignore

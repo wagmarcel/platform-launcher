@@ -10,6 +10,7 @@ spec:
   dnsNames:
   - staging.streammyiot.com
   - ws.staging.streammyiot.com
+  - streamer.staging.streammyiot.com
   issuerRef:
     name: letsencrypt-prod
     # We can reference ClusterIssuers by changing the kind here.

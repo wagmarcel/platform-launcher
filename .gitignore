@@ -10,4 +10,6 @@ data-backup/
 node_modules/
 oisp-logs_*.zip
 *.pem
-ci_deploy/kubeconfig
+ci_deployer/kubeconfig
+kubernetes/charts/*.tgz
+backups/

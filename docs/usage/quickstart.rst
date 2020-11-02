@@ -14,7 +14,6 @@ If you wish to deploy on an external cluster, make sure the following conditions
 1. Your host is configured to manage the cluster, meaning the default kubeconfig file is at ``~/.kube/config``.
 2. Helm and kubectl are installed on the client and cluster.
 3. The cluster has an Ingress controller and a volume provisioner configured.
-4. The `minio operator <https://github.com/minio/minio-operator>`_ is installed in the cluster.
 
 
 Creating a lightweight local kubernetes cluster
@@ -42,12 +41,15 @@ If you have access to the OISP dockerhub repository, export your user credential
 
   export DOCKERUSER=[YOURUSERNAME]
   read -s DOCKERPASS # type your password and press enter
+  export DOCKERPASS
 
 Otherwise, you will have to build the images yourself. Go to the project root and run ``make update && make build``.
 You can specify a docker tag for the images being built. Run ``make help`` for more details. Afterwards, you have two options to get the images inside the cluster:
 
 1. Run ``make import-images``, which also takes the ``DOCKER_TAG`` and ``DEBUG`` parameter, of which the later has to be set to ``true`` in order to run tests.
 2. *OR* push the images to another repo, and adapt the ``imageCredentials`` section in ``kubernetes/values.yaml``. You will also need to export your credentials to your shell as described before.
+
+There are couple of operators that OISP depends on. They can be installed buy running the script `util/deploy_operators.sh`.
 
 Finally, adapt the ``kubernetes/values.yaml`` to fit your needs and run ``make deploy-oisp``.
 
