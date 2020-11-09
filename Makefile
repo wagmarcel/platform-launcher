@@ -21,10 +21,10 @@ export TEST = 0
 
 COMPOSE_PROJECT_NAME?="oisp"
 CONTAINERS?=$(shell docker-compose --log-level ERROR config --services)
-EXT_CONTAINERS=cassandra;gcr.io/cassandra-operator/cassandra-3.11.5:latest sidecar;gcr.io/cassandra-operator/cassandra-sidecar:latest kafka;confluentinc/cp-kafka:5.0.1
+EXT_CONTAINERS=cassandra;gcr.io/cassandra-operator/cassandra-3.11.6:v6.4.0 cassandra;gcr.io/cassandra-operator/cassandra-operator:v6.7.0 sidecar;gcr.io/cassandra-operator/instaclustr-icarus:1.0.1 kafka;confluentinc/cp-kafka:5.0.1
 CONTAINERS_AGENT=oisp-testsensor oisp-iot-agent
 DOCKER_COMPOSE_ARGS?=
-K3S_NODE=$(shell docker ps --format '{{.Names}}' | grep k3s_node)
+K3S_NODE=$(shell docker ps --format '{{.Names}}' | grep k3s_agent)
 KEYCLOAK_HELM_REPO:="https://codecentric.github.io/helm-charts"
 KEYCLOAK_HELM_REPO_NAME:="codecentric"
 export DOCKER_TAG?=latest
@@ -34,6 +34,7 @@ export GIT_COMMIT_GEARPUMP=$(git -C oisp-gearpump-rule-engine rev-parse HEAD)
 export GIT_COMMIT_WEBSOCKET_SERVER=$(git -C oisp-websocket-server rev-parse HEAD)
 export GIT_COMMIT_BACKEND=$(git -C oisp-backend rev-parse HEAD)
 
+NOBACKUP?=false
 DEBUG?=false
 ifeq  ($(DEBUG),true)
 CONTAINERS:=$(CONTAINERS) debugger
@@ -48,6 +49,8 @@ DEBUGGER_POD:=$(shell kubectl -n $(NAMESPACE) get pods -o custom-columns=:metada
 SELECTED_POD:=$(shell kubectl -n $(NAMESPACE) get pods -o custom-columns=:metadata.name | grep $(DEPLOYMENT) | head -n 1)
 FRONTEND_POD:=$(shell kubectl -n $(NAMESPACE) get pods -o custom-columns=:metadata.name | grep frontend | head -n 1)
 
+BACKUP_EXCLUDE:=sh.helm stolon default-token oisp-stolon-token
+
 .init:
 	@$(call msg,"Initializing ...");
 	@$(call msg,"Currently on branch ${BRANCH}");
@@ -60,8 +63,7 @@ FRONTEND_POD:=$(shell kubectl -n $(NAMESPACE) get pods -o custom-columns=:metada
 			esac \
 		fi; \
 	else \
-		git submodule init; \
-		git submodule update; \
+		git submodule update --init --recursive; \
 	fi;
 	@if [ -f docker/hbase/id_rsa ]; then echo "HBase keys existing already"; else \
 		ssh-keygen -q -t rsa -P "" -f docker/hbase/id_rsa; \
@@ -83,6 +85,12 @@ check-docker-cred-env:
 			echo "DOCKERPASS env var is undefined"; exit 1; \
 		fi; \
 		docker login -u $$DOCKERUSER -p $$DOCKERPASS; \
+	fi
+# ftp pass checking is disabled, as service jars are hosted in services-server now
+# re-enable this if an ftp server is used instead.
+#		if [ "$$FTPPASS" = "" ]; then \
+#			echo "FTPPASS env var is undefined"; exit 1; \
+#		fi; \
 	fi
 
 ## deploy-oisp-test: Deploy repository as HELM chart,
@@ -113,11 +121,13 @@ generate_keys:
 ##
 deploy-oisp: check-docker-cred-env generate_keys
 	# First generate ssh keys
+	@$(call msg,"Starting first deploy");
 	$(eval PUBLICKEY:=$(shell cat public.pem | base64 | tr -d "\n"))
 	$(eval PRIVATEKEY:=$(shell cat private.pem | base64 | tr -d "\n"))
 	$(eval X509CERT:=$(shell cat x509.pem | base64 | tr -d "\n"))
 	cd kubernetes && \
 	kubectl create namespace $(NAMESPACE) && \
+	cp ../oisp-services/services-operator/kubernetes/crd.yml crds/oisp-services.yml && \
 	POSTGRES_PASSWORD="$(call randomPass)" && \
 	helm repo add "${KEYCLOAK_HELM_REPO_NAME}" "${KEYCLOAK_HELM_REPO}" --namespace "${NAMESPACE}" && \
 	helm dependency update --namespace $(NAMESPACE) && \
@@ -129,6 +139,8 @@ deploy-oisp: check-docker-cred-env generate_keys
 		--set grafana.password="$(call randomPass)" \
 		--set mqtt.broker.password="$(call randomPass)" \
 		--set ruleEngine.password="$(call randomPass)" \
+		--set ruleEngine.password="$(call randomPass)" \
+		--set ruleEngine.ftpPassword="$${FTPPASS}" \
 		--set ruleEngine.gearpump.password="$(call randomPass)" \
 		--set websocketServer.password="$(call randomPass)" \
 		--set stolon.pgSuperuserPassword="$${POSTGRES_PASSWORD}" \
@@ -137,6 +149,8 @@ deploy-oisp: check-docker-cred-env generate_keys
 		--set keycloak.keycloak.password="$(call randomPass)" \
 		--set keycloak.frontend.secret="$(call randomPass)" \
 		--set keycloak.mqttBroker.secret="$(call randomPass)" \
+		--set keycloak.websocketServer.secret="$(call randomPass)" \
+		--set keycloak.fusionBackend.secret="$(call randomPass)" \
 		--set jwt.public="$(PUBLICKEY)" \
 		--set jwt.private="$(PRIVATEKEY)" \
 		--set jwt.x509="$(X509CERT)" \
@@ -146,7 +160,8 @@ deploy-oisp: check-docker-cred-env generate_keys
 
 ## upgrade-oisp: Upgrade already deployed HELM chart
 ##
-upgrade-oisp: check-docker-cred-env
+upgrade-oisp: check-docker-cred-env backup
+	@$(call msg,"Starting upgrade");
 	@source util/get_oisp_credentials.sh && \
 	cd kubernetes && \
 	helm repo add "${KEYCLOAK_HELM_REPO_NAME}" "${KEYCLOAK_HELM_REPO}" --namespace "${NAMESPACE}" && \
@@ -167,6 +182,8 @@ upgrade-oisp: check-docker-cred-env
 		--set keycloak.keycloak.password="$${KEYCLOAK_PASSWORD}" \
 		--set keycloak.frontend.secret="$${KEYCLOAK_FRONTEND_SECRET}" \
 		--set keycloak.mqttBroker.secret="$${KEYCLOAK_MQTT_BROKER_SECRET}" \
+		--set keycloak.websocketServer.secret="$${KEYCLOAK_WEBSOCKET_SERVER_SECRET}" \
+		--set keycloak.fusionBackend.secret="$${KEYCLOAK_FUSION_BACKEND_SECRET}" \
 		--set jwt.public="$${JWT_PUBLIC}" \
 		--set jwt.private="$${JWT_PRIVATE}" \
 		--set jwt.x509="$${JWT_X509}" \
@@ -179,9 +196,11 @@ upgrade-oisp: check-docker-cred-env
 ##
 undeploy-oisp:
 	@cd kubernetes && \
+	(kubectl delete -n $(NAMESPACE) bs --all || echo "Beam services not (or already) deleted") && \
 	( helm uninstall $(NAME) --namespace $(NAMESPACE) || echo helm uninstall failed)  && \
 	(kubectl delete namespace $(NAMESPACE) || echo "namespace not (or already) deleted") && \
 	(kubectl -n cassandra delete cassandradatacenter $(NAMESPACE) || echo "cassandra dc not (or already) deleted")
+# Beam services must be deleted first, otherwise the finalizer (operator) is down, and deletation does not work.
 
 # =====
 # UTILS
@@ -209,14 +228,12 @@ wait-until-ready:
 	if [ "$${DOCKER_TAG}" = "latest" ]; then \
 	  export DOCKER_TAG=test; \
 	fi; \
-	while ! $(SHELL) ./wait-until-ready.sh $(NAMESPACE); \
-		do \
-			if [ ! -z "${TEST}" ]; then \
-				printf "\nTimeout! Redeploying with docker tag $${DOCKER_TAG}\n"; \
-				make undeploy-oisp; \
-				make DOCKER_TAG=$${DOCKER_TAG} deploy-oisp-test; \
-			fi \
-		done }
+	$(SHELL) ./wait-until-ready.sh $(NAMESPACE); \
+	retval=$$?; \
+	if [ $${retval} -eq 2 ]; then \
+		printf "\nTimeout while waiting for platform\n"; \
+		exit 2; \
+	fi }
 
 ## import-images: Import images listed in CONTAINERS into local cluster
 ##
@@ -284,7 +301,7 @@ prepare-tests: wait-until-ready
 ## test: Run tests
 ##
 test: OISP_TESTS_SKIP_SCALE ?= "true"
-test: prepare-tests
+test: prepare-tests test-prep-only
 	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger \
 		-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && make test TERM=xterm NAMESPACE=$(NAMESPACE) OISP_TESTS_SKIP_SCALE=$(OISP_TESTS_SKIP_SCALE)"
 
@@ -311,10 +328,14 @@ build: .init
 ##
 update: clean
 	@$(call msg,"Git Update (dev only)");
-	@git submodule init
-	@git submodule update
-	@git submodule foreach git fetch origin
-	@git submodule foreach git checkout origin/develop
+# Normally, the following should be enough, but it can crash in merge conflicts
+# Everything is run twice to allow submodules of submodules, if the .gitmodules
+# file is different at HEAD than latest develop.
+#	@git submodule update --init --recursive --remote --merge
+	@$(call msg,"Git Update (dev only)");
+	@git submodule update --init
+	@git submodule foreach --recursive "git fetch origin && git checkout origin/develop && git submodule update --init"
+	@git submodule foreach --recursive "git fetch origin && git checkout origin/develop"
 
 ## docker-clean: Remove all docker images and containers.
 ##     This also includes non-oisp containers.
@@ -357,6 +378,38 @@ else
 	)
 endif
 
+
+## test-backup: Test backup
+##     Assumes test-prep-only executed before
+##     then make backup, redeploying OISP and restore backup. Check the users, devices, etc.
+##     NOTE: NAMESPACE and DOCKERTAG need to be set
+##
+test-backup: prepare-tests test-prep-only
+	@$(call msg,"Testing backup and restore ...");
+	$(eval ACCOUNTID := $(shell jq ".accountId" tests/oisp-prep-only.conf))
+	$(eval ACTIVATIONCODE := $(shell jq ".activationCode" tests/oisp-prep-only.conf))
+	$(eval USERNAME := $(shell jq ".username" tests/oisp-prep-only.conf))
+	$(eval PASSWORD := $(shell jq ".password" tests/oisp-prep-only.conf))
+	kubectl -n $(NAMESPACE) exec $(DEBUGGER_POD) -c debugger \
+		-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && \
+		make test-backup-before TERM=xterm NAMESPACE=$(NAMESPACE) \
+		ACCOUNTID=$(ACCOUNTID) ACTIVATIONCODE=$(ACTIVATIONCODE) USERNAME=$(USERNAME) PASSWORD=$(PASSWORD)"
+	$(MAKE) backup
+	$(MAKE) undeploy-oisp
+	$(MAKE) NAMESPACE=$(NAMESPACE) DEBUG=$(DEBUG) DOCKER_TAG=$(DOCKER_TAG) deploy-oisp-test
+	$(MAKE) restore
+	FRONTEND=$$(kubectl -n $(NAMESPACE) get pods | grep frontend| cut -d " " -f 1) && \
+	kubectl -n $(NAMESPACE) delete pod keycloak-0 $${FRONTEND}
+	DEBUGGER_POD=$$(kubectl -n $(NAMESPACE) get pods -o custom-columns=:metadata.name | grep debugger | head -n 1) && \
+	$(MAKE) NAMESPACE=$(NAMESPACE) DEBUGGER_POD=$${DEBUGGER_POD} prepare-tests && \
+	kubectl -n $(NAMESPACE) exec $${DEBUGGER_POD} -c debugger \
+		-- /bin/bash -c "cd /home/$(CURRENT_DIR_BASE)/tests && \
+		make test-backup-after TERM=xterm NAMESPACE=$(NAMESPACE) \
+		ACCOUNTID=$(ACCOUNTID) ACTIVATIONCODE=$(ACTIVATIONCODE) USERNAME=$(USERNAME) PASSWORD=$(PASSWORD)"
+
+
+
+
 ## logs:
 ##     Create a .zip archive containing logs from all containers.
 ##     The result will be saved in platform-lancuher-logs_{data}.zip
@@ -386,10 +439,45 @@ push-images:
 	@$(call msg,"Pushing docker images to registry");
 	@docker-compose -f docker-compose.yml -f docker/debugger/docker-compose-debugger.yml push $(CONTAINERS)
 
+## backup: backup database, configmaps and secrets.
+##     This requires either default K8s config or KUBECONFIG set
+##     A tar file is created containing the files
+##
+backup:
+ifeq ($(NOBACKUP),false)
+	@$(call msg,"Creating backup");
+	@mkdir -p backups
+	@$(eval TMPDIR := backup_$(NAMESPACE)_$(shell date +'%Y-%m-%d_%H-%M-%S'))
+	@if [ -d "/tmp/$(TMPDIR)" ]; then echo "Backup file already exists. Not overwriting. Bye"; exit 1; fi
+	@mkdir -p /tmp/$(TMPDIR)
+	@util/backup/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) >/dev/null 2>&1
+	@util/backup/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)" >/dev/null 2>&1
+	@tar cvzf backups/$(TMPDIR).tgz -C /tmp $(TMPDIR)
+	@rm -rf /tmp/$(TMPDIR)
+endif
+
+## restore: restore database, configmaps and secrets.
+##     This requires either default K8s config or KUBECONFIG set
+##     Parameters: BACKUPFILE var must be set or the most recent timestamp is selected
+##
+restore:
+ifndef BACKUPFILE
+		@echo Look for most recent backup file
+		@$(eval BACKUPFILE := $(shell ls backups/backup_*|sort -V| tail -n 1))
+endif
+	@echo using backup file $(BACKUPFILE)
+	$(eval BASEDIR := $(shell basedir=$(BACKUPFILE); basedir="$${basedir##*/}"; basedir="$${basedir%.*}"; echo $${basedir} ))
+	tar xvzf $(BACKUPFILE) -C /tmp
+	@util/backup/cm_check.sh /tmp/$(BASEDIR) $(NAMESPACE)
+	@util/backup/db_restore.sh /tmp/$(BASEDIR) $(NAMESPACE)
+	@util/backup/cm_restore.sh /tmp/$(BASEDIR) $(NAMESPACE)
+	@rm -rf /tmp/$(BASEDIR)
 ## help: Show this help message
 ##
 help:
 	@grep "^##" Makefile | cut -c4-
+
+
 
 #-----------------
 # helper functions

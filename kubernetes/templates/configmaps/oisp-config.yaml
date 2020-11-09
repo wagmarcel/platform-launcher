@@ -21,6 +21,7 @@ data:
     "websocketUserConfig": "@@OISP_WEBSOCKETUSER_CONFIG",
     "kafkaConfig": "@@OISP_KAFKA_CONFIG",
     "redisConfig": "@@OISP_REDIS_CONFIG",
+    "keycloakConfig": "@@OISP_KEYCLOAK_CONFIG",
     "uri": ""
     }
   backend: |
@@ -50,9 +51,9 @@ data:
     "uri": "{{ .service }}",
     "partitions": 1,
     "metricsPartitions": {{ .metricsPartitions }},
-    "replication": {{ .replicationFactor}},
+    "replication": {{ .replicationFactor }},
     "timeoutMs": 10000,
-    "topicsObservations": "metrics",
+    "topicsObservations": {{ .metricsTopic | quote }},
     "topicsRuleEngine": "rules-update",
     "topicsHeartbeatName": "heartbeat",
     "topicsHeartbeatInterval": 5000,
@@ -128,6 +129,8 @@ data:
     "secret": "{{ .Values.keycloak.frontend.secret }}",
     "mqtt-broker-secret": "{{ .Values.keycloak.mqttBroker.secret }}",
     "mqtt-broker-id": "{{ .Values.keycloak.mqttBroker.id }}",
+    "websocket-server-secret": "{{ .Values.keycloak.websocketServer.secret }}",
+    "websocket-server-id": "{{ .Values.keycloak.websocketServer.id }}",
     "ssl-required": "external"
     }
   keycloak-admin: |
@@ -137,6 +140,7 @@ data:
     }
   keycloak-frontend-secret: {{ .Values.keycloak.frontend.secret }}
   keycloak-mqtt-broker-secret: {{ .Values.keycloak.mqttBroker.secret }}
+  keycloak-websocket-server-secret: {{ .Values.keycloak.websocketServer.secret }}
   gateway: |
     {
     "username": "{{ .Values.systemuser.username }}",
@@ -160,7 +164,6 @@ data:
     "gearpumpUsername": "{{ .Values.ruleEngine.gearpump.username }}",
     "gearpumpPassword": "{{ .Values.ruleEngine.gearpump.password }}",
     "frontendUri": "frontend:4001",
-    "hbaseConfig": "@@OISP_HBASE_CONFIG",
     "kafkaConfig": "@@OISP_KAFKA_CONFIG",
     "zookeeperConfig": "@@OISP_ZOOKEEPER_CONFIG"
     }
@@ -225,6 +228,15 @@ data:
     "keyfile": "{{ .Values.mqtt.certs.rootpath }}/{{ .Values.mqtt.certs.keyfile }}",
     "certfile": "{{ .Values.mqtt.certs.rootpath }}/{{ .Values.mqtt.certs.certfile }}"
     }
+  streamer: |
+    {
+    "kafkaConfig": "@@OISP_KAFKA_CONFIG",
+    "keycloakConfig": "@@OISP_KEYCLOAK_CONFIG",
+    "hostname": "streamer",
+    "port": 9000
+    }
+
+
 
 kind: ConfigMap
 metadata:
