@@ -37,6 +37,7 @@ certmanager:
   issuer: letsencrypt-self
 
 emqx:
+  replicaCount: 3
   fullnameOverride: emqx
   emqxConfig:
     EMQX_AUTH__HTTP__ACL_REQ: http://mqtt-gateway:3025/acl
@@ -48,8 +49,10 @@ emqx:
     EMQX_CLUSTER__K8S__ADDRESS_TYPE: hostname
     EMQX_CLUSTER__K8S__APISERVER: https://kubernetes.default.svc:443
     EMQX_CLUSTER__K8S__SUFFIX: svc.cluster.local
-    EMQX_LOADED_PLUGINS: emqx_auth_http,emqx_web_hook
+    EMQX_LOADED_PLUGINS: emqx_auth_http
     EMQX_LOG__LEVEL: warning
+    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.crt
+    EMQX_LISTENER__SSL__EXTERNAL__KEYFILE: etc/certs/server.key
 
 emqxtest:
   replicaCount: 1
@@ -64,8 +67,11 @@ emqxtest:
     EMQX_CLUSTER__K8S__ADDRESS_TYPE: hostname
     EMQX_CLUSTER__K8S__APISERVER: https://kubernetes.default.svc:443
     EMQX_CLUSTER__K8S__SUFFIX: svc.cluster.local
-    EMQX_LOADED_PLUGINS: emqx_auth_http,emqx_web_hook
+    EMQX_LOADED_PLUGINS: emqx_auth_http
     EMQX_LOG__LEVEL: warning
+    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.crt
+    EMQX_LISTENER__SSL__EXTERNAL__KEYFILE: etc/certs/server.key
+
 
 kafka:
   fullnameOverride: oisp-kafka
@@ -160,11 +166,15 @@ mqtt:
     username: username
     password: password
     url: emqx
+    localport: 1883
+  gateway:
+    port: 3025
+    url: mqtt-gateway
   certs:
     cafile: "server.cert"
     keyfile: "server.key"
     certfile: "server.cert"
-    rootpath: "/app/ssl"
+    rootpath: "/opt/emqx/etc/certs"
 
 # Gearpump username and password are legacy, they can be removed safely
 # after the rule-engine is updated to ignore them.

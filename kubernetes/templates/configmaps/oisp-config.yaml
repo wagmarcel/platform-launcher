@@ -206,14 +206,11 @@ data:
     }
   mqtt-gateway: |
     {
-    "mqttBrokerUrl": "localhost",
-    "mqttBrokerPort": "8883",
+    "mqttBrokerUrl": "{{ .Values.mqtt.broker.url }}",
+    "mqttBrokerLocalPort": "{{ .Values.mqtt.broker.localport }}",
     "mqttBrokerUsername": "{{ .Values.mqtt.broker.username }}",
     "mqttBrokerPassword": "{{ .Values.mqtt.broker.password }}",
-    "frontendUri": "frontend",
-    "frontendPort": "4001",
-    "frontendSystemUser": "{{ .Values.systemuser.username }}",
-    "frontendSystemPassword": "{{ .Values.systemuser.password }}",
+    "authServicePort": "{{ .Values.mqtt.gateway.port }}",
     "redisConf": "@@OISP_REDIS_CONFIG",
     "kafkaConfig": "@@OISP_KAFKA_CONFIG",
     "postgresConfig": "@@OISP_POSTGRES_CONFIG",

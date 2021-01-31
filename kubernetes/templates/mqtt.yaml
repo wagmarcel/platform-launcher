@@ -6,7 +6,7 @@ metadata:
   name: mqtt-gateway
 spec:
   ports:
-  - port: 8883
+  - port: 3025
   clusterIP: None
   selector:
     app: mqtt-gateway
@@ -38,12 +38,6 @@ spec:
         {{ end }}
         command: ["./wait-for-it.sh"]
         args:
-        - localhost:8883
-        - -t
-        - "3000000"
-        - -s
-        - --
-        - ./wait-for-it.sh
         - redis:6379
         - -t
         - "300000"
