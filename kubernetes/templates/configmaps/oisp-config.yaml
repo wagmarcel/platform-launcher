@@ -214,7 +214,7 @@ data:
     "redisConf": "@@OISP_REDIS_CONFIG",
     "kafkaConfig": "@@OISP_KAFKA_CONFIG",
     "postgresConfig": "@@OISP_POSTGRES_CONFIG",
-    "aesKey": "/app/keys/mqtt/mqtt_gw_secret.key"
+    "keycloakConfig": "@@OISP_KEYCLOAK_CONFIG"
     }
   streamer: |
     {

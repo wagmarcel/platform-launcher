@@ -77,6 +77,11 @@ spec:
             configMapKeyRef:
               name: oisp-config
               key: kafka
+        - name: OISP_KEYCLOAK_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: oisp-config
+              key: keycloak
         - name: OISP_POSTGRES_CONFIG
           valueFrom:
             configMapKeyRef:
