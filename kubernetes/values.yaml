@@ -51,8 +51,9 @@ emqx:
     EMQX_CLUSTER__K8S__SUFFIX: svc.cluster.local
     EMQX_LOADED_PLUGINS: emqx_auth_http
     EMQX_LOG__LEVEL: warning
-    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.crt
+    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.cert
     EMQX_LISTENER__SSL__EXTERNAL__KEYFILE: etc/certs/server.key
+    EMQX_LISTENER__SSL__EXTERNAL__VERIFY: verify_none
 
 emqxtest:
   replicaCount: 1
@@ -69,8 +70,9 @@ emqxtest:
     EMQX_CLUSTER__K8S__SUFFIX: svc.cluster.local
     EMQX_LOADED_PLUGINS: emqx_auth_http
     EMQX_LOG__LEVEL: warning
-    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.crt
+    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.cert
     EMQX_LISTENER__SSL__EXTERNAL__KEYFILE: etc/certs/server.key
+    EMQX_LISTENER__SSL__EXTERNAL__VERIFY: verify_none
 
 
 kafka:

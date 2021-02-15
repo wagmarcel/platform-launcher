@@ -6,8 +6,7 @@ metadata:
   name: mqtt-gateway
 spec:
   ports:
-  - port: 3025
-  clusterIP: None
+  - port: {{ .Values.mqtt.gateway.port }}
   selector:
     app: mqtt-gateway
 ---
@@ -36,6 +35,8 @@ spec:
         {{ else }}
         image: oisp/mqtt-gateway:{{ .Values.tag }}
         {{ end }}
+        ports:
+        - containerPort: {{ .Values.mqtt.gateway.port }}
         command: ["./wait-for-it.sh"]
         args:
         - redis:6379
@@ -43,7 +44,7 @@ spec:
         - "300000"
         - -s
         - --
-        - "./start-analytics-gateway.sh"
+        - "./start-mqtt-kafka-bridge.sh"
         resources:
           {{ if .Values.less_resources }}
           requests:
@@ -91,6 +92,6 @@ spec:
         readinessProbe:
           httpGet:
             path: /v1/api/health
-            port: 4005
+            port: {{ .Values.mqtt.gateway.port }}
       imagePullSecrets:
       - name: dockercred
