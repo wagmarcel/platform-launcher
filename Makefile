@@ -28,6 +28,7 @@ K3S_NODE=$(shell docker ps --format '{{.Names}}' | grep k3s_agent)
 KEYCLOAK_HELM_REPO:="https://codecentric.github.io/helm-charts"
 KEYCLOAK_HELM_REPO_NAME:="codecentric"
 export DOCKER_TAG?=latest
+export DOCKER_PREFIX?=oisp
 export GIT_COMMIT_PLATFORM_LAUNCHER=$(git rev-parse HEAD)
 export GIT_COMMIT_FRONTEND=$(git -C oisp-frontend rev-parse HEAD)
 export GIT_COMMIT_GEARPUMP=$(git -C oisp-gearpump-rule-engine rev-parse HEAD)
@@ -131,7 +132,7 @@ deploy-oisp: check-docker-cred-env generate_keys
 	helm repo add "${KEYCLOAK_HELM_REPO_NAME}" "${KEYCLOAK_HELM_REPO}" --namespace "${NAMESPACE}" && \
 	helm dependency update --namespace $(NAMESPACE) && \
 	helm install $(NAME) . --namespace $(NAMESPACE) \
-		--timeout 600s \
+		--timeout 1200s \
 		--set imageCredentials.username="$$DOCKERUSER" \
 		--set imageCredentials.password="$$DOCKERPASS" \
 		--set systemuser.password="$(call randomPass)" \
@@ -154,6 +155,8 @@ deploy-oisp: check-docker-cred-env generate_keys
 		--set jwt.private="$(PRIVATEKEY)" \
 		--set jwt.x509="$(X509CERT)" \
 		--set tag=$(DOCKER_TAG) \
+		--set imagePrefix=$(DOCKER_PREFIX) \
+		--set keycloak.keycloak.image.repository=$(DOCKER_PREFIX)/keycloak \
 		--set keycloak.keycloak.image.tag=$(DOCKER_TAG) \
 		$(HELM_ARGS)
 
@@ -187,6 +190,8 @@ upgrade-oisp: check-docker-cred-env backup
 		--set jwt.private="$${JWT_PRIVATE}" \
 		--set jwt.x509="$${JWT_X509}" \
 		--set tag=$(DOCKER_TAG) \
+		--set imagePrefix=$(DOCKER_PREFIX) \
+		--set keycloak.keycloak.image.repository=$(DOCKER_PREFIX)/keycloak \
 		--set keycloak.keycloak.image.tag=$(DOCKER_TAG) \
 		$(HELM_ARGS)
 
@@ -239,7 +244,7 @@ wait-until-ready:
 import-images:
 	@$(foreach image,$(CONTAINERS), \
 		printf $(image); \
-		docker save oisp/$(image):$(DOCKER_TAG) -o /tmp/$(image) && printf " is saved" && \
+		docker save $(DOCKER_PREFIX)/$(image):$(DOCKER_TAG) -o /tmp/$(image) && printf " is saved" && \
 		docker cp /tmp/$(image) $(K3S_NODE):/tmp/$(image) && printf ", copied" && \
 		docker exec -it $(K3S_NODE) ctr image import /tmp/$(image) >> /dev/null && printf ", imported\n"; \
 	)
@@ -257,7 +262,7 @@ import-images:
 import-images-agent:
 	@$(foreach image,$(CONTAINERS_AGENT), \
 		printf $(image); \
-		docker save oisp/$(image):$(DOCKER_TAG) -o /tmp/$(image) && printf " is saved" && \
+		docker save $(DOCKER_PREFIX)/$(image):$(DOCKER_TAG) -o /tmp/$(image) && printf " is saved" && \
 		docker cp /tmp/$(image) $(K3S_NODE):/tmp/$(image) && printf ", copied" && \
 		docker exec -it $(K3S_NODE) ctr image import /tmp/$(image) >> /dev/null && printf ", imported\n"; \
 	)
@@ -265,8 +270,8 @@ import-images-agent:
 import-images-to-local-registry:
 	@$(foreach image,$(CONTAINERS), \
                 printf $(image); \
-                docker tag oisp/$(image):$(DOCKER_TAG) registry.local:5000/oisp/$(image):$(DOCKER_TAG) && \
-                docker push registry.local:5000/oisp/$(image):$(DOCKER_TAG) && printf " done\n"; \
+                docker tag $(DOCKER_PREFIX)/$(image):$(DOCKER_TAG) registry.local:5000/$(DOCKER_PREFIX)/$(image):$(DOCKER_TAG) && \
+                docker push registry.local:5000/$(DOCKER_PREFIX)/$(image):$(DOCKER_TAG) && printf " done\n"; \
         )
 
 ## open-shell: Open a shell to a random pod in DEPLOYMENT.
@@ -438,6 +443,7 @@ push-images:
 	@$(call msg,"Pushing docker images to registry");
 	@docker-compose -f docker-compose.yml -f docker/debugger/docker-compose-debugger.yml push $(CONTAINERS)
 
+
 ## backup: backup database, configmaps and secrets.
 ##     This requires either default K8s config or KUBECONFIG set
 ##     A tar file is created containing the files
@@ -447,30 +453,82 @@ ifeq ($(NOBACKUP),false)
 	@$(call msg,"Creating backup");
 	@mkdir -p backups
 	@$(eval TMPDIR := backup_$(NAMESPACE)_$(shell date +'%Y-%m-%d_%H-%M-%S'))
+	@$(eval TARGETNAME := backup_$(NAMESPACE)_daily_$(shell date -Iseconds).tgz)
 	@if [ -d "/tmp/$(TMPDIR)" ]; then echo "Backup file already exists. Not overwriting. Bye"; exit 1; fi
 	@mkdir -p /tmp/$(TMPDIR)
-	@util/backup/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) >/dev/null 2>&1
-	@util/backup/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)" >/dev/null 2>&1
-	@tar cvzf backups/$(TMPDIR).tgz -C /tmp $(TMPDIR)
+	@util/backup/db_dump.sh /tmp/$(TMPDIR) $(NAMESPACE)  2>&1 || exit 1
+	@util/backup/cm_dump.sh /tmp/$(TMPDIR) $(NAMESPACE) "$(BACKUP_EXCLUDE)" 2>&1 || exit 1
+	@tar cvzf backups/$(TARGETNAME) -C /tmp $(TMPDIR)
 	@rm -rf /tmp/$(TMPDIR)
 endif
+ifdef S3BUCKET
+	s3cmd put backups/$(TARGETNAME) $(S3BUCKET)/$(TARGETNAME)
+endif
+
+## purge-backups: looks into S3 Bucket or local backups folder and purges
+##                daily backups older than 7 days. Keeps one backup per month.
+##     This requires either default K8s config or KUBECONFIG set
+##     A tar file is created containing the files
+##
+purge-backups:
+	@$(call msg,"Purging backups");
+ifdef S3BUCKET
+	@echo Purging S3 backups in $(S3BUCKET)
+	@util/backup/purge_backup.sh $(S3BUCKET)
+else
+	@echo purging local backups
+	@util/backup/purge_backup.sh backups
+endif
+
 
 ## restore: restore database, configmaps and secrets.
 ##     This requires either default K8s config or KUBECONFIG set
 ##     Parameters: BACKUPFILE var must be set or the most recent timestamp is selected
 ##
 restore:
+ifdef S3BUCKET
+	@if [ -z "$(BACKUPFILE)" ]; then echo "BACKUPFILE should be set when S3BUCKET is set"; exit 1; fi
+endif
 ifndef BACKUPFILE
 		@echo Look for most recent backup file
-		@$(eval BACKUPFILE := $(shell ls backups/backup_*|sort -V| tail -n 1))
+		@$(eval BACKUPFILE := $(shell ls backups/backup_*|sort -V| head -n 1))
 endif
-	@echo using backup file $(BACKUPFILE)
-	$(eval BASEDIR := $(shell basedir=$(BACKUPFILE); basedir="$${basedir##*/}"; basedir="$${basedir%.*}"; echo $${basedir} ))
-	tar xvzf $(BACKUPFILE) -C /tmp
-	@util/backup/cm_check.sh /tmp/$(BASEDIR) $(NAMESPACE)
-	@util/backup/db_restore.sh /tmp/$(BASEDIR) $(NAMESPACE)
-	@util/backup/cm_restore.sh /tmp/$(BASEDIR) $(NAMESPACE)
-	@rm -rf /tmp/$(BASEDIR)
+	@$(eval TMPDIR := backup_$(NAMESPACE)_$(shell date +'%Y-%m-%d_%H-%M-%S'))
+	@echo using backup file $(BACKUPFILE) and copying to localfile $(TMPDIR).tgz
+ifdef S3BUCKET
+	@echo Copy $(BACKUPFILE) from bucket $(S3BUCKET) to /tmp/$(BACKUPFILE)
+	@s3cmd get $(S3BUCKET)/$(BACKUPFILE)  /tmp/$(TMPDIR).tgz || exit 1
+else
+	@cp $(BACKUPFILE) /tmp/$(TMPDIR).tgz
+endif
+	@mkdir /tmp/$(TMPDIR)
+	@tar xvzf /tmp/$(TMPDIR).tgz --strip-components=1 -C /tmp/$(TMPDIR)
+
+	@util/backup/cm_check.sh /tmp/$(TMPDIR) $(NAMESPACE)
+	@util/backup/db_restore.sh /tmp/$(TMPDIR) $(NAMESPACE)
+	@util/backup/cm_restore.sh /tmp/$(TMPDIR) $(NAMESPACE)
+ifdef S3BUCKET
+	@rm -rf /tmp/$(BACKUPFILE)
+else
+	@rm -rf /tmp/$(TMPDIR) /tmp/$(TMPDIR).tgz
+endif
+
+## backup-db only, backup is saved in backups/database.sql
+##
+backup-db:
+	$(call msg, "Creating DB backup");
+	mkdir -p backups;
+	util/backup/db_dump.sh backups $(NAMESPACE)
+
+## restore-db only, from backups/database.sql
+##
+restore-db:
+ifndef BACKUPFILE
+	$(eval BACKUPFIL := backups/database.sql)
+endif
+	$(call msg, "Restoring DB backup");
+	export DBONLY=true && util/backup/db_restore.sh backups/ $(NAMESPACE)
+
 ## help: Show this help message
 ##
 help:
