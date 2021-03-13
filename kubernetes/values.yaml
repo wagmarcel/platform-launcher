@@ -1,3 +1,7 @@
+# The following two should always be changed together!
+imagePrefix: oisp
+keycloakImageVar: &keycloakImage "oisp/keycloak"
+
 # Credentials to pull images from docker registry
 imageCredentials:
     registry: docker.io
@@ -29,9 +33,51 @@ minio:
   secretkey: minio123
   mcimage: minio/mc:latest
 
+backup:
+  bucket: backup
+
 certmanager:
   secret: frontend-web-prod-tls
   issuer: letsencrypt-prod
+
+emqx:
+  replicaCount: 3
+  fullnameOverride: emqx
+  emqxConfig:
+    EMQX_AUTH__HTTP__ACL_REQ: http://mqtt-gateway:3025/acl
+    EMQX_AUTH__HTTP__ACL_REQ__METHOD: get
+    EMQX_AUTH__HTTP__ACL_REQ__PARAMS: access=%A,username=%u,topic=%t
+    EMQX_AUTH__HTTP__AUTH_REQ: http://mqtt-gateway:3025/auth
+    EMQX_AUTH__HTTP__AUTH_REQ__METHOD: get
+    EMQX_AUTH__HTTP__AUTH_REQ__PARAMS: username=%u,password=%P
+    EMQX_CLUSTER__K8S__ADDRESS_TYPE: hostname
+    EMQX_CLUSTER__K8S__APISERVER: https://kubernetes.default.svc:443
+    EMQX_CLUSTER__K8S__SUFFIX: svc.cluster.local
+    EMQX_LOADED_PLUGINS: emqx_auth_http
+    EMQX_LOG__LEVEL: warning
+    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.cert
+    EMQX_LISTENER__SSL__EXTERNAL__KEYFILE: etc/certs/server.key
+    EMQX_LISTENER__SSL__EXTERNAL__VERIFY: verify_none
+
+emqxtest:
+  replicaCount: 1
+  fullnameOverride: emqx
+  emqxConfig:
+    EMQX_AUTH__HTTP__ACL_REQ: http://mqtt-gateway:3025/acl
+    EMQX_AUTH__HTTP__ACL_REQ__METHOD: get
+    EMQX_AUTH__HTTP__ACL_REQ__PARAMS: access=%A,username=%u,topic=%t
+    EMQX_AUTH__HTTP__AUTH_REQ: http://mqtt-gateway:3025/auth
+    EMQX_AUTH__HTTP__AUTH_REQ__METHOD: get
+    EMQX_AUTH__HTTP__AUTH_REQ__PARAMS: username=%u,password=%P
+    EMQX_CLUSTER__K8S__ADDRESS_TYPE: hostname
+    EMQX_CLUSTER__K8S__APISERVER: https://kubernetes.default.svc:443
+    EMQX_CLUSTER__K8S__SUFFIX: svc.cluster.local
+    EMQX_LOADED_PLUGINS: emqx_auth_http
+    EMQX_LOG__LEVEL: warning
+    EMQX_LISTENER__SSL__EXTERNAL__CERTFILE: etc/certs/server.cert
+    EMQX_LISTENER__SSL__EXTERNAL__KEYFILE: etc/certs/server.key
+    EMQX_LISTENER__SSL__EXTERNAL__VERIFY: verify_none
+
 
 kafka:
   fullnameOverride: oisp-kafka
@@ -44,8 +90,7 @@ kafka:
   requestTimeout: 20000
   maxRetryTime: 2000
   retries: 5
-  persistence:
-    size: 15Gi
+  maxPayloadSize: "20000000"
   resources:
     requests:
       cpu: 500m
@@ -77,6 +122,7 @@ kafkatest:
   requestTimeout: 20000
   maxRetryTime: 5000
   retries: 10
+  maxPayloadSize: "20000000"
   resources:
     requests:
       cpu: 50m
@@ -127,11 +173,16 @@ mqtt:
   broker:
     username: username
     password: password
+    url: emqx
+    localport: 1883
+  gateway:
+    port: 3025
+    url: mqtt-gateway
   certs:
     cafile: "server.cert"
     keyfile: "server.key"
     certfile: "server.cert"
-    rootpath: "/app/ssl"
+    rootpath: "/opt/emqx/etc/certs"
 
 # Gearpump username and password are legacy, they can be removed safely
 # after the rule-engine is updated to ignore them.
@@ -175,7 +226,7 @@ keycloak:
   nameOverride: "keycloak"
   keycloak:
     image:
-      repository: oisp/keycloak
+      repository: *keycloakImage
       pullSecrets:
       - dockercred
       tag: latest
@@ -195,11 +246,6 @@ keycloak:
           configMapKeyRef:
             name: oisp-config
             key: keycloak-frontend-secret
-      - name: OISP_MQTT_BROKER_SECRET
-        valueFrom:
-          configMapKeyRef:
-            name: oisp-config
-            key: keycloak-mqtt-broker-secret
       - name: OISP_WEBSOCKET_SERVER_SECRET
         valueFrom:
           configMapKeyRef:
@@ -250,10 +296,6 @@ keycloak:
   websocketServer:
     secret: "supersecret"
     id: "websocket-server"
-  mqttBroker:
-    secret: "supersecret"
-    id: "mqtt-broker"
-    waitForKeycloak: "keycloak-http:4080"
   fusionBackend:
     secret: "supersecret"
   # Change root address of authServerUrl to the URL of oisp-frontend
