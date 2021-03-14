@@ -269,3 +269,54 @@ alter table quantity_type
 	add constraint fksbddu8uv3c5ajhya8k7kws90v
 		foreign key (base_unit_id) references unit;
 
+create sequence idgen_asset;
+
+alter sequence idgen_asset owner to postgres;
+
+create sequence idgen_assetseries;
+
+alter sequence idgen_assetseries owner to postgres;
+
+create sequence idgen_assettype;
+
+alter sequence idgen_assettype owner to postgres;
+
+create sequence idgen_assettypetemplate;
+
+alter sequence idgen_assettypetemplate owner to postgres;
+
+create sequence idgen_company;
+
+alter sequence idgen_company owner to postgres;
+
+create sequence idgen_field;
+
+alter sequence idgen_field owner to postgres;
+
+create sequence idgen_fieldinstance;
+
+alter sequence idgen_fieldinstance owner to postgres;
+
+create sequence idgen_fieldsource;
+
+alter sequence idgen_fieldsource owner to postgres;
+
+create sequence idgen_fieldtarget;
+
+alter sequence idgen_fieldtarget owner to postgres;
+
+create sequence idgen_location;
+
+alter sequence idgen_location owner to postgres;
+
+create sequence idgen_quantitytype;
+
+alter sequence idgen_quantitytype owner to postgres;
+
+create sequence idgen_room;
+
+alter sequence idgen_room owner to postgres;
+
+create sequence idgen_unit;
+
+alter sequence idgen_unit owner to postgres;

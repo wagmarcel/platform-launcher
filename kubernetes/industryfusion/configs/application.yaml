@@ -31,7 +31,21 @@ spring:
     open-in-view: false
     database: postgresql
 
+keycloak:
+  realm: OISP
+  resource: fusion-backend
+  auth-server-url: https://platform.industry-fusion.com/keycloak/
+  ssl-required: external
+  public-client: false
+  principal-attribute: preferred_username
+  verify-token-audience: true
+  credentials:
+    secret: 7c4c8779-41a0-4a50-8753-78da442c151d
+  bearer-only: true
+  use-resource-role-mappings: true
+
 logging:
   level:
     root: INFO
+
 
