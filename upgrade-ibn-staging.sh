@@ -1,3 +1,5 @@
+export DOCKERUSER=oispreadonly
+export DOCKERPASS=UCouldGuess01!
 export NAMESPACE=oisp-staging
 export KUBECONFIG=${HOME}/.kube/kubeconfig-ibn4.0.yaml
 export DOCKER_TAG=v2.0.2-beta.1
