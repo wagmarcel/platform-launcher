@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+  labels:
+    app.kubernetes.io/managed-by: com.instaclustr.cassandra-operator
+    cassandra-operator.instaclustr.com/cluster: oisp
+    cassandra-operator.instaclustr.com/datacenter: oisp-staging
+    cassandra-operator.instaclustr.com/rack: rack1
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          f:volume.beta.kubernetes.io/storage-provisioner: {}
+        f:labels:
+          .: {}
+          f:app.kubernetes.io/managed-by: {}
+          f:cassandra-operator.instaclustr.com/cluster: {}
+          f:cassandra-operator.instaclustr.com/datacenter: {}
+          f:cassandra-operator.instaclustr.com/rack: {}
+      f:spec:
+        f:accessModes: {}
+        f:resources:
+          f:requests:
+            .: {}
+            f:storage: {}
+        f:volumeMode: {}
+      f:status:
+        f:phase: {}
+    manager: kube-controller-manager
+    operation: Update
+    time: "2021-05-06T07:23:50Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:volume.kubernetes.io/selected-node: {}
+    manager: kube-scheduler
+    operation: Update
+    time: "2021-05-06T07:23:50Z"
+  name: data-volume-cassandra-oisp-oisp-staging-rack1-0
+  namespace: cassandra
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 25000Mi
+  storageClassName: ionos-enterprise-ssd
+  volumeMode: Filesystem
+status:
+  phase: Pending
