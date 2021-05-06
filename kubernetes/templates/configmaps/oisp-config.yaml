@@ -91,7 +91,7 @@ data:
   postgres: |
     {
     "dbname": "oisp",
-    "hostname": "postgres-ro",
+    "hostname": "postgres",
     "writeHostname": "postgres",
     "port": "5432",
     "su_username": "{{ .Values.stolon.pgSuperuserName }}",
